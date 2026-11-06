@@ -66,7 +66,7 @@ public final class TerminalBladeConfig {
         builder.push("super_slash_art");
         SUPER_RADIUS = builder
                 .comment("以玩家身体中心为球心的半径。判定使用球形距离，不是立方体。")
-                .defineInRange("radius", 8.0D, 0.5D, 128.0D);
+                .defineInRange("radius", 16.0D, 0.5D, 128.0D);
         SUPER_SACRIFICE_RATIO = builder
                 .comment("献祭最大生命的比例。当前生命不足以支付时，范围攻击完成后玩家死亡。")
                 .defineInRange("sacrifice_ratio", 0.90D, 0.0D, 1.0D);
