@@ -97,6 +97,36 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void normalAttackFormulaAppliesOncePerTargetTick(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        prepare(caster, target);
+        giveBlade(helper, caster);
+        setMaxHealth(target, 300.0D);
+        caster.setHealth(20.0F);
+        target.setHealth(300.0F);
+        target.invulnerableTime = 0;
+        MistletoeDamage.clearSlashStack();
+
+        target.hurt(caster.level().damageSources().mobAttack(caster), 8.0F);
+        float firstLoss = 300.0F - target.getHealth();
+        float afterFirst = target.getHealth();
+        target.invulnerableTime = 0;
+        target.hurt(caster.level().damageSources().mobAttack(caster), 8.0F);
+        float secondLoss = afterFirst - target.getHealth();
+
+        TerminalBlade.LOGGER.info(
+                "[GameTest] 同一 tick 两次平A事件：第一次={} 第二次={} 目标剩余={}",
+                firstLoss, secondLoss, target.getHealth());
+        helper.assertTrue(firstLoss > 60.0F && firstLoss < 68.0F,
+                "第一次平 A 不在公式 64 附近：" + firstLoss);
+        helper.assertTrue(secondLoss < 20.0F,
+                "同一 tick 的第二次平 A 又套了一遍公式：" + secondLoss);
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void justSlashArtUsesItsOwnState(GameTestHelper helper) {
         Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
         Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);

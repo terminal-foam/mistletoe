@@ -43,6 +43,13 @@ public final class MistletoeDamage {
 
     private static final ThreadLocal<Boolean> APPLYING = ThreadLocal.withInitial(() -> false);
     private static final ThreadLocal<ArrayDeque<EntitySlashEffect>> ACTIVE_SLASH = ThreadLocal.withInitial(ArrayDeque::new);
+    /**
+     * 平 A 的一次挥击在 SlashBlade 里可能同时产生玩家 direct 命中和斩击实体命中，
+     * 两个 LivingIncomingDamageEvent 都命中同一个目标时，公式只能改写一次；否则
+     * 目标会吃到两倍公式伤害（实测 600 HP 目标出现两条 124，合计 248 > 强化 SA 的 244.4）。
+     * 按 attacker:target 去重，每个服务端 tick 清空。
+     */
+    private static final ThreadLocal<Set<String>> NORMAL_FORMULA_APPLIED = ThreadLocal.withInitial(HashSet::new);
     /** 只在当前强制处决调用栈里生效；LivingDeathEvent 的 LOWEST 处理器据此解除取消。 */
     private static final ThreadLocal<Set<UUID>> FORCE_KILLING = ThreadLocal.withInitial(HashSet::new);
 
@@ -110,6 +117,12 @@ public final class MistletoeDamage {
             return;
         }
         if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+
+        // 同一次挥击的第二个命中事件不再重复套公式，保留它原本的伤害。
+        String formulaKey = attacker.getUUID() + ":" + target.getUUID();
+        if (!NORMAL_FORMULA_APPLIED.get().add(formulaKey)) {
             return;
         }
 
@@ -231,10 +244,12 @@ public final class MistletoeDamage {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         ACTIVE_SLASH.remove();
+        NORMAL_FORMULA_APPLIED.remove();
     }
 
     public static void clearSlashStack() {
         ACTIVE_SLASH.remove();
+        NORMAL_FORMULA_APPLIED.remove();
     }
 
     public static DamageSource source(Entity attacker, ResourceKey<DamageType> type) {

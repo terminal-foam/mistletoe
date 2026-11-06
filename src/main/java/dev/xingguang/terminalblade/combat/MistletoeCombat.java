@@ -101,12 +101,13 @@ public final class MistletoeCombat {
 
         if (enhanced && TerminalBladeConfig.slashArtPayOnWhiff()) {
             paySlashArt(user, level, cost);
-            log(user, "sacrifice", just ? "just_sa" : "sa", true);
+            log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         boolean connected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, damage);
         if (enhanced && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
             paySlashArt(user, level, cost);
-            log(user, "sacrifice", just ? "just_sa" : "sa", true);
+            // 普通 SA 的献祭固定是当前生命的 10%，不会致死；true 只属于 Super SA。
+            log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         if (connected) {
             play(user, ModSounds.HIT.get(), 0.7F, enhanced ? 0.85F : 1.15F);
