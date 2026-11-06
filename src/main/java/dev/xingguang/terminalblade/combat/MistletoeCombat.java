@@ -228,6 +228,10 @@ public final class MistletoeCombat {
         if (TerminalBladeConfig.superConsumeHalfDurability() && !applyHalfDurabilityCost(player)) {
             return true;
         }
+        // 扣耐久可能触发物品损坏/ComboState 变化；切换前再确认一次，避免扣完才发现进不去。
+        if (!canEnterSuper(player)) {
+            return true;
+        }
 
         ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
         state.updateComboSeq(player, ModComboStates.SUPER.getId());
