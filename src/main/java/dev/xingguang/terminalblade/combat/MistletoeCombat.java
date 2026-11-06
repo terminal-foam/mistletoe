@@ -29,13 +29,13 @@ public final class MistletoeCombat {
     public static final int HIT_TICK = 6;
     public static final long CAST_COOLDOWN_TICKS = 8L;
 
-    private static final String SA_TOKEN = "terminalblade:sa_token";
-    private static final String SA_ARMED = "terminalblade:sa_armed";
-    private static final String SA_JUST = "terminalblade:sa_just";
-    private static final String SA_COMBO = "terminalblade:sa_combo";
-    public static final String SUPER_TOKEN = "terminalblade:super_token";
-    private static final String SUPER_ARMED = "terminalblade:super_armed";
-    private static final String SUPER_COMBO = "terminalblade:super_combo";
+    private static final String SA_TOKEN = "mistletoe:sa_token";
+    private static final String SA_ARMED = "mistletoe:sa_armed";
+    private static final String SA_JUST = "mistletoe:sa_just";
+    private static final String SA_COMBO = "mistletoe:sa_combo";
+    public static final String SUPER_TOKEN = "mistletoe:super_token";
+    private static final String SUPER_ARMED = "mistletoe:super_armed";
+    private static final String SUPER_COMBO = "mistletoe:super_combo";
 
     private MistletoeCombat() {
     }

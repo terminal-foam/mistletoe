@@ -6,7 +6,7 @@
 # 再加上 libs\SlashBladeResharped-2.1.9-1.21.1.jar 即可编译本模组。
 #
 # 用法：
-#   .\build-1.21.1.ps1            # 增量编译 → build-1.21.1\libs\terminalblade-<version>.jar
+#   .\build-1.21.1.ps1            # 增量编译 → build-1.21.1\libs\mistletoe-<version>.jar
 #   .\build-1.21.1.ps1 -Clean
 #   .\build-1.21.1.ps1 -Verify
 
@@ -70,10 +70,10 @@ Set-Content (Join-Path $classes 'META-INF\neoforge.mods.toml') $toml -Encoding U
 $manifest = Join-Path $build 'MANIFEST.MF'
 @(
     'Manifest-Version: 1.0'
-    'Specification-Title: terminalblade'
+    'Specification-Title: mistletoe'
     'Specification-Vendor: Xingguang'
     'Specification-Version: 1'
-    'Implementation-Title: terminalblade'
+    'Implementation-Title: mistletoe'
     "Implementation-Version: $modVersion"
     'Implementation-Vendor: Xingguang'
     ''
@@ -97,7 +97,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [System.IO.Compression.ZipFile]::OpenRead($jarPath)
 try {
     $names = $zip.Entries | ForEach-Object FullName
-    foreach ($required in 'META-INF/neoforge.mods.toml', 'META-INF/MANIFEST.MF', 'terminalblade.mixins.json') {
+    foreach ($required in 'META-INF/neoforge.mods.toml', 'META-INF/MANIFEST.MF', 'mistletoe.mixins.json') {
         if (-not ($names -contains $required)) { throw "jar 缺少 $required" }
     }
     $classCount = ($zip.Entries | Where-Object { $_.FullName -like '*.class' }).Count

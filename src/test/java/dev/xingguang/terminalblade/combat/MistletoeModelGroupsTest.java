@@ -29,7 +29,7 @@ class MistletoeModelGroupsTest {
 
     @Test
     void objDeclaresEveryRendererGroup() throws Exception {
-        Path model = Path.of("src/main/resources/assets/terminalblade/model/named/mistletoe.obj");
+        Path model = Path.of("src/main/resources/assets/mistletoe/model/named/mistletoe.obj");
         Set<String> groups = new HashSet<>();
         for (String line : Files.readAllLines(model)) {
             if (line.startsWith("g ")) {

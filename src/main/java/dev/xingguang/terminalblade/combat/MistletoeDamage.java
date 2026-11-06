@@ -37,7 +37,7 @@ public final class MistletoeDamage {
     public static final ResourceKey<DamageType> GODSLAYER = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer"));
     public static final ResourceKey<DamageType> GODSLAYER_ABSOLUTE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer_absolute"));
 
-    public static final String ORIGIN = "terminalblade:origin";
+    public static final String ORIGIN = "mistletoe:origin";
     public static final String ORIGIN_MISTLETOE = "mistletoe";
     public static final String ORIGIN_OTHER = "other";
 

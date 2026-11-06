@@ -44,7 +44,7 @@ public final class MistletoeHooks {
         }
         long pressTime = event.getState().getLastPressTime(InputCommand.SPRINT);
         IInputState input = event.getState();
-        input.getScheduler().schedule("terminalbladeCharge", pressTime + 5L, (entity, queue, now) -> {
+        input.getScheduler().schedule("mistletoeCharge", pressTime + 5L, (entity, queue, now) -> {
             if (!(entity instanceof ServerPlayer serverPlayer) || !stillHolding(serverPlayer, pressTime)) {
                 return;
             }

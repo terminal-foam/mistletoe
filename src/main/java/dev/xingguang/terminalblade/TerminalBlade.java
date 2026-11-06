@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(TerminalBlade.MOD_ID)
 public class TerminalBlade {
-    public static final String MOD_ID = "terminalblade";
+    public static final String MOD_ID = "mistletoe";
     public static final Logger LOGGER = LogManager.getLogger("TerminalBlade");
 
     public TerminalBlade(IEventBus modBus, ModContainer container) {

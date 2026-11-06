@@ -52,7 +52,7 @@ public final class MistletoeCommands {
         if (blade.isEmpty() || !player.addItem(blade)) {
             player.drop(blade, false);
         }
-        player.displayClientMessage(Component.translatable("commands.terminalblade.give", player.getDisplayName()), false);
+        player.displayClientMessage(Component.translatable("commands.mistletoe.give", player.getDisplayName()), false);
         return 1;
     }
 
@@ -77,7 +77,7 @@ public final class MistletoeCommands {
                 1.0F);
         MistletoeFormulas.SuperSacrifice superSacrifice = MistletoeFormulas.superSacrifice(
                 playerCurrent, playerMax, TerminalBladeConfig.superSacrificeRatio());
-        source.sendSuccess(() -> Component.translatable("commands.terminalblade.audit",
+        source.sendSuccess(() -> Component.translatable("commands.mistletoe.audit",
                 normal, enhanced, cost, sa, superSacrifice.cost(), superSacrifice.lethal(),
                 TerminalBladeConfig.superRadius()), false);
         return 1;

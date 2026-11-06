@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class MistletoeBlade {
     public static final ResourceLocation NAME = TerminalBlade.id("mistletoe");
-    public static final String TRANSLATION_KEY = "item.terminalblade.mistletoe";
+    public static final String TRANSLATION_KEY = "item.mistletoe.mistletoe";
 
     private MistletoeBlade() {
     }

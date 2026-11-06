@@ -33,7 +33,7 @@ Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲�
 
 Just 窗口沿用本体，默认没有额外倍率。长按 V 时不要同时潜行并移动，这是本体的输入条件。
 
-Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透伤害，也不会被强制处决。已知 Boss 模组可以注册 `PhaseLockAdapter`；数据包标签 `terminalblade:super_sa_phase_protected` 是未适配 Boss 的保守兜底（默认空）。未适配目标按普通实体处理，可被处决；本模组不声称自动识别任意第三方 Boss 的阶段锁血。
+Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透伤害，也不会被强制处决。已知 Boss 模组可以注册 `PhaseLockAdapter`；数据包标签 `mistletoe:super_sa_phase_protected` 是未适配 Boss 的保守兜底（默认空）。未适配目标按普通实体处理，可被处决；本模组不声称自动识别任意第三方 Boss 的阶段锁血。
 
 公式可以用命令复核，三个数分别是目标最大生命、玩家当前生命、玩家最大生命：
 
@@ -41,7 +41,7 @@ Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透�
 /mistletoe audit 300 20 20
 ```
 
-服务端配置在 `config/terminalblade-common.toml`。把 `debug.log_damage` 设为 `true` 后，每次结算会写进日志。
+服务端配置在 `config/mistletoe-common.toml`。把 `debug.log_damage` 设为 `true` 后，每次结算会写进日志。
 
 ## 本地构建
 

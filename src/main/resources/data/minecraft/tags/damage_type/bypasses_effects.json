@@ -1,8 +1,8 @@
 {
   "replace": false,
   "values": [
-    "terminalblade:mistletoe_sacrifice",
-    "terminalblade:mistletoe_godslayer",
-    "terminalblade:mistletoe_godslayer_absolute"
+    "mistletoe:mistletoe_sacrifice",
+    "mistletoe:mistletoe_godslayer",
+    "mistletoe:mistletoe_godslayer_absolute"
   ]
 }

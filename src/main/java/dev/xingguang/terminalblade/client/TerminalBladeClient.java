@@ -27,7 +27,7 @@ public final class TerminalBladeClient {
         if (!MistletoeBlade.isMistletoe(event.getItemStack())) {
             return;
         }
-        event.getToolTip().add(Component.translatable("item.terminalblade.mistletoe.desc").withStyle(ChatFormatting.GRAY));
-        event.getToolTip().add(Component.translatable("item.terminalblade.mistletoe.hint").withStyle(ChatFormatting.DARK_GREEN));
+        event.getToolTip().add(Component.translatable("item.mistletoe.mistletoe.desc").withStyle(ChatFormatting.GRAY));
+        event.getToolTip().add(Component.translatable("item.mistletoe.mistletoe.hint").withStyle(ChatFormatting.DARK_GREEN));
     }
 }

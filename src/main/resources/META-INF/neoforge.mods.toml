@@ -10,7 +10,7 @@ authors="星光"
 description='''槲寄生：一把以生命差额为刃、以献祭换取弑神的原创拔刀剑。SlashBlade Resharped 附属模组。'''
 
 [[mixins]]
-config="terminalblade.mixins.json"
+config="mistletoe.mixins.json"
 
 [[dependencies.${mod_id}]]
 modId="neoforge"

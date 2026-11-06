@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
  *
  * <p>阶段锁血目标连 bypasses_invulnerability 的伤害都不打，避免在识别出锁血之前
  * 就把它打穿。UNKNOWN 按普通实体处理（可伤害、可强制处决）；需要保守保护的整合包
- * 使用 {@code terminalblade:super_sa_phase_protected} 标签。</p>
+ * 使用 {@code mistletoe:super_sa_phase_protected} 标签。</p>
  */
 public final class SuperSaExecutionService {
     public enum Result {
