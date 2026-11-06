@@ -1,6 +1,6 @@
 # 槲寄生
 
-Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲寄生」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.1.9，不修改、不重新打包本体。
+Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲寄生」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.0.7–2.1.9（主目标 2.1.9），不修改、不重新打包本体。
 
 主题来自巴德尔神话里的槲寄生：平时克制，面对越庞大的生命，切口越深。Super SA 以自己的大部分生命换一次球形即死。
 
@@ -9,7 +9,7 @@ Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲�
 - Minecraft 1.21.1
 - NeoForge 21.1.228 到 21.2 之前。0.1.2 在 21.1.264 专用服务器上做过启动加载测试
 - Java 21
-- SlashBlade: Resharped 只接受 `2.1.9-1.21.1`
+- SlashBlade: Resharped 接受 `2.0.7-1.21.1` 到 `2.1.9-1.21.1`；开发和 GameTest 基准是 2.1.9
 
 把本模组 JAR 和 Resharped 放进同一个 `mods` 文件夹。缺少 Resharped 时加载器会直接拒绝启动。
 
@@ -50,7 +50,7 @@ Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透�
 
 `test` 只跑 JUnit。`runGameTestServer` 才跑游戏内测试。两套都要通过，不能互相代替。
 
-`downloadSlashBlade` 会把 Resharped 2.1.9 下载到 `libs/`，并核对 SHA-512。这个 JAR 只用于编译和开发运行，不会打进附属模组。
+`downloadSlashBlade` 会把 Resharped 2.1.9 下载到 `libs/`（编译基准），并核对 SHA-512。这个 JAR 只用于编译和开发运行，不会打进附属模组。
 
 本机没有 Gradle 缓存时，可以用离线脚本：
 
