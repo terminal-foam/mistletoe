@@ -59,6 +59,44 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void normalAttackVersusEnhancedSlashArt(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        prepare(caster, target);
+        giveBlade(helper, caster);
+        setMaxHealth(target, 300.0D);
+        caster.setHealth(20.0F);
+        target.setHealth(300.0F);
+        target.invulnerableTime = 0;
+        MistletoeDamage.clearSlashStack();
+
+        target.hurt(caster.level().damageSources().mobAttack(caster), 8.0F);
+        float normalLoss = 300.0F - target.getHealth();
+
+        target.setHealth(300.0F);
+        target.invulnerableTime = 0;
+        caster.setHealth(20.0F);
+        enter(caster, ModComboStates.SLASH_ART.getId());
+        fireHit(caster, ModComboStates.SLASH_ART.getId());
+        float saLoss = 300.0F - target.getHealth();
+        float casterAfter = caster.getHealth();
+        TerminalBlade.LOGGER.info(
+                "[GameTest] 同一目标 平A掉血={} 强化SA掉血={} 施法者献祭后={} 目标剩余={}",
+                normalLoss, saLoss, casterAfter, target.getHealth());
+
+        helper.assertTrue(normalLoss > 60.0F && normalLoss < 68.0F,
+                "平 A 实测不在 8 + 0.2×280 = 64 附近：" + normalLoss);
+        helper.assertTrue(saLoss > normalLoss,
+                "强化 SA 实测没有高于平 A：平A=" + normalLoss + " SA=" + saLoss);
+        helper.assertTrue(saLoss > 120.0F && saLoss < 129.0F,
+                "强化 SA 实测不在 8 + 0.2×282 + 60 = 124.4 附近：" + saLoss);
+        helper.assertTrue(casterAfter > 17.0F && casterAfter < 19.0F,
+                "强化 SA 后施法者不是剩 18 HP：" + casterAfter);
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void justSlashArtUsesItsOwnState(GameTestHelper helper) {
         Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
         Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
