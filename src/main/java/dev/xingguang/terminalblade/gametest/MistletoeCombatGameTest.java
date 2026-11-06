@@ -144,24 +144,26 @@ public class MistletoeCombatGameTest {
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void durabilityIsNotSpentWhenSuperCannotEnter(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        player.setItemSlot(EquipmentSlot.MAINHAND, blade(helper));
+        // 用僵尸而不是 makeMockServerPlayerInLevel：SlashBlade 在 mock player 上会尝试发
+        // motion_broadcast 包，GameTest 服务器没有真实连接，直接抛异常。
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        giveBlade(helper, caster);
         boolean previous = TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.get();
         TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.set(true);
         try {
-            ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
+            ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
 
-            state.updateComboSeq(player, ModComboStates.SUPER.getId());
-            player.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, player.level().getGameTime() - 100L);
-            int before = player.getMainHandItem().getDamageValue();
-            MistletoeCombat.releaseSuperFromInput(player);
-            helper.assertValueEqual(before, player.getMainHandItem().getDamageValue(),
+            state.updateComboSeq(caster, ModComboStates.SUPER.getId());
+            caster.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, caster.level().getGameTime() - 100L);
+            int before = caster.getMainHandItem().getDamageValue();
+            MistletoeCombat.releaseSuperFromInput(caster);
+            helper.assertValueEqual(before, caster.getMainHandItem().getDamageValue(),
                     "ComboState 不允许转入 Super 时仍然扣了耐久");
 
-            state.updateComboSeq(player, ComboStateRegistry.STANDBY.getId());
-            player.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, player.level().getGameTime() - 100L);
-            MistletoeCombat.releaseSuperFromInput(player);
-            helper.assertTrue(player.getMainHandItem().getDamageValue() > before,
+            state.updateComboSeq(caster, ComboStateRegistry.STANDBY.getId());
+            caster.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, caster.level().getGameTime() - 100L);
+            MistletoeCombat.releaseSuperFromInput(caster);
+            helper.assertTrue(caster.getMainHandItem().getDamageValue() > before,
                     "合法转入 Super 时没有扣耐久");
         } finally {
             TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.set(previous);

@@ -28,7 +28,7 @@ public final class SuperSaExecutionService {
 
     public static Result execute(LivingEntity user, LivingEntity target) {
         if (user == null || target == null || user.level().isClientSide()
-                || target.isRemoved() || target == user) {
+                || target.isRemoved() || target.isDeadOrDying() || target == user) {
             return Result.SKIPPED;
         }
 
@@ -40,9 +40,10 @@ public final class SuperSaExecutionService {
         float amount = target.getMaxHealth() + target.getAbsorptionAmount() + 1000.0F;
         MistletoeDamage.hurt(user, target, MistletoeDamage.GODSLAYER_ABSOLUTE, amount);
 
-        // 注意：isAlive() 在 1.21.1 是 health > 0；死亡事件被取消时目标会停在 0 生命但
-        // 仍然没有 isRemoved()，所以这里用 isRemoved() 判断“真的死了”。
-        if (target.isRemoved()) {
+        // 注意：isAlive() 是 health > 0；正常死亡的实体在 die() 后先进入 20 tick 的
+        // DYING 姿态，isRemoved() 要等 tickDeath 才变 true。这里用 isDeadOrDying()
+        // （health <= 0）判断“正常伤害已经完成死亡”，避免把垂死目标再走一遍强制处决。
+        if (target.isRemoved() || target.isDeadOrDying()) {
             log(target, "killed_by_damage");
             return Result.KILLED_BY_DAMAGE;
         }

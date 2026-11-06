@@ -206,6 +206,14 @@ public final class MistletoeCombat {
     }
 
     public static boolean releaseSuperFromInput(ServerPlayer player) {
+        return releaseSuperFromInput((LivingEntity) player);
+    }
+
+    /**
+     * 与 {@link #releaseSuperFromInput(ServerPlayer)} 相同的入口，供 GameTest 用非玩家施法者验证
+     * ComboState / 耐久顺序；真人输入仍走 ServerPlayer 重载。
+     */
+    public static boolean releaseSuperFromInput(LivingEntity player) {
         ItemStack stack = player.getMainHandItem();
         if (!MistletoeBlade.isMistletoe(stack)) {
             return false;
@@ -241,7 +249,7 @@ public final class MistletoeCombat {
     /**
      * 只检查能否转入 SUPER，不写状态。确保扣耐久之前就能拒绝非法转换。
      */
-    private static boolean canEnterSuper(ServerPlayer player) {
+    private static boolean canEnterSuper(LivingEntity player) {
         if (!MistletoeBlade.isMistletoe(player.getMainHandItem())) {
             return false;
         }

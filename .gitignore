@@ -16,3 +16,4 @@ libs/*.jar
 __pycache__/
 *.pyc
 build-1.21.1/
+run-gametest/

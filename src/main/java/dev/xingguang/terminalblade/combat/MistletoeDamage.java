@@ -199,10 +199,15 @@ public final class MistletoeDamage {
             DamageSource source = source(user, type);
             target.setHealth(0.0F);
             target.die(source);
+            // 如果另一个模组在 LivingDeathEvent 里把目标治疗回来，死亡逻辑已经跑完，
+            // 但目标还活着；把生命压回 0，让它进入原版的 DYING/tickDeath 流程。
+            if (!target.isRemoved() && !target.isDeadOrDying()) {
+                target.setHealth(0.0F);
+            }
         } finally {
             active.remove(id);
         }
-        return target.isRemoved();
+        return target.isRemoved() || target.isDeadOrDying();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
