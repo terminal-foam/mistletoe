@@ -1,6 +1,8 @@
-# 槲寄生
+# 拔刀剑扩展：槲寄生
 
-Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲寄生」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.0.7–2.1.9（主目标 2.1.9），不修改、不重新打包本体。
+**SlashBlade Expansion: Mistletoe**
+
+Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲寄生『暮色』」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.0.7–2.1.9（主目标 2.1.9），不修改、不重新打包本体。
 
 主题来自巴德尔神话里的槲寄生：平时克制，面对越庞大的生命，切口越深。Super SA 以自己的大部分生命换一次球形即死。
 
@@ -15,7 +17,7 @@ Minecraft 1.21.1 / NeoForge 附属模组。它只加一把原创拔刀剑「槲�
 
 ## 怎么拿到刀
 
-- 创造模式：拔刀剑物品栏里的「槲寄生」
+- 创造模式：拔刀剑物品栏里的「槲寄生『暮色』」
 - 命令：`/mistletoe give`
 - 合成：白鞘拔刀剑居中，上下是发光浆果，左右是铁锭，四角是橡树树叶
 
