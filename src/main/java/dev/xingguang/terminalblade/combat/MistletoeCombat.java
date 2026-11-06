@@ -3,6 +3,7 @@ package dev.xingguang.terminalblade.combat;
 import dev.xingguang.terminalblade.TerminalBlade;
 import dev.xingguang.terminalblade.TerminalBladeConfig;
 import dev.xingguang.terminalblade.blade.MistletoeBlade;
+import dev.xingguang.terminalblade.combat.execution.SuperSaExecutionService;
 import dev.xingguang.terminalblade.registry.ModComboStates;
 import dev.xingguang.terminalblade.registry.ModSounds;
 import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
@@ -32,7 +33,7 @@ public final class MistletoeCombat {
     private static final String SA_ARMED = "terminalblade:sa_armed";
     private static final String SA_JUST = "terminalblade:sa_just";
     private static final String SA_COMBO = "terminalblade:sa_combo";
-    private static final String SUPER_TOKEN = "terminalblade:super_token";
+    public static final String SUPER_TOKEN = "terminalblade:super_token";
     private static final String SUPER_ARMED = "terminalblade:super_armed";
     private static final String SUPER_COMBO = "terminalblade:super_combo";
 
@@ -163,15 +164,23 @@ public final class MistletoeCombat {
         }
 
         List<LivingEntity> targets = MistletoeTargets.selectSuperTargets(user, radius);
-        int finished = 0;
-        int resisted = 0;
+        int killed = 0;
+        int phaseLocked = 0;
+        int failed = 0;
         for (LivingEntity target : targets) {
-            if (execute(user, target)) {
-                finished++;
-            } else if (target.isAlive()) {
-                resisted++;
-                TerminalBlade.LOGGER.warn("[槲寄生] Super SA 没有完成即死：{} ({})",
-                        target.getName().getString(), net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(target.getType()));
+            SuperSaExecutionService.Result result = SuperSaExecutionService.execute(user, target);
+            switch (result) {
+                case KILLED_BY_DAMAGE, KILLED_BY_FORCE -> killed++;
+                case PHASE_LOCKED -> phaseLocked++;
+                case FORCE_FAILED -> {
+                    failed++;
+                    TerminalBlade.LOGGER.warn("[槲寄生] Super SA 没有完成处决：{} ({})",
+                            target.getName().getString(),
+                            net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(target.getType()));
+                }
+                case SKIPPED -> {
+                    // 目标已经不在/同一施法者；不计入失败。
+                }
             }
         }
 
@@ -190,8 +199,8 @@ public final class MistletoeCombat {
             }
             if (TerminalBladeConfig.logDamage()) {
                 TerminalBlade.LOGGER.info(
-                        "[槲寄生] Super SA 半径={} 目标={} 即死={} 未完成={} 献祭={} 致死={}",
-                        radius, targets.size(), finished, resisted, sacrifice.cost(), sacrifice.lethal());
+                        "[槲寄生] Super SA 半径={} 目标={} 击杀={} 阶段锁={} 失败={} 献祭={} 致死={}",
+                        radius, targets.size(), killed, phaseLocked, failed, sacrifice.cost(), sacrifice.lethal());
             }
         }
     }
@@ -207,20 +216,46 @@ public final class MistletoeCombat {
         if (TerminalBladeConfig.superRequiresGround() && !player.onGround()) {
             return true;
         }
+
+        // M1-04：ComboState 转换和冷却都必须在扣耐久之前确认，
+        // 否则“技能没放出来但耐久已经扣了”，重复输入还会重复扣。
+        if (isSuperCoolingDown(player)) {
+            return true;
+        }
+        if (!canEnterSuper(player)) {
+            return true;
+        }
         if (TerminalBladeConfig.superConsumeHalfDurability() && !applyHalfDurabilityCost(player)) {
             return true;
         }
 
         ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
+        state.updateComboSeq(player, ModComboStates.SUPER.getId());
+        return true;
+    }
+
+    /**
+     * 只检查能否转入 SUPER，不写状态。确保扣耐久之前就能拒绝非法转换。
+     */
+    private static boolean canEnterSuper(ServerPlayer player) {
+        if (!MistletoeBlade.isMistletoe(player.getMainHandItem())) {
+            return false;
+        }
+        ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
         var currentLoc = state.resolvCurrentComboStateTicks(player);
         ComboState current = ComboStateRegistry.REGISTRY.get(currentLoc.getValue());
         var destination = ModComboStates.SUPER.getId();
         ComboState next = ComboStateRegistry.REGISTRY.get(destination);
-        if (current != null && next != null && !currentLoc.getValue().equals(destination)
-                && current.getPriority() > next.getPriority()) {
-            state.updateComboSeq(player, destination);
-        }
-        return true;
+        return current != null && next != null
+                && !currentLoc.getValue().equals(destination)
+                && current.getPriority() > next.getPriority();
+    }
+
+    private static boolean isSuperCoolingDown(LivingEntity user) {
+        var tag = user.getPersistentData();
+        long now = user.level().getGameTime();
+        return MistletoeCastGate.isCoolingDown(
+                tag.contains(SUPER_TOKEN), tag.getLong(SUPER_TOKEN), now, CAST_COOLDOWN_TICKS);
     }
 
     /**
@@ -233,22 +268,6 @@ public final class MistletoeCombat {
         }
         stack.hurtAndBreak(Math.max(1, stack.getMaxDamage() / 2), user, EquipmentSlot.MAINHAND);
         return canFight(user);
-    }
-
-    private static boolean execute(LivingEntity user, LivingEntity target) {
-        float before = target.getHealth();
-        var type = TerminalBladeConfig.superBypassInvulnerability()
-                ? MistletoeDamage.GODSLAYER_ABSOLUTE
-                : MistletoeDamage.GODSLAYER;
-        float amount = target.getMaxHealth() + target.getAbsorptionAmount() + 1000.0F;
-        MistletoeDamage.hurt(user, target, type, amount);
-        if (!target.isAlive()) {
-            return true;
-        }
-        if (TerminalBladeConfig.superFinishUnyielding() && !target.isInvulnerable()) {
-            target.kill();
-        }
-        return !target.isAlive() && before > 0.0F;
     }
 
     private static void paySlashArt(LivingEntity user, ServerLevel level, float cost) {

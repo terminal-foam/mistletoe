@@ -25,8 +25,6 @@ public final class TerminalBladeConfig {
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_PLAYERS;
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_TAMED;
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_PASSIVE;
-    public static final ModConfigSpec.BooleanValue SUPER_BYPASS_INVULNERABILITY;
-    public static final ModConfigSpec.BooleanValue SUPER_FINISH_UNYIELDING;
     public static final ModConfigSpec.BooleanValue LOG_DAMAGE;
 
     static {
@@ -87,12 +85,6 @@ public final class TerminalBladeConfig {
         SUPER_AFFECT_PASSIVE = builder
                 .comment("是否影响非敌对生物。默认只处理实现了 Enemy 的敌对生物。")
                 .define("affect_passive", false);
-        SUPER_BYPASS_INVULNERABILITY = builder
-                .comment("即死是否无视无敌标签。默认关闭，避免破坏脚本 Boss 的阶段锁。")
-                .define("bypass_invulnerability", false);
-        SUPER_FINISH_UNYIELDING = builder
-                .comment("普通致死伤害被取消后，是否再调用 kill()。默认关闭，不承诺击杀所有模组 Boss。")
-                .define("finish_unyielding", false);
         builder.pop();
 
         builder.push("debug");
@@ -169,14 +161,6 @@ public final class TerminalBladeConfig {
 
     public static boolean superAffectPassive() {
         return SUPER_AFFECT_PASSIVE.get();
-    }
-
-    public static boolean superBypassInvulnerability() {
-        return SUPER_BYPASS_INVULNERABILITY.get();
-    }
-
-    public static boolean superFinishUnyielding() {
-        return SUPER_FINISH_UNYIELDING.get();
     }
 
     public static boolean logDamage() {

@@ -17,9 +17,14 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * 普攻差额只改写槲寄生打出的那一次伤害，不在原伤害上再加一遍。
@@ -38,6 +43,8 @@ public final class MistletoeDamage {
 
     private static final ThreadLocal<Boolean> APPLYING = ThreadLocal.withInitial(() -> false);
     private static final ThreadLocal<ArrayDeque<EntitySlashEffect>> ACTIVE_SLASH = ThreadLocal.withInitial(ArrayDeque::new);
+    /** 只在当前强制处决调用栈里生效；LivingDeathEvent 的 LOWEST 处理器据此解除取消。 */
+    private static final ThreadLocal<Set<UUID>> FORCE_KILLING = ThreadLocal.withInitial(HashSet::new);
 
     private MistletoeDamage() {
     }
@@ -169,6 +176,60 @@ public final class MistletoeDamage {
         if (entity.isAlive()) {
             entity.kill();
         }
+    }
+
+    /**
+     * Super SA 的受控强制处决：绕开 LivingIncomingDamageEvent / LivingDamageEvent 的取消，
+     * 但仍然经过 LivingDeathEvent。作用域内的 LOWEST 监听器会把死亡取消解除；
+     * 目标模组如果在更晚的 LOWEST 再次取消，或每 tick 回血/替换实体，仍然可能挡住，见文档。
+     *
+     * @return 目标是否已被移除（玩家不死于 isRemoved，服务层单独处理）
+     */
+    public static boolean forceKill(LivingEntity user, LivingEntity target, ResourceKey<DamageType> type) {
+        if (user == null || target == null || target == user || target.isRemoved()) {
+            return target != null && target.isRemoved();
+        }
+        Set<UUID> active = FORCE_KILLING.get();
+        UUID id = target.getUUID();
+        if (!active.add(id)) {
+            // 同一个目标在强制处决过程中再次进入：不重复 die、不重复掉落。
+            return target.isRemoved();
+        }
+        try {
+            DamageSource source = source(user, type);
+            target.setHealth(0.0F);
+            target.die(source);
+        } finally {
+            active.remove(id);
+        }
+        return target.isRemoved();
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    public static void onForceKillDeath(LivingDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity == null || !FORCE_KILLING.get().contains(entity.getUUID())) {
+            return;
+        }
+        if (event.isCanceled()) {
+            event.setCanceled(false);
+            if (TerminalBladeConfig.logDamage()) {
+                TerminalBlade.LOGGER.info("[槲寄生] 强制处决解除死亡取消：{}", entity.getName().getString());
+            }
+        }
+    }
+
+    /**
+     * 兜底：EntitySlashEffect.tick 抛异常时 Mixin 的 RETURN pop 不会执行。
+     * 每个服务端 tick 结束清空当前线程的斩击栈，避免上一 tick 的斩击污染下一次伤害判定。
+     */
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent.Post event) {
+        ACTIVE_SLASH.remove();
+    }
+
+    public static void clearSlashStack() {
+        ACTIVE_SLASH.remove();
     }
 
     public static DamageSource source(Entity attacker, ResourceKey<DamageType> type) {

@@ -126,6 +126,8 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.named('jar', Jar).configure {
+    // GameTest 只用于开发运行；测试用的取消事件监听器不能跟着生产 jar 发布。
+    exclude 'dev/xingguang/terminalblade/gametest/**'
     manifest {
         attributes([
                 'Specification-Title'  : mod_id,

@@ -15,3 +15,4 @@ libs/*.jar
 .neoforge/
 __pycache__/
 *.pyc
+build-1.21.1/

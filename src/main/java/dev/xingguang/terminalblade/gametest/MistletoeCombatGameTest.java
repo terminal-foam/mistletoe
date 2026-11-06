@@ -1,6 +1,7 @@
 package dev.xingguang.terminalblade.gametest;
 
 import dev.xingguang.terminalblade.TerminalBlade;
+import dev.xingguang.terminalblade.TerminalBladeConfig;
 import dev.xingguang.terminalblade.blade.MistletoeBlade;
 import dev.xingguang.terminalblade.combat.MistletoeCombat;
 import dev.xingguang.terminalblade.combat.MistletoeDamage;
@@ -128,7 +129,49 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
-    public static void damageTypeTagsMatchTheUnconfirmedRules(GameTestHelper helper) {
+    public static void superWithoutTargetsStillSacrifices(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        giveBlade(helper, caster);
+        caster.setHealth(caster.getMaxHealth());
+
+        enter(caster, ModComboStates.SUPER.getId());
+        fireHit(caster, ModComboStates.SUPER.getId());
+
+        helper.assertValueEqual(2.0F, caster.getHealth(), "无目标 Super SA 没有按规则献祭最大生命的 90%");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void durabilityIsNotSpentWhenSuperCannotEnter(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setItemSlot(EquipmentSlot.MAINHAND, blade(helper));
+        boolean previous = TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.get();
+        TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.set(true);
+        try {
+            ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
+
+            state.updateComboSeq(player, ModComboStates.SUPER.getId());
+            player.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, player.level().getGameTime() - 100L);
+            int before = player.getMainHandItem().getDamageValue();
+            MistletoeCombat.releaseSuperFromInput(player);
+            helper.assertValueEqual(before, player.getMainHandItem().getDamageValue(),
+                    "ComboState 不允许转入 Super 时仍然扣了耐久");
+
+            state.updateComboSeq(player, ComboStateRegistry.STANDBY.getId());
+            player.getPersistentData().putLong(MistletoeCombat.SUPER_TOKEN, player.level().getGameTime() - 100L);
+            MistletoeCombat.releaseSuperFromInput(player);
+            helper.assertTrue(player.getMainHandItem().getDamageValue() > before,
+                    "合法转入 Super 时没有扣耐久");
+        } finally {
+            TerminalBladeConfig.SUPER_CONSUME_HALF_DURABILITY.set(previous);
+        }
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void damageTypeTagsMatchTheConfirmedRules(GameTestHelper helper) {
         var lookup = helper.getLevel().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE);
         var slash = lookup.getOrThrow(MistletoeDamage.SLASH);
         helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_ARMOR), "普通 SA 目前不应绕过护甲");
@@ -139,9 +182,10 @@ public class MistletoeCombatGameTest {
         helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_EFFECTS), "Super SA 应绕过状态效果");
         helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_ENCHANTMENTS), "Super SA 应绕过附魔");
         helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_COOLDOWN), "Super SA 应绕过受伤冷却");
-        helper.assertFalse(godslayer.is(DamageTypeTags.BYPASSES_INVULNERABILITY), "默认 Super SA 不应绕过无敌标签");
+        helper.assertFalse(godslayer.is(DamageTypeTags.BYPASSES_INVULNERABILITY),
+                "普通 godslayer 类型仍是非穿透变体，阶段锁血目标用的就是这种保守语义");
         helper.assertTrue(lookup.getOrThrow(MistletoeDamage.GODSLAYER_ABSOLUTE).is(DamageTypeTags.BYPASSES_INVULNERABILITY),
-                "absolute 类型应绕过无敌标签");
+                "0.1.2 起 Super SA 的默认伤害类型 absolute 必须绕过无敌标签");
         helper.assertTrue(lookup.getOrThrow(MistletoeDamage.SACRIFICE).is(DamageTypeTags.BYPASSES_ARMOR),
                 "自身献祭应绕过护甲");
         helper.succeed();

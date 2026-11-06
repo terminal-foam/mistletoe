@@ -167,6 +167,12 @@ def build_model() -> str:
     obj.use("sheath_luminous")
     obj.prism(-36.0, -288.0, 1.6, 2.3, -0.45, 0.45, 0.12, edge)
 
+    # Resharped 的 LayerMainBlade.renderChargeEffect 会按 "effect" 组渲染充能外壳；
+    # 这里是低模占位壳，正式美术阶段再换成槲寄生枝叶/光壳。
+    obj.use("effect")
+    obj.prism(-30.0, -290.0, -2.6, 2.6, -9.0, 9.0, 0.02, edge)
+    obj.prism(-26.0, 64.0, -2.6, 2.6, -2.6, 2.6, 0.92, edge)
+
     icon(obj, "item_blade", False, True, False, metal, handle, guard, sheath, edge)
     icon(obj, "item_blade_luminous", False, False, True, metal, handle, guard, sheath, edge)
     icon(obj, "item_damaged", True, False, False, metal, handle, guard, sheath, edge)

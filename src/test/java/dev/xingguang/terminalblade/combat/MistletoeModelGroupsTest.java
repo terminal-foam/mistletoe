@@ -18,6 +18,7 @@ class MistletoeModelGroupsTest {
             "blade_damaged_luminous",
             "sheath",
             "sheath_luminous",
+            "effect",
             "item_blade",
             "item_blade_luminous",
             "item_damaged",
