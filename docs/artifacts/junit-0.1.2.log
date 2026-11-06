@@ -1,0 +1,33 @@
+╷
+├─ JUnit Platform Suite ✔
+├─ JUnit Jupiter ✔
+│  ├─ MistletoeFormulasTest ✔
+│  │  ├─ sphereIncludesTheBoundaryAndExcludesTheOutside() ✔
+│  │  ├─ superSacrificeMatchesTheTwentyHealthCases() ✔
+│  │  ├─ slashArtThresholdIsStrictlyAboveOneHundred() ✔
+│  │  ├─ normalHitUsesTargetMaxAndPlayerCurrent() ✔
+│  │  ├─ axisDistanceUsesTheNearestPointOnABox() ✔
+│  │  ├─ enhancedSlashArtPaysTenPercentThenAddsTwentyPercentOfTargetMax() ✔
+│  │  ├─ justSlashArtOnlyAppliesTheConfiguredMultiplier() ✔
+│  │  └─ negativeGapClampsAtZeroUnlessDisabled() ✔
+│  ├─ MistletoeCastGateTest ✔
+│  │  ├─ firstCastAtTheStartOfTheWorldIsNotCoolingDown() ✔
+│  │  └─ repeatInsideTheCooldownIsBlocked() ✔
+│  └─ MistletoeModelGroupsTest ✔
+│     └─ objDeclaresEveryRendererGroup() ✔
+└─ JUnit Vintage ✔
+
+Test run finished after 57 ms
+[         6 containers found      ]
+[         0 containers skipped    ]
+[         6 containers started    ]
+[         0 containers aborted    ]
+[         6 containers successful ]
+[         0 containers failed     ]
+[        11 tests found           ]
+[         0 tests skipped         ]
+[        11 tests started         ]
+[         0 tests aborted         ]
+[        11 tests successful      ]
+[         0 tests failed          ]
+
