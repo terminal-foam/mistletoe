@@ -247,6 +247,8 @@ public class MistletoeCombatGameTest {
         helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_ARMOR), "普通 SA 目前不应绕过护甲");
         helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_EFFECTS), "普通 SA 目前不应绕过状态效果");
         helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_ENCHANTMENTS), "普通 SA 目前不应绕过附魔减伤");
+        helper.assertTrue(slash.is(DamageTypeTags.BYPASSES_INVULNERABILITY),
+                "普通 SA 必须绕过 Boss 的伤害上限/阶段无敌，否则会被 Cataclysm 一类 Boss 压到 20");
         var godslayer = lookup.getOrThrow(MistletoeDamage.GODSLAYER);
         helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_ARMOR), "Super SA 应绕过护甲");
         helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_EFFECTS), "Super SA 应绕过状态效果");
