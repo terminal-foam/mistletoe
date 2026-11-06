@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Generate the original placeholder katana, texture, particles, and tones."""
+"""Generate the original placeholder katana, texture, particles, and tones.
+
+The model/texture are skipped when non-placeholder art already exists. Pass
+``--force-placeholder`` to overwrite them with the simple generated katana.
+"""
 
 import math
 import struct
 import subprocess
+import sys
 import zlib
 from pathlib import Path
 
@@ -219,8 +224,15 @@ def disc(cx, cy, radius, color, background=(0, 0, 0, 0)):
 
 def main():
     MODEL.mkdir(parents=True, exist_ok=True)
-    (MODEL / "mistletoe.obj").write_text(build_model(), encoding="utf-8")
-    write_png(MODEL / "mistletoe.png", 64, 64, blade_texture)
+    obj = MODEL / "mistletoe.obj"
+    png = MODEL / "mistletoe.png"
+    if "--force-placeholder" in sys.argv or not obj.exists() or not png.exists():
+        obj.write_text(build_model(), encoding="utf-8")
+        write_png(png, 64, 64, blade_texture)
+        print("已生成占位模型/贴图")
+    else:
+        print("跳过 mistletoe.obj / mistletoe.png：已存在美术模型；"
+              "要覆盖占位模型请加 --force-placeholder")
     write_png(PARTICLE / "petal.png", 16, 16, disc(7.5, 7.5, 6.2, (244, 255, 246, 230)))
     write_png(PARTICLE / "berry.png", 16, 16, disc(7.5, 7.5, 4.2, (255, 255, 255, 240)))
     write_png(PARTICLE / "spark.png", 16, 16, disc(7.5, 7.5, 2.4, (255, 255, 250, 255)))
