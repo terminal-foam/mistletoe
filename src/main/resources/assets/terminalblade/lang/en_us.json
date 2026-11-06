@@ -1,0 +1,19 @@
+{
+  "item.terminalblade.mistletoe": "Mistletoe",
+  "item.terminalblade.mistletoe.desc": "An overlooked branch. The greater the life before it, the deeper the cut.",
+  "item.terminalblade.mistletoe.hint": "Charge right click for the precise cut. Hold the special move key (V) for about a second to bloom.",
+  "slash_art.terminalblade.godslayer": "Godslayer",
+  "subtitles.terminalblade.draw": "Mistletoe drawn",
+  "subtitles.terminalblade.swing": "Mistletoe swings",
+  "subtitles.terminalblade.hit": "Mistletoe hits",
+  "subtitles.terminalblade.sacrifice": "Mistletoe sacrifice",
+  "subtitles.terminalblade.super_charge": "Mistletoe charges",
+  "subtitles.terminalblade.super_release": "Mistletoe blooms",
+  "death.attack.mistletoe_slash": "%1$s was cut open by mistletoe",
+  "death.attack.mistletoe_slash.player": "%1$s was cut open by %2$s with mistletoe",
+  "death.attack.mistletoe_sacrifice": "%1$s gave their life to the mistletoe",
+  "death.attack.mistletoe_godslayer": "%1$s was pierced by the mistletoe's exception",
+  "death.attack.mistletoe_godslayer.player": "%1$s was pierced by %2$s through mistletoe",
+  "commands.terminalblade.give": "Gave Mistletoe to %s",
+  "commands.terminalblade.audit": "Normal %s; enhanced SA %s; sacrifice %s; SA damage %s; super cost %s; super lethal %s; radius %s"
+}

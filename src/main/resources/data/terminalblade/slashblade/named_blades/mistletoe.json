@@ -1,0 +1,23 @@
+{
+  "name": "terminalblade:mistletoe",
+  "properties": {
+    "attack_base": 8.0,
+    "max_damage": 80,
+    "slash_art": "terminalblade:godslayer",
+    "sword_type": [
+      "bewitched"
+    ]
+  },
+  "render": {
+    "carry_type": "katana",
+    "model": "terminalblade:model/named/mistletoe.obj",
+    "texture": "terminalblade:model/named/mistletoe.png",
+    "summon_sword_color": 16053494
+  },
+  "enchantments": [
+    {
+      "id": "minecraft:unbreaking",
+      "lvl": 3
+    }
+  ]
+}

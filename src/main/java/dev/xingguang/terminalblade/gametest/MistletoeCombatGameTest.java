@@ -1,0 +1,197 @@
+package dev.xingguang.terminalblade.gametest;
+
+import dev.xingguang.terminalblade.TerminalBlade;
+import dev.xingguang.terminalblade.blade.MistletoeBlade;
+import dev.xingguang.terminalblade.combat.MistletoeCombat;
+import dev.xingguang.terminalblade.combat.MistletoeDamage;
+import dev.xingguang.terminalblade.registry.ModComboStates;
+import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
+import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
+import mods.flammpfeil.slashblade.registry.combo.ComboState;
+import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+@GameTestHolder(TerminalBlade.MOD_ID)
+public class MistletoeCombatGameTest {
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void slashArtWaitsForTheHitTick(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        prepare(caster, target);
+        giveBlade(helper, caster);
+        setMaxHealth(target, 300.0D);
+        float targetBefore = target.getHealth();
+        float casterBefore = caster.getHealth();
+
+        enter(caster, ModComboStates.SLASH_ART.getId());
+        helper.assertValueEqual(targetBefore, target.getHealth(), "进入普通 SA 时目标已经掉血");
+        helper.assertValueEqual(casterBefore, caster.getHealth(), "进入普通 SA 时已经献祭");
+
+        fireHit(caster, ModComboStates.SLASH_ART.getId());
+        helper.assertTrue(target.getHealth() < targetBefore, "命中帧没有打中目标");
+        helper.assertTrue(caster.getHealth() < casterBefore, "强化 SA 命中后没有献祭");
+        float targetAfter = target.getHealth();
+        float casterAfter = caster.getHealth();
+        fireHit(caster, ModComboStates.SLASH_ART.getId());
+        helper.assertValueEqual(targetAfter, target.getHealth(), "同一次普通 SA 结算了两次伤害");
+        helper.assertValueEqual(casterAfter, caster.getHealth(), "同一次普通 SA 献祭了两次");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void justSlashArtUsesItsOwnState(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        prepare(caster, target);
+        giveBlade(helper, caster);
+        setMaxHealth(target, 300.0D);
+        float before = target.getHealth();
+        enter(caster, ModComboStates.SLASH_ART_JUST.getId());
+        helper.assertValueEqual(before, target.getHealth(), "进入 Just SA 时目标已经掉血");
+        helper.assertValueEqual(ModComboStates.SLASH_ART_JUST.getId().toString(), combo(caster), "没有进入 Just ComboState");
+        fireHit(caster, ModComboStates.SLASH_ART_JUST.getId());
+        helper.assertTrue(target.getHealth() < before, "Just SA 命中帧没有造成伤害");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void superAttackFinishesBeforeSacrifice(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Zombie foe = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 4);
+        Cow cow = helper.spawnWithNoFreeWill(EntityType.COW, 4, 1, 2);
+        ArmorStand stand = helper.spawn(EntityType.ARMOR_STAND, 3, 1, 3);
+        prepare(caster, foe);
+        giveBlade(helper, caster);
+        caster.setHealth(caster.getMaxHealth());
+        float casterBefore = caster.getHealth();
+        enter(caster, ModComboStates.SUPER.getId());
+        helper.assertTrue(foe.isAlive(), "进入 Super SA 时目标已经死亡");
+        helper.assertTrue(cow.isAlive(), "进入 Super SA 时被动生物已经死亡");
+        helper.assertValueEqual(casterBefore, caster.getHealth(), "进入 Super SA 时已经献祭");
+
+        fireHit(caster, ModComboStates.SUPER.getId());
+        helper.assertFalse(foe.isAlive(), "Super SA 没有击倒范围内的敌对生物");
+        helper.assertTrue(cow.isAlive(), "Super SA 击倒了名单外的被动生物");
+        helper.assertTrue(stand.isAlive(), "Super SA 击倒了盔甲架");
+        helper.assertValueEqual(2.0F, caster.getHealth(), "满血 Super SA 之后不是剩余 2 点生命");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void superKillsCasterAfterTheAttackWhenLifeIsShort(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Zombie foe = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 4);
+        prepare(caster, foe);
+        giveBlade(helper, caster);
+        enter(caster, ModComboStates.SUPER.getId());
+        caster.setHealth(10.0F);
+        fireHit(caster, ModComboStates.SUPER.getId());
+        helper.assertFalse(foe.isAlive(), "生命不足时范围攻击没有结算");
+        helper.assertFalse(caster.isAlive(), "生命不足时攻击结束后施法者仍存活");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void brokenBladeDoesNotCastAfterDurabilityCost(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack blade = blade(helper);
+        blade.setDamageValue(Math.max(0, blade.getMaxDamage() - 1));
+        player.setItemSlot(EquipmentSlot.MAINHAND, blade);
+        boolean stillFighting = MistletoeCombat.applyHalfDurabilityCost(player);
+        helper.assertFalse(stillFighting, "扣除一半耐久后损坏的刀仍被允许发动");
+        ItemStack held = player.getMainHandItem();
+        helper.assertTrue(held.isEmpty() || MistletoeBlade.isBrokenOrSealed(held), "耐久耗尽后刀没有进入损坏状态");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void damageTypeTagsMatchTheUnconfirmedRules(GameTestHelper helper) {
+        var lookup = helper.getLevel().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE);
+        var slash = lookup.getOrThrow(MistletoeDamage.SLASH);
+        helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_ARMOR), "普通 SA 目前不应绕过护甲");
+        helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_EFFECTS), "普通 SA 目前不应绕过状态效果");
+        helper.assertFalse(slash.is(DamageTypeTags.BYPASSES_ENCHANTMENTS), "普通 SA 目前不应绕过附魔减伤");
+        var godslayer = lookup.getOrThrow(MistletoeDamage.GODSLAYER);
+        helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_ARMOR), "Super SA 应绕过护甲");
+        helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_EFFECTS), "Super SA 应绕过状态效果");
+        helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_ENCHANTMENTS), "Super SA 应绕过附魔");
+        helper.assertTrue(godslayer.is(DamageTypeTags.BYPASSES_COOLDOWN), "Super SA 应绕过受伤冷却");
+        helper.assertFalse(godslayer.is(DamageTypeTags.BYPASSES_INVULNERABILITY), "默认 Super SA 不应绕过无敌标签");
+        helper.assertTrue(lookup.getOrThrow(MistletoeDamage.GODSLAYER_ABSOLUTE).is(DamageTypeTags.BYPASSES_INVULNERABILITY),
+                "absolute 类型应绕过无敌标签");
+        helper.assertTrue(lookup.getOrThrow(MistletoeDamage.SACRIFICE).is(DamageTypeTags.BYPASSES_ARMOR),
+                "自身献祭应绕过护甲");
+        helper.succeed();
+    }
+
+    private static void prepare(LivingEntity caster, LivingEntity target) {
+        double dx = target.getX() - caster.getX();
+        double dz = target.getZ() - caster.getZ();
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        caster.setYRot(yaw);
+        caster.setYBodyRot(yaw);
+        caster.setYHeadRot(yaw);
+        caster.setXRot(0.0F);
+    }
+
+    private static void giveBlade(GameTestHelper helper, LivingEntity entity) {
+        entity.setItemSlot(EquipmentSlot.MAINHAND, blade(helper));
+    }
+
+    private static ItemStack blade(GameTestHelper helper) {
+        ResourceKey<SlashBladeDefinition> key = ResourceKey.create(SlashBladeDefinition.REGISTRY_KEY, MistletoeBlade.NAME);
+        return helper.getLevel().registryAccess()
+                .lookupOrThrow(SlashBladeDefinition.REGISTRY_KEY)
+                .getOrThrow(key)
+                .value()
+                .getBlade(helper.getLevel().registryAccess());
+    }
+
+    private static void setMaxHealth(LivingEntity entity, double health) {
+        var attribute = entity.getAttribute(Attributes.MAX_HEALTH);
+        if (attribute != null) {
+            attribute.setBaseValue(health);
+        }
+        entity.setHealth((float) health);
+    }
+
+    private static void enter(LivingEntity caster, ResourceLocation combo) {
+        ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
+        state.updateComboSeq(caster, combo);
+    }
+
+    private static void fireHit(LivingEntity caster, ResourceLocation combo) {
+        ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
+        state.setLastActionTime(caster.level().getGameTime() - MistletoeCombat.HIT_TICK);
+        caster.getPersistentData().remove(ComboState.LAST_PROCESSED_TICK_KEY);
+        ComboState resolved = ComboStateRegistry.REGISTRY.get(combo);
+        resolved.tickAction(caster);
+    }
+
+    private static String combo(LivingEntity caster) {
+        return MistletoeBlade.state(caster.getMainHandItem()).getComboSeq().toString();
+    }
+}

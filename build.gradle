@@ -1,0 +1,139 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+            programArgument '--username'
+            programArgument 'Xingguang'
+        }
+
+        server {
+            server()
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+def slashbladeJarFile = layout.projectDirectory.file("libs/SlashBladeResharped-${slashblade_version}.jar").asFile
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly files(slashbladeJarFile)
+    runtimeOnly files(slashbladeJarFile)
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.register('downloadSlashBlade') {
+    outputs.file(slashbladeJarFile)
+    doLast {
+        if (slashbladeJarFile.exists() && sha512(slashbladeJarFile) == project.slashblade_sha512) {
+            return
+        }
+        logger.lifecycle('Downloading SlashBlade Resharped {}', project.slashblade_version)
+        slashbladeJarFile.parentFile.mkdirs()
+        def url = new URI('https://cdn.modrinth.com/data/8T53F0sy/versions/SA6IKdsb/SlashBladeResharped-2.1.9-1.21.1.jar').toURL()
+        url.withInputStream { input ->
+            slashbladeJarFile.withOutputStream { output -> output << input }
+        }
+        def actual = sha512(slashbladeJarFile)
+        if (actual != project.slashblade_sha512) {
+            throw new GradleException("SlashBlade jar SHA-512 mismatch: ${actual}")
+        }
+    }
+}
+
+static String sha512(File file) {
+    def digest = java.security.MessageDigest.getInstance('SHA-512')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[8192]
+        int read
+        while ((read = input.read(buffer)) >= 0) {
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().collect { String.format('%02x', it) }.join('')
+}
+
+tasks.named('compileJava').configure {
+    dependsOn 'downloadSlashBlade'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            slashblade_version_range: slashblade_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+    ]
+    filteringCharset = 'UTF-8'
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'  : mod_id,
+                'Specification-Vendor' : mod_authors,
+                'Specification-Version': '1',
+                'Implementation-Title' : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': mod_authors,
+        ])
+    }
+}

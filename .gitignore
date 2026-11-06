@@ -1,0 +1,17 @@
+.gradle/
+build/
+run/
+runs/
+out/
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+libs/*.jar
+!libs/.gitkeep
+*.log
+.neoforge/
+__pycache__/
+*.pyc
