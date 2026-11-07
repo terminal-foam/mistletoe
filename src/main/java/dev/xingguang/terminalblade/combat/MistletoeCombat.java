@@ -147,6 +147,11 @@ public final class MistletoeCombat {
             return;
         }
         user.getPersistentData().putString(SUPER_COMBO, comboId(user));
+        // 蓄力音效持续到 Super 真正开始，然后在释放瞬间停掉，避免盖住原版 release。
+        if (user instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
+                    ModSounds.SUPER_CHARGE.get().getLocation(), SoundSource.PLAYERS));
+        }
         if (user.level() instanceof ServerLevel level) {
             MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
         }
