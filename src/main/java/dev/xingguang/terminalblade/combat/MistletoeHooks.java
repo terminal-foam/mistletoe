@@ -4,9 +4,7 @@ import dev.xingguang.terminalblade.TerminalBlade;
 import dev.xingguang.terminalblade.blade.MistletoeBlade;
 import dev.xingguang.terminalblade.registry.ModSounds;
 import mods.flammpfeil.slashblade.capability.inputstate.IInputState;
-import mods.flammpfeil.slashblade.event.SlashBladeEvent;
 import mods.flammpfeil.slashblade.event.handler.InputCommandEvent;
-import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.util.InputCommand;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -21,18 +19,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 @EventBusSubscriber(modid = TerminalBlade.MOD_ID)
 public final class MistletoeHooks {
     private MistletoeHooks() {
-    }
-
-    @SubscribeEvent
-    public static void onCombo(SlashBladeEvent.NextComboEvent event) {
-        if (event.getUser().level().isClientSide() || !MistletoeBlade.isMistletoe(event.getBlade())) {
-            return;
-        }
-        var state = event.getSlashBladeState();
-        var current = state.getComboSeq();
-        if (ComboStateRegistry.STANDBY.getId().equals(current) || ComboStateRegistry.NONE.getId().equals(current)) {
-            play(event.getUser(), ModSounds.DRAW.get(), 0.65F, 1.15F);
-        }
     }
 
     /**

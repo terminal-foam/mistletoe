@@ -56,7 +56,6 @@ public final class MistletoeCombat {
         CompoundTag tag = user.getPersistentData();
         tag.putBoolean(SA_JUST, just);
         tag.putString(SA_COMBO, comboId(user));
-        play(user, ModSounds.DRAW.get(), 0.55F, just ? 1.2F : 1.0F);
         if (user.level() instanceof ServerLevel level) {
             Vec3 eye = user.getEyePosition();
             MistletoeDamage.burst(level, eye.x, eye.y, eye.z, 6, 0.15D);
@@ -76,7 +75,6 @@ public final class MistletoeCombat {
             return;
         }
         ServerLevel level = (ServerLevel) user.level();
-        play(user, ModSounds.SWING.get(), 0.8F, just ? 1.25F : 1.0F);
         spawnSlash(user, just ? -18.0F : -30.0F, just);
         spawnSlash(user, just ? 24.0F : 35.0F, just);
         Vec3 eye = user.getEyePosition();
@@ -94,7 +92,6 @@ public final class MistletoeCombat {
             boolean connected = !target.isAlive() || target.getHealth() < healthBefore;
             if (connected) {
                 user.addEffect(new MobEffectInstance(MobEffects.REGENERATION, XIWEI_REGEN_TICKS, 0, false, true, true));
-                play(user, ModSounds.HIT.get(), 0.7F, 1.15F);
                 MistletoeDamage.burst(level, target.getX(), target.getY(0.6D), target.getZ(), 8, 0.25D);
             }
             if (TerminalBladeConfig.logDamage()) {
@@ -131,7 +128,6 @@ public final class MistletoeCombat {
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         if (connected) {
-            play(user, ModSounds.HIT.get(), 0.7F, enhanced ? 0.85F : 1.15F);
             MistletoeDamage.burst(level, target.getX(), target.getY(0.6D), target.getZ(), enhanced ? 18 : 8, 0.25D);
         }
         if (TerminalBladeConfig.logDamage()) {
@@ -151,7 +147,6 @@ public final class MistletoeCombat {
             return;
         }
         user.getPersistentData().putString(SUPER_COMBO, comboId(user));
-        play(user, ModSounds.DRAW.get(), 0.7F, 0.8F);
         if (user.level() instanceof ServerLevel level) {
             MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
         }
@@ -170,7 +165,6 @@ public final class MistletoeCombat {
         }
         ServerLevel level = (ServerLevel) user.level();
         double radius = TerminalBladeConfig.superRadius();
-        play(user, ModSounds.SUPER_RELEASE.get(), 1.0F, 0.9F);
         for (int i = 0; i < 8; i++) {
             spawnSlash(user, i * 22.5F, true);
         }
