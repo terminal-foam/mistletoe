@@ -18,6 +18,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -103,8 +104,11 @@ public final class MistletoeCombat {
 
         float targetMax = target.getMaxHealth();
         boolean enhanced = MistletoeFormulas.isEnhancedSlashArt(targetMax, TerminalBladeConfig.slashArtThreshold());
+        boolean payHealth = paysHealthCost(user);
         float current = user.getHealth();
-        float cost = enhanced ? MistletoeFormulas.sacrificeCost(current, TerminalBladeConfig.slashArtSacrificeRatio()) : 0.0F;
+        float cost = enhanced && payHealth
+                ? MistletoeFormulas.sacrificeCost(current, TerminalBladeConfig.slashArtSacrificeRatio())
+                : 0.0F;
         float healthForGap = enhanced ? Math.max(0.0F, current - cost) : current;
         float multiplier = just ? TerminalBladeConfig.justMultiplier() : 1.0F;
         float damage = MistletoeFormulas.slashArtDamage(
@@ -117,12 +121,12 @@ public final class MistletoeCombat {
                 TerminalBladeConfig.slashArtMaxHealthBonus(),
                 multiplier);
 
-        if (enhanced && TerminalBladeConfig.slashArtPayOnWhiff()) {
+        if (enhanced && payHealth && TerminalBladeConfig.slashArtPayOnWhiff()) {
             paySlashArt(user, level, cost);
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         boolean connected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, damage);
-        if (enhanced && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
+        if (enhanced && payHealth && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
             paySlashArt(user, level, cost);
             // 普通 SA 的献祭固定是当前生命的 10%，不会致死；true 只属于 Super SA。
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
@@ -201,24 +205,40 @@ public final class MistletoeCombat {
         }
 
         if (user.isAlive()) {
-            MistletoeFormulas.SuperSacrifice sacrifice = MistletoeFormulas.superSacrifice(
-                    user.getHealth(), user.getMaxHealth(), TerminalBladeConfig.superSacrificeRatio());
-            play(user, ModSounds.SACRIFICE.get(), 1.0F, 0.7F);
-            log(user, "sacrifice", "super", sacrifice.lethal());
-            if (sacrifice.lethal()) {
-                MistletoeDamage.finish(user, MistletoeDamage.SACRIFICE);
-            } else {
-                user.setHealth(sacrifice.remainingHealth());
-                user.hurtTime = 10;
-                user.hurtDuration = 10;
-                user.level().broadcastEntityEvent(user, (byte) 2);
-            }
+            MistletoeFormulas.SuperSacrifice sacrifice = applySuperSacrifice(user);
             if (TerminalBladeConfig.logDamage()) {
                 TerminalBlade.LOGGER.info(
-                        "[槲寄生] Super SA 半径={} 目标={} 击杀={} 阶段锁={} 失败={} 献祭={} 致死={}",
-                        radius, targets.size(), killed, phaseLocked, failed, sacrifice.cost(), sacrifice.lethal());
+                        "[槲寄生] Super SA 半径={} 目标={} 击杀={} 阶段锁={} 失败={} 献祭={} 致死={} 支付生命={}",
+                        radius, targets.size(), killed, phaseLocked, failed, sacrifice.cost(), sacrifice.lethal(),
+                        paysHealthCost(user));
             }
         }
+    }
+
+    /**
+     * Super SA 的自身献祭结算。创造/旁观玩家不扣血、不播献祭音效；
+     * 单独抽出是为了让 GameTest 不依赖 ComboState 和斩击实体就能验证这条分支。
+     */
+    public static MistletoeFormulas.SuperSacrifice applySuperSacrifice(LivingEntity user) {
+        boolean payHealth = paysHealthCost(user);
+        MistletoeFormulas.SuperSacrifice sacrifice = payHealth
+                ? MistletoeFormulas.superSacrifice(
+                        user.getHealth(), user.getMaxHealth(), TerminalBladeConfig.superSacrificeRatio())
+                : new MistletoeFormulas.SuperSacrifice(0.0F, user.getHealth(), false);
+        log(user, "sacrifice", "super", sacrifice.lethal());
+        if (!payHealth) {
+            return sacrifice;
+        }
+        play(user, ModSounds.SACRIFICE.get(), 1.0F, 0.7F);
+        if (sacrifice.lethal()) {
+            MistletoeDamage.finish(user, MistletoeDamage.SACRIFICE);
+        } else {
+            user.setHealth(sacrifice.remainingHealth());
+            user.hurtTime = 10;
+            user.hurtDuration = 10;
+            user.level().broadcastEntityEvent(user, (byte) 2);
+        }
+        return sacrifice;
     }
 
     public static boolean releaseSuperFromInput(ServerPlayer player) {
@@ -318,6 +338,14 @@ public final class MistletoeCombat {
             slash.setBaseSize(critical ? 2.4F : 1.8F);
             slash.setLifetime(8);
         }
+    }
+
+    /**
+     * 创造/旁观玩家不支付生命献祭。原逻辑直接 setHealth / finish，会把创造玩家扣到 0 血，
+     * 第二次 Super SA 就会真的死亡；这里统一给普通 SA 和 Super SA 使用。
+     */
+    public static boolean paysHealthCost(LivingEntity user) {
+        return !(user instanceof Player player) || (!player.isCreative() && !player.isSpectator());
     }
 
     private static boolean canFight(LivingEntity user) {

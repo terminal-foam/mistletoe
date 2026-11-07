@@ -27,6 +27,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -232,6 +233,24 @@ public class MistletoeCombatGameTest {
         fireHit(caster, ModComboStates.SUPER.getId());
 
         helper.assertValueEqual(2.0F, caster.getHealth(), "无目标 Super SA 没有按规则献祭最大生命的 90%");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void creativeCasterDoesNotPaySuperSacrifice(GameTestHelper helper) {
+        ServerPlayer caster = helper.makeMockServerPlayerInLevel();
+        caster.setGameMode(GameType.CREATIVE);
+        caster.setItemSlot(EquipmentSlot.MAINHAND, blade(helper));
+        // 普通生存玩家在这个血量放 Super SA 必死；创造玩家不应被扣血，更不应死亡。
+        caster.setHealth(2.0F);
+
+        var sacrifice = MistletoeCombat.applySuperSacrifice(caster);
+
+        helper.assertValueEqual(0.0F, sacrifice.cost(), "创造模式玩家仍然被计算了 Super SA 献祭");
+        helper.assertFalse(sacrifice.lethal(), "创造模式玩家被判定为 Super SA 致死");
+        helper.assertTrue(caster.isAlive(), "创造模式玩家被 Super SA 献祭杀死");
+        helper.assertValueEqual(2.0F, caster.getHealth(), "创造模式玩家仍然被扣了 Super SA 生命");
         helper.succeed();
     }
 
