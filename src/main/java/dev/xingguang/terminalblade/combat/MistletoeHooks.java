@@ -38,6 +38,9 @@ public final class MistletoeHooks {
         if (!MistletoeBlade.isMistletoe(player)) {
             return;
         }
+        if (MistletoeBlade.isDawn(player.getMainHandItem())) {
+            return;
+        }
         boolean pressed = !event.getOld().contains(InputCommand.SPRINT) && event.getCurrent().contains(InputCommand.SPRINT);
         if (!pressed) {
             return;

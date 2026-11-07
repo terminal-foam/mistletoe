@@ -98,6 +98,10 @@ public final class MistletoeDamage {
         if (attacker.level().isClientSide() || event.getEntity() == attacker) {
             return;
         }
+        // 朝露不套暮色的生命差公式；它的普攻保持低面板，只有熹微是固定 12。
+        if (MistletoeBlade.isDawn(attacker.getMainHandItem())) {
+            return;
+        }
         ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
         if (type != null && TerminalBlade.MOD_ID.equals(type.location().getNamespace())) {
             return;

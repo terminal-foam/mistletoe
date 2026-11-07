@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -122,6 +123,31 @@ public class MistletoeCombatGameTest {
                 "第一次平 A 不在公式 64 附近：" + firstLoss);
         helper.assertTrue(secondLoss < 20.0F,
                 "同一 tick 的第二次平 A 又套了一遍公式：" + secondLoss);
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void dawnXiweiUsesFixedDamageAndRegeneration(GameTestHelper helper) {
+        Cow caster = helper.spawnWithNoFreeWill(EntityType.COW, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        prepare(caster, target);
+        giveBlade(helper, caster, MistletoeBlade.DAWN_NAME);
+        setMaxHealth(target, 100.0D);
+        target.setHealth(100.0F);
+        caster.setHealth(10.0F);
+        target.invulnerableTime = 0;
+        MistletoeDamage.clearSlashStack();
+
+        enter(caster, ModComboStates.SLASH_ART.getId());
+        fireHit(caster, ModComboStates.SLASH_ART.getId());
+        float loss = 100.0F - target.getHealth();
+        var regen = caster.getEffect(MobEffects.REGENERATION);
+        TerminalBlade.LOGGER.info("[GameTest] 熹微固定伤害掉血={} 恢复={} 目标剩余={}",
+                loss, regen == null ? 0 : regen.getDuration(), target.getHealth());
+        helper.assertTrue(loss > 11.5F && loss < 12.5F, "熹微不是固定 12 伤害：" + loss);
+        helper.assertTrue(regen != null, "熹微命中后没有获得生命恢复 I");
+        helper.assertTrue(regen.getDuration() > 80, "熹微生命恢复持续时间过短：" + regen.getDuration());
         helper.succeed();
     }
 
@@ -274,11 +300,19 @@ public class MistletoeCombatGameTest {
     }
 
     private static void giveBlade(GameTestHelper helper, LivingEntity entity) {
-        entity.setItemSlot(EquipmentSlot.MAINHAND, blade(helper));
+        giveBlade(helper, entity, MistletoeBlade.NAME);
+    }
+
+    private static void giveBlade(GameTestHelper helper, LivingEntity entity, ResourceLocation name) {
+        entity.setItemSlot(EquipmentSlot.MAINHAND, blade(helper, name));
     }
 
     private static ItemStack blade(GameTestHelper helper) {
-        ResourceKey<SlashBladeDefinition> key = ResourceKey.create(SlashBladeDefinition.REGISTRY_KEY, MistletoeBlade.NAME);
+        return blade(helper, MistletoeBlade.NAME);
+    }
+
+    private static ItemStack blade(GameTestHelper helper, ResourceLocation name) {
+        ResourceKey<SlashBladeDefinition> key = ResourceKey.create(SlashBladeDefinition.REGISTRY_KEY, name);
         return helper.getLevel().registryAccess()
                 .lookupOrThrow(SlashBladeDefinition.REGISTRY_KEY)
                 .getOrThrow(key)

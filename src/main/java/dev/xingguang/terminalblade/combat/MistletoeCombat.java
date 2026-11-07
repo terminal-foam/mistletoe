@@ -14,6 +14,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +30,9 @@ public final class MistletoeCombat {
      */
     public static final int HIT_TICK = 6;
     public static final long CAST_COOLDOWN_TICKS = 8L;
+    /** 熹微：固定伤害、固定恢复时长，不参与暮色的生命差/最大生命公式。 */
+    public static final float XIWEI_DAMAGE = 12.0F;
+    public static final int XIWEI_REGEN_TICKS = 100;
 
     private static final String SA_TOKEN = "mistletoe:sa_token";
     private static final String SA_ARMED = "mistletoe:sa_armed";
@@ -80,6 +85,22 @@ public final class MistletoeCombat {
         LivingEntity target = MistletoeTargets.selectSlashArtTarget(user, TerminalBladeConfig.slashArtRange());
         if (target == null) {
             log(user, "whiff", just ? "just_sa" : "sa", false);
+            return;
+        }
+
+        if (MistletoeBlade.isDawn(user.getMainHandItem())) {
+            float healthBefore = target.getHealth();
+            MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, XIWEI_DAMAGE);
+            boolean connected = !target.isAlive() || target.getHealth() < healthBefore;
+            if (connected) {
+                user.addEffect(new MobEffectInstance(MobEffects.REGENERATION, XIWEI_REGEN_TICKS, 0, false, true, true));
+                play(user, ModSounds.HIT.get(), 0.7F, 1.15F);
+                MistletoeDamage.burst(level, target.getX(), target.getY(0.6D), target.getZ(), 8, 0.25D);
+            }
+            if (TerminalBladeConfig.logDamage()) {
+                TerminalBlade.LOGGER.info("[槲寄生] 普通 SA art=xiwei 固定伤害={} 命中={} 恢复={}tick",
+                        XIWEI_DAMAGE, connected, connected ? XIWEI_REGEN_TICKS : 0);
+            }
             return;
         }
 
@@ -219,6 +240,10 @@ public final class MistletoeCombat {
         if (!MistletoeBlade.isMistletoe(stack)) {
             return false;
         }
+        // 朝露没有 Super；它的强度只来自熹微的固定伤害与恢复。
+        if (MistletoeBlade.isDawn(stack)) {
+            return false;
+        }
         if (!canFight(player)) {
             return true;
         }
@@ -252,6 +277,9 @@ public final class MistletoeCombat {
      */
     private static boolean canEnterSuper(LivingEntity player) {
         if (!MistletoeBlade.isMistletoe(player.getMainHandItem())) {
+            return false;
+        }
+        if (MistletoeBlade.isDawn(player.getMainHandItem())) {
             return false;
         }
         ISlashBladeState state = MistletoeBlade.state(player.getMainHandItem());
