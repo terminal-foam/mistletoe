@@ -6,6 +6,7 @@ import dev.xingguang.terminalblade.combat.MistletoeFormulas;
 import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,6 +56,10 @@ public final class MistletoeCommands {
                 .getOrThrow(key)
                 .value()
                 .getBlade(player.registryAccess());
+        if (DAWN_NAME.equals(name) && !blade.isEmpty()) {
+            // 刀铭：未附魔仍是封刀，附魔后满足“印咒 + 赋铭”直接变妖。
+            blade.set(DataComponents.CUSTOM_NAME, Component.translatable("item.mistletoe.dawn"));
+        }
         if (blade.isEmpty() || !player.addItem(blade)) {
             player.drop(blade, false);
         }
