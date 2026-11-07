@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(SuperSlashArts.class)
 public abstract class SuperSlashArtsMixin {
-    @Inject(method = "releaseSSA", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "releaseSSA", at = @At("HEAD"), cancellable = true, remap = false)
     private static void terminalblade$releaseMistletoe(ServerPlayer entity, CallbackInfo ci) {
         if (MistletoeCombat.releaseSuperFromInput(entity)) {
             ci.cancel();
