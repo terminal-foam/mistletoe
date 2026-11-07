@@ -3,7 +3,7 @@
   "category": "equipment",
   "key": {
     "B": {
-      "item": "slashblade:slashblade_white"
+      "item": "slashblade:slashblade"
     },
     "G": {
       "item": "minecraft:glow_berries"
@@ -21,8 +21,8 @@
     "LGL"
   ],
   "result": {
-    "count": 1,
-    "id": "slashblade:slashblade"
+    "item": "slashblade:slashblade",
+    "count": 1
   },
   "blade": "mistletoe:mistletoe"
 }

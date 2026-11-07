@@ -8,9 +8,9 @@ import net.minecraft.resources.ResourceLocation;
 import dev.xingguang.terminalblade.client.TerminalBladeClient;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +21,8 @@ public class TerminalBlade {
     public static final String MOD_ID = "mistletoe";
     public static final Logger LOGGER = LogManager.getLogger("TerminalBlade");
 
-    public TerminalBlade(IEventBus modBus, ModContainer container) {
+    public TerminalBlade() {
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TerminalBladeConfig.SPEC);
         ModSounds.SOUNDS.register(modBus);
         ModParticles.PARTICLES.register(modBus);

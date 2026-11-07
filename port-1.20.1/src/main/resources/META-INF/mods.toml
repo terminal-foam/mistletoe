@@ -11,21 +11,21 @@ description='''槲寄生：一把以生命差额为刃、以献祭换取弑神�
 
 [[dependencies.mistletoe]]
 modId="forge"
-type="required"
+mandatory=true
 versionRange="[47,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.mistletoe]]
 modId="minecraft"
-type="required"
+mandatory=true
 versionRange="[1.20.1,1.21)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.mistletoe]]
 modId="slashblade"
-type="required"
+mandatory=true
 versionRange="[1.1.23,1.2)"
 ordering="AFTER"
 side="BOTH"
