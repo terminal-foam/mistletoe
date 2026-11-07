@@ -4,13 +4,13 @@
   "blade": "mistletoe:mistletoe",
   "key": {
     "A": {
-      "item": "minecraft:amethyst_block"
+      "item": "minecraft:end_crystal"
     },
     "C": {
-      "item": "minecraft:amethyst_cluster"
+      "item": "slashblade:proudsoul_trapezohedron"
     },
     "Q": {
-      "item": "minecraft:quartz"
+      "item": "minecraft:nether_star"
     },
     "D": {
       "type": "slashblade:blade",
