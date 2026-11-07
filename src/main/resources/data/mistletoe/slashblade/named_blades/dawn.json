@@ -3,7 +3,10 @@
   "properties": {
     "attack_base": 4.0,
     "max_damage": 40,
-    "slash_art": "mistletoe:xiwei"
+    "slash_art": "mistletoe:xiwei",
+    "sword_type": [
+      "bewitched"
+    ]
   },
   "render": {
     "carry_type": "katana",
