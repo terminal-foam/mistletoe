@@ -8,12 +8,16 @@ import mods.flammpfeil.slashblade.event.SlashBladeEvent;
 import mods.flammpfeil.slashblade.event.handler.InputCommandEvent;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.util.InputCommand;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 @EventBusSubscriber(modid = TerminalBlade.MOD_ID)
 public final class MistletoeHooks {
@@ -29,6 +33,18 @@ public final class MistletoeHooks {
         var current = state.getComboSeq();
         if (ComboStateRegistry.STANDBY.getId().equals(current) || ComboStateRegistry.NONE.getId().equals(current)) {
             play(event.getUser(), ModSounds.DRAW.get(), 0.65F, 1.15F);
+        }
+    }
+
+    /**
+     * 旧暮色配方现在产出朝露；这里补刀铭，让合成出来的朝露也走
+     * “封 → 附魔 → 妖”的路线，和 /mistletoe give dawn 一致。
+     */
+    @SubscribeEvent
+    public static void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+        ItemStack crafted = event.getCrafting();
+        if (MistletoeBlade.isDawn(crafted) && !crafted.has(DataComponents.CUSTOM_NAME)) {
+            crafted.set(DataComponents.CUSTOM_NAME, Component.translatable("item.mistletoe.dawn"));
         }
     }
 
