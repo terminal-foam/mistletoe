@@ -1,0 +1,34 @@
+Compiled from "AttackManager.java"
+public class mods.flammpfeil.slashblade.util.AttackManager {
+  public mods.flammpfeil.slashblade.util.AttackManager();
+  public static void areaAttack(net.minecraft.world.entity.LivingEntity, java.util.function.Consumer<net.minecraft.world.entity.LivingEntity>);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, boolean);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, boolean, boolean);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, boolean, boolean, double);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, net.minecraft.world.phys.Vec3, boolean, boolean, double);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, net.minecraft.world.phys.Vec3, boolean, boolean, double, mods.flammpfeil.slashblade.util.KnockBacks);
+  public static mods.flammpfeil.slashblade.entity.EntitySlashEffect doSlash(net.minecraft.world.entity.LivingEntity, float, int, net.minecraft.world.phys.Vec3, boolean, boolean, double, mods.flammpfeil.slashblade.util.KnockBacks);
+  public static void doVoidSlashAttack(net.minecraft.world.entity.LivingEntity);
+  public static java.util.List<net.minecraft.world.entity.Entity> areaAttack(net.minecraft.world.entity.LivingEntity, java.util.function.Consumer<net.minecraft.world.entity.LivingEntity>, float, boolean, boolean, boolean);
+  public static java.util.List<net.minecraft.world.entity.Entity> areaAttack(net.minecraft.world.entity.LivingEntity, java.util.function.Consumer<net.minecraft.world.entity.LivingEntity>, float, boolean, boolean, boolean, java.util.List<net.minecraft.world.entity.Entity>);
+  public static <E extends net.minecraft.world.entity.Entity & mods.flammpfeil.slashblade.entity.IShootable> java.util.List<net.minecraft.world.entity.Entity> areaAttack(E, java.util.function.Consumer<net.minecraft.world.entity.LivingEntity>, double, boolean, boolean);
+  public static <E extends net.minecraft.world.entity.Entity & mods.flammpfeil.slashblade.entity.IShootable> java.util.List<net.minecraft.world.entity.Entity> areaAttack(E, java.util.function.Consumer<net.minecraft.world.entity.LivingEntity>, double, boolean, boolean, java.util.List<net.minecraft.world.entity.Entity>);
+  public static void doManagedAttack(java.util.function.Consumer<net.minecraft.world.entity.Entity>, net.minecraft.world.entity.Entity, boolean, boolean);
+  public static void doAttackWith(net.minecraft.world.damagesource.DamageSource, float, net.minecraft.world.entity.Entity, boolean, boolean);
+  public static void doMeleeAttack(net.minecraft.world.entity.LivingEntity, net.minecraft.world.entity.Entity, boolean, boolean);
+  public static void doMeleeAttack(net.minecraft.world.entity.LivingEntity, net.minecraft.world.entity.Entity, boolean, boolean, float);
+  public static void playQuickSheathSoundAction(net.minecraft.world.entity.LivingEntity);
+  public static void playPiercingSoundAction(net.minecraft.world.entity.LivingEntity);
+  public static net.minecraft.world.phys.Vec3 genRushOffset(net.minecraft.world.entity.LivingEntity);
+  public static float getSlashBladeDamageScale(net.minecraft.world.entity.LivingEntity);
+  private static void lambda$doMeleeAttack$8(net.minecraft.world.entity.LivingEntity, float, net.minecraft.world.entity.Entity);
+  private static void lambda$doMeleeAttack$7(net.minecraft.world.entity.LivingEntity, net.minecraft.world.entity.Entity, float, mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+  private static void lambda$doAttackWith$6(net.minecraft.world.damagesource.DamageSource, float, net.minecraft.world.entity.Entity);
+  private static void lambda$doVoidSlashAttack$5(mods.flammpfeil.slashblade.entity.EntitySlashEffect, net.minecraft.world.entity.LivingEntity, mods.flammpfeil.slashblade.capability.concentrationrank.IConcentrationRank);
+  private static java.lang.Integer lambda$doVoidSlashAttack$4();
+  private static java.lang.Integer lambda$doVoidSlashAttack$3(mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+  private static void lambda$doSlash$2(mods.flammpfeil.slashblade.entity.EntitySlashEffect, net.minecraft.world.entity.LivingEntity, mods.flammpfeil.slashblade.capability.concentrationrank.IConcentrationRank);
+  private static java.lang.Integer lambda$doSlash$1();
+  private static java.lang.Integer lambda$doSlash$0(mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+}

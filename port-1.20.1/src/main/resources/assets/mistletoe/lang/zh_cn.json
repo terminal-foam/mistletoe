@@ -1,0 +1,19 @@
+{
+  "item.mistletoe.mistletoe": "槲寄生「暮色」",
+  "item.mistletoe.mistletoe.desc": "被忽略的枝条。它越是面对庞大的生命，切口就越深。",
+  "item.mistletoe.mistletoe.hint": "右键蓄力释放精准处决。长按特殊动作键（默认 V）约一秒，献祭最大生命并绽放球形即死。",
+  "slash_art.mistletoe.godslayer": "斩星",
+  "subtitles.mistletoe.draw": "槲寄生出鞘",
+  "subtitles.mistletoe.swing": "槲寄生挥击",
+  "subtitles.mistletoe.hit": "槲寄生命中",
+  "subtitles.mistletoe.sacrifice": "槲寄生献祭",
+  "subtitles.mistletoe.super_charge": "槲寄生蓄力",
+  "subtitles.mistletoe.super_release": "槲寄生绽放",
+  "death.attack.mistletoe_slash": "%1$s被槲寄生切开了",
+  "death.attack.mistletoe_slash.player": "%1$s被%2$s用槲寄生切开了",
+  "death.attack.mistletoe_sacrifice": "%1$s把生命交给了槲寄生",
+  "death.attack.mistletoe_godslayer": "%1$s被槲寄生的例外贯穿",
+  "death.attack.mistletoe_godslayer.player": "%1$s被%2$s以槲寄生贯穿",
+  "commands.mistletoe.give": "已将槲寄生交给 %s",
+  "commands.mistletoe.audit": "普攻 %s；强化 SA %s；献祭 %s；SA 伤害 %s；Super 献祭 %s；Super 致死 %s；半径 %s"
+}

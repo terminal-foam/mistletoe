@@ -1,0 +1,38 @@
+{
+  "draw": {
+    "subtitle": "subtitles.mistletoe.draw",
+    "sounds": [
+      "mistletoe:draw"
+    ]
+  },
+  "swing": {
+    "subtitle": "subtitles.mistletoe.swing",
+    "sounds": [
+      "mistletoe:swing"
+    ]
+  },
+  "hit": {
+    "subtitle": "subtitles.mistletoe.hit",
+    "sounds": [
+      "mistletoe:hit"
+    ]
+  },
+  "sacrifice": {
+    "subtitle": "subtitles.mistletoe.sacrifice",
+    "sounds": [
+      "mistletoe:sacrifice"
+    ]
+  },
+  "super_charge": {
+    "subtitle": "subtitles.mistletoe.super_charge",
+    "sounds": [
+      "mistletoe:super_charge"
+    ]
+  },
+  "super_release": {
+    "subtitle": "subtitles.mistletoe.super_release",
+    "sounds": [
+      "mistletoe:super_release"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+Compiled from "SlashBladeDefinition.java"
+public class mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition {
+  public static final com.mojang.serialization.Codec<mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition> CODEC;
+  public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition>> REGISTRY_KEY;
+  private final net.minecraft.resources.ResourceLocation name;
+  private final mods.flammpfeil.slashblade.registry.slashblade.RenderDefinition renderDefinition;
+  private final mods.flammpfeil.slashblade.registry.slashblade.PropertiesDefinition stateDefinition;
+  private final java.util.List<mods.flammpfeil.slashblade.registry.slashblade.EnchantmentDefinition> enchantments;
+  public static final mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition$BladeComparator COMPARATOR;
+  public mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition(net.minecraft.resources.ResourceLocation, mods.flammpfeil.slashblade.registry.slashblade.RenderDefinition, mods.flammpfeil.slashblade.registry.slashblade.PropertiesDefinition, java.util.List<mods.flammpfeil.slashblade.registry.slashblade.EnchantmentDefinition>);
+  public net.minecraft.resources.ResourceLocation getName();
+  public java.lang.String getTranslationKey();
+  public mods.flammpfeil.slashblade.registry.slashblade.RenderDefinition getRenderDefinition();
+  public mods.flammpfeil.slashblade.registry.slashblade.PropertiesDefinition getStateDefinition();
+  public java.util.List<mods.flammpfeil.slashblade.registry.slashblade.EnchantmentDefinition> getEnchantments();
+  public net.minecraft.world.item.ItemStack getBlade();
+  public net.minecraft.world.item.ItemStack getBlade(net.minecraft.world.item.Item);
+  private static void lambda$getBlade$1(mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState, net.minecraft.world.item.ItemStack, mods.flammpfeil.slashblade.item.SwordType);
+  private static com.mojang.datafixers.kinds.App lambda$static$0(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+  static {};
+}

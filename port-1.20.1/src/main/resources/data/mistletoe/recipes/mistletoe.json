@@ -1,0 +1,28 @@
+{
+  "type": "slashblade:shaped_blade",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "slashblade:slashblade_white"
+    },
+    "G": {
+      "item": "minecraft:glow_berries"
+    },
+    "L": {
+      "item": "minecraft:oak_leaves"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "LGL",
+    "SBS",
+    "LGL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "slashblade:slashblade"
+  },
+  "blade": "mistletoe:mistletoe"
+}

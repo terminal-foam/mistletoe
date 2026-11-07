@@ -1,0 +1,10 @@
+Compiled from "SuperSlashArts.java"
+public class mods.flammpfeil.slashblade.ability.SuperSlashArts {
+  public static mods.flammpfeil.slashblade.ability.SuperSlashArts getInstance();
+  private mods.flammpfeil.slashblade.ability.SuperSlashArts();
+  public void register();
+  public void onInputChange(mods.flammpfeil.slashblade.event.InputCommandEvent);
+  public static void releaseSSA(net.minecraft.server.level.ServerPlayer);
+  private static void lambda$releaseSSA$1(net.minecraft.world.item.ItemStack, net.minecraft.server.level.ServerPlayer, mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+  private void lambda$onInputChange$0(java.lang.Long, net.minecraft.util.RandomSource, net.minecraft.server.level.ServerPlayer, mods.flammpfeil.slashblade.event.InputCommandEvent, mods.flammpfeil.slashblade.capability.inputstate.IInputState);
+}

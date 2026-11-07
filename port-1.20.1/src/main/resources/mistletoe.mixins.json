@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.xingguang.terminalblade.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SuperSlashArtsMixin",
+    "EntitySlashEffectMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

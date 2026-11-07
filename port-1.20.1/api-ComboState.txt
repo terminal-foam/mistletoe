@@ -1,0 +1,41 @@
+Compiled from "ComboState.java"
+public class mods.flammpfeil.slashblade.registry.combo.ComboState {
+  public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<mods.flammpfeil.slashblade.registry.combo.ComboState>> REGISTRY_KEY;
+  private net.minecraft.resources.ResourceLocation motionLoc;
+  private int start;
+  private int end;
+  private float speed;
+  private boolean loop;
+  public int timeout;
+  private java.util.function.Function<net.minecraft.world.entity.LivingEntity, net.minecraft.resources.ResourceLocation> next;
+  private java.util.function.Function<net.minecraft.world.entity.LivingEntity, net.minecraft.resources.ResourceLocation> nextOfTimeout;
+  private java.util.function.Consumer<net.minecraft.world.entity.LivingEntity> holdAction;
+  private java.util.function.Consumer<net.minecraft.world.entity.LivingEntity> tickAction;
+  private java.util.function.BiConsumer<net.minecraft.world.entity.LivingEntity, net.minecraft.world.entity.LivingEntity> hitEffect;
+  private java.util.function.Consumer<net.minecraft.world.entity.LivingEntity> clickAction;
+  private java.util.function.BiFunction<net.minecraft.world.entity.LivingEntity, java.lang.Integer, mods.flammpfeil.slashblade.slasharts.SlashArts$ArtsType> releaseAction;
+  private boolean isAerial;
+  private int priority;
+  public net.minecraft.resources.ResourceLocation getMotionLoc();
+  public int getStartFrame();
+  public int getEndFrame();
+  public float getSpeed();
+  public boolean getLoop();
+  public int getTimeoutMS();
+  public void holdAction(net.minecraft.world.entity.LivingEntity);
+  public void tickAction(net.minecraft.world.entity.LivingEntity);
+  public void hitEffect(net.minecraft.world.entity.LivingEntity, net.minecraft.world.entity.LivingEntity);
+  public void clickAction(net.minecraft.world.entity.LivingEntity);
+  public mods.flammpfeil.slashblade.slasharts.SlashArts$ArtsType releaseAction(net.minecraft.world.entity.LivingEntity, int);
+  public static net.minecraft.resources.ResourceLocation getRegistryKey(mods.flammpfeil.slashblade.registry.combo.ComboState);
+  private mods.flammpfeil.slashblade.registry.combo.ComboState(mods.flammpfeil.slashblade.registry.combo.ComboState$Builder);
+  public net.minecraft.resources.ResourceLocation getNext(net.minecraft.world.entity.LivingEntity);
+  public net.minecraft.resources.ResourceLocation getNextOfTimeout(net.minecraft.world.entity.LivingEntity);
+  public mods.flammpfeil.slashblade.registry.combo.ComboState checkTimeOut(net.minecraft.world.entity.LivingEntity, float);
+  public boolean isAerial();
+  public int getPriority();
+  public static mods.flammpfeil.slashblade.slasharts.SlashArts$ArtsType releaseActionQuickCharge(net.minecraft.world.entity.LivingEntity, java.lang.Integer);
+  public static long getElapsed(net.minecraft.world.entity.LivingEntity);
+  private static java.lang.Long lambda$getElapsed$0(net.minecraft.world.entity.LivingEntity, mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+  static {};
+}

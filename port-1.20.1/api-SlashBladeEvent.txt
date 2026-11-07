@@ -1,0 +1,8 @@
+Compiled from "SlashBladeEvent.java"
+public abstract class mods.flammpfeil.slashblade.event.SlashBladeEvent extends net.minecraftforge.eventbus.api.Event {
+  private final net.minecraft.world.item.ItemStack blade;
+  private final mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState state;
+  public mods.flammpfeil.slashblade.event.SlashBladeEvent(net.minecraft.world.item.ItemStack, mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState);
+  public net.minecraft.world.item.ItemStack getBlade();
+  public mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState getSlashBladeState();
+}
