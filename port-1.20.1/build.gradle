@@ -89,6 +89,7 @@ minecraft {
 
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
+            property 'mixin.config', 'mistletoe.mixins.json'
             args '--nogui'
         }
 
@@ -130,6 +131,8 @@ repositories {
 }
 
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.3'
     annotationProcessor 'org.spongepowered:mixin:0.8.5'
     annotationProcessor 'com.google.code.gson:gson:2.10.1'
     annotationProcessor 'com.google.guava:guava:31.1-jre'
@@ -229,4 +232,8 @@ jar {
 mixin {
     add sourceSets.main, 'mistletoe.refmap.json'
     config 'mistletoe.mixins.json'
+}
+
+test {
+    useJUnitPlatform()
 }
