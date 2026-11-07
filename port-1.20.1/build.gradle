@@ -112,6 +112,7 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    maven { name = 'LocalMaven'; url = uri('local-maven') }
     maven { name = 'AliyunPublic'; url = 'https://maven.aliyun.com/repository/public' }
     maven { name = 'AliyunGradlePlugin'; url = 'https://maven.aliyun.com/repository/gradle-plugin' }
     maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
