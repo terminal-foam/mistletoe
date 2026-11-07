@@ -58,7 +58,7 @@ public final class MistletoeCommands {
                 .getBlade(player.registryAccess());
         if (DAWN_NAME.equals(name) && !blade.isEmpty()) {
             // 刀铭：未附魔仍是封刀，附魔后满足“印咒 + 赋铭”直接变妖。
-            blade.set(DataComponents.CUSTOM_NAME, Component.translatable("item.mistletoe.dawn"));
+            blade.set(DataComponents.CUSTOM_NAME, dev.xingguang.terminalblade.blade.MistletoeBlade.dawnName());
         }
         if (blade.isEmpty() || !player.addItem(blade)) {
             player.drop(blade, false);

@@ -3,6 +3,7 @@ package dev.xingguang.terminalblade.blade;
 import dev.xingguang.terminalblade.TerminalBlade;
 import mods.flammpfeil.slashblade.capability.slashblade.BladeStateAccess;
 import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +18,14 @@ public final class MistletoeBlade {
     private static final Set<String> BLADE_KEYS = Set.of(TRANSLATION_KEY, DAWN_TRANSLATION_KEY);
 
     private MistletoeBlade() {
+    }
+
+    /**
+     * 刀铭（CUSTOM_NAME）。显式关闭斜体，但保留 SlashBlade/稀有度给名字上的颜色。
+     */
+    public static Component dawnName() {
+        return Component.translatable(DAWN_TRANSLATION_KEY)
+                .withStyle(style -> style.withItalic(false));
     }
 
     public static boolean isMistletoe(ItemStack stack) {

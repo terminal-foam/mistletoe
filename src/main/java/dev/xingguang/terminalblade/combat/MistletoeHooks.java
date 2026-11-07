@@ -9,7 +9,6 @@ import mods.flammpfeil.slashblade.event.handler.InputCommandEvent;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.util.InputCommand;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -44,7 +43,7 @@ public final class MistletoeHooks {
     public static void onCrafted(PlayerEvent.ItemCraftedEvent event) {
         ItemStack crafted = event.getCrafting();
         if (MistletoeBlade.isDawn(crafted) && !crafted.has(DataComponents.CUSTOM_NAME)) {
-            crafted.set(DataComponents.CUSTOM_NAME, Component.translatable("item.mistletoe.dawn"));
+            crafted.set(DataComponents.CUSTOM_NAME, MistletoeBlade.dawnName());
         }
     }
 
