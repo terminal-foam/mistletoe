@@ -260,8 +260,8 @@ public class MistletoeCombatGameTest {
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void legendaryMonstersBossTakesMistletoeSlashDamage(GameTestHelper helper) {
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(
-                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin"));
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(
+                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin")).orElse(null);
         if (type == null) {
             helper.succeed();
             return;
@@ -306,8 +306,8 @@ public class MistletoeCombatGameTest {
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void legendaryMonstersBossRejectsFakeForceKill(GameTestHelper helper) {
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(
-                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin"));
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(
+                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin")).orElse(null);
         if (type == null) {
             helper.succeed();
             return;
@@ -451,3 +451,4 @@ public class MistletoeCombatGameTest {
         return MistletoeBlade.state(caster.getMainHandItem()).getComboSeq().toString();
     }
 }
+

@@ -106,6 +106,6 @@ public final class MistletoeTargets {
                 && !target.isSpectator()
                 && !(target instanceof ArmorStand)
                 && !target.isPassengerOfSameVehicle(user)
-                && MistletoeBlade.isMistletoe(user);
+                && (MistletoeBlade.isMistletoe(user) || MistletoeBlade.isFirstSnow(user));
     }
 }

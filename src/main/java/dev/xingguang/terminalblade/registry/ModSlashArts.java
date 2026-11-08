@@ -1,6 +1,7 @@
 package dev.xingguang.terminalblade.registry;
 
 import dev.xingguang.terminalblade.TerminalBlade;
+import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.slasharts.SlashArts;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -22,6 +23,15 @@ public final class ModSlashArts {
             () -> new SlashArts(user -> ModComboStates.SLASH_ART.getId())
                     .setComboStateJust(user -> ModComboStates.SLASH_ART_JUST.getId())
                     .setComboStateSuper(user -> ModComboStates.SUPER.getId())
+                    .setProudSoulCost(0));
+
+    /**
+     * 初雪的「霜刃」：7 段高速斩击，走普通攻击伤害，不套暮色的生命差公式。
+     */
+    public static final DeferredHolder<SlashArts, SlashArts> FROST_BLADE = SLASH_ARTS.register("frost_blade",
+            () -> new SlashArts(user -> ModComboStates.FROST_BLADE.getId())
+                    .setComboStateJust(user -> ModComboStates.FROST_BLADE.getId())
+                    .setComboStateSuper(user -> ComboStateRegistry.NONE.getId())
                     .setProudSoulCost(0));
 
     private ModSlashArts() {

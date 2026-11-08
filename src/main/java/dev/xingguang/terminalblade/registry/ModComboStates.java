@@ -24,6 +24,32 @@ public final class ModComboStates {
     public static final DeferredHolder<ComboState, ComboState> SUPER = COMBO_STATES.register("godslayer_bloom",
             () -> art(1900, 1960, 20, MistletoeCombat::beginSuper, MistletoeCombat::resolveSuper));
 
+    /**
+     * 初雪「霜刃」：同一段原版动作模板加速到 1.6 倍，7 个固定 tick 各斩一刀。
+     * 命中 tick 与动作速度一起调过，避免动作变快后命中点漂移。
+     */
+    public static final DeferredHolder<ComboState, ComboState> FROST_BLADE = COMBO_STATES.register("frost_blade",
+            () -> {
+                var timeline = ComboState.TimeLineTickAction.getBuilder();
+                for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
+                    int hit = i;
+                    timeline.put(
+                            MistletoeCombat.FROST_FIRST_TICK + i * MistletoeCombat.FROST_INTERVAL,
+                            user -> MistletoeCombat.frostBladeHit(user, hit));
+                }
+                return ComboState.Builder.newInstance()
+                        .startAndEnd(400, 449)
+                        .speed(1.6F)
+                        .priority(40)
+                        .motionLoc(DefaultResources.ExMotionLocation)
+                        .next(entity -> ComboStateRegistry.NONE.getId())
+                        .nextOfTimeout(entity -> ComboStateRegistry.NONE.getId())
+                        .clickAction(MistletoeCombat::beginFrostBlade)
+                        .addTickAction(timeline.build())
+                        .timeout(400)
+                        .build();
+            });
+
     private ModComboStates() {
     }
 

@@ -5,8 +5,12 @@
   "item.mistletoe.dawn": "Mistletoe -Dew-",
   "item.mistletoe.dawn.desc": "A branch beaded with dawn dew. It does not seek the kill; it only helps its wielder last a little longer.",
   "item.mistletoe.dawn.hint": "Charge right click to release First Light. On hit, gain brief Regeneration I.",
+  "item.mistletoe.first_snow": "Mistletoe -First Snow-",
+  "item.mistletoe.first_snow.desc": "A thin frost on the edge. No clever rules, only faster and denser cuts.",
+  "item.mistletoe.first_snow.hint": "Charge right click to release Frost Blade: seven high-speed slashes.",
   "slash_art.mistletoe.godslayer": "Star-Slayer",
   "slash_art.mistletoe.xiwei": "First Light",
+  "slash_art.mistletoe.frost_blade": "Frost Blade",
   "subtitles.mistletoe.draw": "Mistletoe drawn",
   "subtitles.mistletoe.swing": "Mistletoe swings",
   "subtitles.mistletoe.hit": "Mistletoe hits",
@@ -20,5 +24,6 @@
   "death.attack.mistletoe_godslayer.player": "%1$s was pierced by %2$s through mistletoe",
   "commands.mistletoe.give": "Gave Mistletoe to %s",
   "commands.mistletoe.give.dawn": "Gave Mistletoe -Dew- to %s",
+  "commands.mistletoe.give.first_snow": "Gave Mistletoe -First Snow- to %s",
   "commands.mistletoe.audit": "Normal %s; enhanced SA %s; sacrifice %s; SA damage %s; super cost %s; super lethal %s; radius %s"
 }
