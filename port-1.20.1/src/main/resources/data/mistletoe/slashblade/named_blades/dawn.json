@@ -1,0 +1,17 @@
+{
+  "name": "mistletoe:dawn",
+  "properties": {
+    "attack_base": 4.0,
+    "max_damage": 40,
+    "slash_art": "mistletoe:xiwei",
+    "sword_type": [
+      "bewitched"
+    ]
+  },
+  "render": {
+    "carry_type": "katana",
+    "model": "mistletoe:model/named/dawn.obj",
+    "texture": "mistletoe:model/named/dawn.png",
+    "summon_sword_color": 2055226
+  }
+}

@@ -5,12 +5,13 @@ import dev.xingguang.terminalblade.blade.MistletoeBlade;
 import dev.xingguang.terminalblade.registry.ModSounds;
 import mods.flammpfeil.slashblade.capability.inputstate.IInputState;
 import mods.flammpfeil.slashblade.event.InputCommandEvent;
-import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.util.InputCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -19,10 +20,25 @@ public final class MistletoeHooks {
     private MistletoeHooks() {
     }
 
+    /**
+     * 旧暮色配方现在产出朝露；这里补刀铭，让合成出来的朝露也走
+     * “封 → 附魔 → 妖”的路线，和 /mistletoe give dawn 一致。
+     */
+    @SubscribeEvent
+    public static void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+        ItemStack crafted = event.getCrafting();
+        if (MistletoeBlade.isDawn(crafted) && !crafted.hasCustomHoverName()) {
+            crafted.setHoverName(MistletoeBlade.dawnName());
+        }
+    }
+
     @SubscribeEvent
     public static void onInput(InputCommandEvent event) {
         ServerPlayer player = event.getEntity();
         if (!MistletoeBlade.isMistletoe(player)) {
+            return;
+        }
+        if (MistletoeBlade.isDawn(player.getMainHandItem())) {
             return;
         }
         boolean pressed = !event.getOld().contains(InputCommand.SPRINT) && event.getCurrent().contains(InputCommand.SPRINT);

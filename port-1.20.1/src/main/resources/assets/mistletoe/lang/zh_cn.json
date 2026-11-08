@@ -2,7 +2,11 @@
   "item.mistletoe.mistletoe": "槲寄生「暮色」",
   "item.mistletoe.mistletoe.desc": "被忽略的枝条。它越是面对庞大的生命，切口就越深。",
   "item.mistletoe.mistletoe.hint": "右键蓄力释放精准处决。长按特殊动作键（默认 V）约一秒，献祭最大生命并绽放球形即死。",
+  "item.mistletoe.dawn": "槲寄生「朝露」",
+  "item.mistletoe.dawn.desc": "沾着晨露的枝条。它不追求斩杀，只让握刀的人多撑一会儿。",
+  "item.mistletoe.dawn.hint": "右键蓄力释放熹微。命中后获得短暂的生命恢复 I。",
   "slash_art.mistletoe.godslayer": "斩星",
+  "slash_art.mistletoe.xiwei": "熹微",
   "subtitles.mistletoe.draw": "槲寄生出鞘",
   "subtitles.mistletoe.swing": "槲寄生挥击",
   "subtitles.mistletoe.hit": "槲寄生命中",
@@ -15,5 +19,6 @@
   "death.attack.mistletoe_godslayer": "%1$s被槲寄生的例外贯穿",
   "death.attack.mistletoe_godslayer.player": "%1$s被%2$s以槲寄生贯穿",
   "commands.mistletoe.give": "已将槲寄生交给 %s",
+  "commands.mistletoe.give.dawn": "已将槲寄生「朝露」交给 %s",
   "commands.mistletoe.audit": "普攻 %s；强化 SA %s；献祭 %s；SA 伤害 %s；Super 献祭 %s；Super 致死 %s；半径 %s"
 }

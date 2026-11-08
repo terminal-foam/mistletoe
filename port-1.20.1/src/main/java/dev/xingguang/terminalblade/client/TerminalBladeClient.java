@@ -27,7 +27,10 @@ public final class TerminalBladeClient {
         if (!MistletoeBlade.isMistletoe(event.getItemStack())) {
             return;
         }
-        event.getToolTip().add(Component.translatable("item.mistletoe.mistletoe.desc").withStyle(ChatFormatting.GRAY));
-        event.getToolTip().add(Component.translatable("item.mistletoe.mistletoe.hint").withStyle(ChatFormatting.DARK_GREEN));
+        String base = MistletoeBlade.isDawn(event.getItemStack())
+                ? "item.mistletoe.dawn"
+                : "item.mistletoe.mistletoe";
+        event.getToolTip().add(Component.translatable(base + ".desc").withStyle(ChatFormatting.GRAY));
+        event.getToolTip().add(Component.translatable(base + ".hint").withStyle(ChatFormatting.DARK_GREEN));
     }
 }

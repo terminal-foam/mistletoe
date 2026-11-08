@@ -61,6 +61,8 @@ Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透�
 .\run-tests.ps1                     # JUnit（需要 libs\junit-platform-console-standalone-1.11.4.jar）
 ```
 
+1.20.1 Forge 版是独立工程 `port-1.20.1/`（Forge 47.2.0 / Java 17 / SlashBlade 1.1.23），构建与验证结果见 [docs/1.20.1-forge移植验证.md](docs/1.20.1-forge移植验证.md)。
+
 开发客户端：
 
 ```bash

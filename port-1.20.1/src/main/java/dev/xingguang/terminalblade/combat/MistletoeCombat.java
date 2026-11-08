@@ -14,8 +14,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,6 +31,9 @@ public final class MistletoeCombat {
      */
     public static final int HIT_TICK = 6;
     public static final long CAST_COOLDOWN_TICKS = 8L;
+    /** 熹微：固定伤害、固定恢复时长，不参与暮色的生命差/最大生命公式。 */
+    public static final float XIWEI_DAMAGE = 12.0F;
+    public static final int XIWEI_REGEN_TICKS = 100;
 
     private static final String SA_TOKEN = "mistletoe:sa_token";
     private static final String SA_ARMED = "mistletoe:sa_armed";
@@ -51,7 +57,6 @@ public final class MistletoeCombat {
         CompoundTag tag = user.getPersistentData();
         tag.putBoolean(SA_JUST, just);
         tag.putString(SA_COMBO, comboId(user));
-        play(user, ModSounds.DRAW.get(), 0.55F, just ? 1.2F : 1.0F);
         if (user.level() instanceof ServerLevel level) {
             Vec3 eye = user.getEyePosition();
             MistletoeDamage.burst(level, eye.x, eye.y, eye.z, 6, 0.15D);
@@ -71,7 +76,6 @@ public final class MistletoeCombat {
             return;
         }
         ServerLevel level = (ServerLevel) user.level();
-        play(user, ModSounds.SWING.get(), 0.8F, just ? 1.25F : 1.0F);
         spawnSlash(user, just ? -18.0F : -30.0F, just);
         spawnSlash(user, just ? 24.0F : 35.0F, just);
         Vec3 eye = user.getEyePosition();
@@ -83,10 +87,28 @@ public final class MistletoeCombat {
             return;
         }
 
+        if (MistletoeBlade.isDawn(user.getMainHandItem())) {
+            float healthBefore = target.getHealth();
+            MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, XIWEI_DAMAGE);
+            boolean connected = !target.isAlive() || target.getHealth() < healthBefore;
+            if (connected) {
+                user.addEffect(new MobEffectInstance(MobEffects.REGENERATION, XIWEI_REGEN_TICKS, 0, false, true, true));
+                MistletoeDamage.burst(level, target.getX(), target.getY(0.6D), target.getZ(), 8, 0.25D);
+            }
+            if (TerminalBladeConfig.logDamage()) {
+                TerminalBlade.LOGGER.info("[槲寄生] 普通 SA art=xiwei 固定伤害={} 命中={} 恢复={}tick",
+                        XIWEI_DAMAGE, connected, connected ? XIWEI_REGEN_TICKS : 0);
+            }
+            return;
+        }
+
         float targetMax = target.getMaxHealth();
         boolean enhanced = MistletoeFormulas.isEnhancedSlashArt(targetMax, TerminalBladeConfig.slashArtThreshold());
+        boolean payHealth = paysHealthCost(user);
         float current = user.getHealth();
-        float cost = enhanced ? MistletoeFormulas.sacrificeCost(current, TerminalBladeConfig.slashArtSacrificeRatio()) : 0.0F;
+        float cost = enhanced && payHealth
+                ? MistletoeFormulas.sacrificeCost(current, TerminalBladeConfig.slashArtSacrificeRatio())
+                : 0.0F;
         float healthForGap = enhanced ? Math.max(0.0F, current - cost) : current;
         float multiplier = just ? TerminalBladeConfig.justMultiplier() : 1.0F;
         float damage = MistletoeFormulas.slashArtDamage(
@@ -99,18 +121,17 @@ public final class MistletoeCombat {
                 TerminalBladeConfig.slashArtMaxHealthBonus(),
                 multiplier);
 
-        if (enhanced && TerminalBladeConfig.slashArtPayOnWhiff()) {
+        if (enhanced && payHealth && TerminalBladeConfig.slashArtPayOnWhiff()) {
             paySlashArt(user, level, cost);
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         boolean connected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, damage);
-        if (enhanced && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
+        if (enhanced && payHealth && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
             paySlashArt(user, level, cost);
             // 普通 SA 的献祭固定是当前生命的 10%，不会致死；true 只属于 Super SA。
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
         if (connected) {
-            play(user, ModSounds.HIT.get(), 0.7F, enhanced ? 0.85F : 1.15F);
             MistletoeDamage.burst(level, target.getX(), target.getY(0.6D), target.getZ(), enhanced ? 18 : 8, 0.25D);
         }
         if (TerminalBladeConfig.logDamage()) {
@@ -130,7 +151,6 @@ public final class MistletoeCombat {
             return;
         }
         user.getPersistentData().putString(SUPER_COMBO, comboId(user));
-        play(user, ModSounds.DRAW.get(), 0.7F, 0.8F);
         if (user.level() instanceof ServerLevel level) {
             MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
         }
@@ -149,7 +169,6 @@ public final class MistletoeCombat {
         }
         ServerLevel level = (ServerLevel) user.level();
         double radius = TerminalBladeConfig.superRadius();
-        play(user, ModSounds.SUPER_RELEASE.get(), 1.0F, 0.9F);
         for (int i = 0; i < 8; i++) {
             spawnSlash(user, i * 22.5F, true);
         }
@@ -186,24 +205,40 @@ public final class MistletoeCombat {
         }
 
         if (user.isAlive()) {
-            MistletoeFormulas.SuperSacrifice sacrifice = MistletoeFormulas.superSacrifice(
-                    user.getHealth(), user.getMaxHealth(), TerminalBladeConfig.superSacrificeRatio());
-            play(user, ModSounds.SACRIFICE.get(), 1.0F, 0.7F);
-            log(user, "sacrifice", "super", sacrifice.lethal());
-            if (sacrifice.lethal()) {
-                MistletoeDamage.finish(user, MistletoeDamage.SACRIFICE);
-            } else {
-                user.setHealth(sacrifice.remainingHealth());
-                user.hurtTime = 10;
-                user.hurtDuration = 10;
-                user.level().broadcastEntityEvent(user, (byte) 2);
-            }
+            MistletoeFormulas.SuperSacrifice sacrifice = applySuperSacrifice(user);
             if (TerminalBladeConfig.logDamage()) {
                 TerminalBlade.LOGGER.info(
-                        "[槲寄生] Super SA 半径={} 目标={} 击杀={} 阶段锁={} 失败={} 献祭={} 致死={}",
-                        radius, targets.size(), killed, phaseLocked, failed, sacrifice.cost(), sacrifice.lethal());
+                        "[槲寄生] Super SA 半径={} 目标={} 击杀={} 阶段锁={} 失败={} 献祭={} 致死={} 支付生命={}",
+                        radius, targets.size(), killed, phaseLocked, failed, sacrifice.cost(), sacrifice.lethal(),
+                        paysHealthCost(user));
             }
         }
+    }
+
+    /**
+     * Super SA 的自身献祭结算。创造/旁观玩家不扣血、不播献祭音效；
+     * 单独抽出是为了让测试不依赖 ComboState 和斩击实体就能验证这条分支。
+     */
+    public static MistletoeFormulas.SuperSacrifice applySuperSacrifice(LivingEntity user) {
+        boolean payHealth = paysHealthCost(user);
+        MistletoeFormulas.SuperSacrifice sacrifice = payHealth
+                ? MistletoeFormulas.superSacrifice(
+                        user.getHealth(), user.getMaxHealth(), TerminalBladeConfig.superSacrificeRatio())
+                : new MistletoeFormulas.SuperSacrifice(0.0F, user.getHealth(), false);
+        log(user, "sacrifice", "super", sacrifice.lethal());
+        if (!payHealth) {
+            return sacrifice;
+        }
+        play(user, ModSounds.SACRIFICE.get(), 1.0F, 0.7F);
+        if (sacrifice.lethal()) {
+            MistletoeDamage.finish(user, MistletoeDamage.SACRIFICE);
+        } else {
+            user.setHealth(sacrifice.remainingHealth());
+            user.hurtTime = 10;
+            user.hurtDuration = 10;
+            user.level().broadcastEntityEvent(user, (byte) 2);
+        }
+        return sacrifice;
     }
 
     public static boolean releaseSuperFromInput(ServerPlayer player) {
@@ -217,6 +252,10 @@ public final class MistletoeCombat {
     public static boolean releaseSuperFromInput(LivingEntity player) {
         ItemStack stack = player.getMainHandItem();
         if (!MistletoeBlade.isMistletoe(stack)) {
+            return false;
+        }
+        // 朝露没有 Super；它的强度只来自熹微的固定伤害与恢复。
+        if (MistletoeBlade.isDawn(stack)) {
             return false;
         }
         if (!canFight(player)) {
@@ -296,6 +335,14 @@ public final class MistletoeCombat {
             slash.setBaseSize(critical ? 2.4F : 1.8F);
             slash.setLifetime(8);
         }
+    }
+
+    /**
+     * 创造/旁观玩家不支付生命献祭。原逻辑直接 setHealth / finish，会把创造玩家扣到 0 血，
+     * 第二次 Super SA 就会真的死亡；这里统一给普通 SA 和 Super SA 使用。
+     */
+    public static boolean paysHealthCost(LivingEntity user) {
+        return !(user instanceof Player player) || (!player.isCreative() && !player.isSpectator());
     }
 
     private static boolean canFight(LivingEntity user) {

@@ -1,0 +1,36 @@
+{
+  "type": "slashblade:shaped_blade",
+  "blade": "mistletoe:mistletoe",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "minecraft:end_crystal"
+    },
+    "C": {
+      "item": "slashblade:proudsoul_trapezohedron"
+    },
+    "Q": {
+      "item": "minecraft:nether_star"
+    },
+    "D": {
+      "type": "slashblade:blade",
+      "item": "slashblade:slashblade",
+      "request": {
+        "name": "mistletoe:dawn",
+        "sword_type": [
+          "bewitched"
+        ]
+      }
+    }
+  },
+  "pattern": [
+    "ACA",
+    "QDQ",
+    "ACA"
+  ],
+  "result": {
+    "item": "slashblade:slashblade",
+    "count": 1
+  },
+  "show_notification": true
+}

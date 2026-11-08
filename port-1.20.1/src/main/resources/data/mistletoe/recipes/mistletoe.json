@@ -1,9 +1,10 @@
 {
   "type": "slashblade:shaped_blade",
+  "blade": "mistletoe:dawn",
   "category": "equipment",
   "key": {
     "B": {
-      "item": "slashblade:slashblade"
+      "item": "slashblade:slashblade_white"
     },
     "G": {
       "item": "minecraft:glow_berries"
@@ -24,5 +25,5 @@
     "item": "slashblade:slashblade",
     "count": 1
   },
-  "blade": "mistletoe:mistletoe"
+  "show_notification": true
 }

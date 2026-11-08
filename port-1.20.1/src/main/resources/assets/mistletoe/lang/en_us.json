@@ -2,7 +2,11 @@
   "item.mistletoe.mistletoe": "Mistletoe -Twilight-",
   "item.mistletoe.mistletoe.desc": "An overlooked branch. The greater the life before it, the deeper the cut.",
   "item.mistletoe.mistletoe.hint": "Charge right click for the precise cut. Hold the special move key (V) for about a second to bloom.",
+  "item.mistletoe.dawn": "Mistletoe -Dew-",
+  "item.mistletoe.dawn.desc": "A branch beaded with dawn dew. It does not seek the kill; it only helps its wielder last a little longer.",
+  "item.mistletoe.dawn.hint": "Charge right click to release First Light. On hit, gain brief Regeneration I.",
   "slash_art.mistletoe.godslayer": "Star-Slayer",
+  "slash_art.mistletoe.xiwei": "First Light",
   "subtitles.mistletoe.draw": "Mistletoe drawn",
   "subtitles.mistletoe.swing": "Mistletoe swings",
   "subtitles.mistletoe.hit": "Mistletoe hits",
@@ -15,5 +19,6 @@
   "death.attack.mistletoe_godslayer": "%1$s was pierced by the mistletoe's exception",
   "death.attack.mistletoe_godslayer.player": "%1$s was pierced by %2$s through mistletoe",
   "commands.mistletoe.give": "Gave Mistletoe to %s",
+  "commands.mistletoe.give.dawn": "Gave Mistletoe -Dew- to %s",
   "commands.mistletoe.audit": "Normal %s; enhanced SA %s; sacrifice %s; SA damage %s; super cost %s; super lethal %s; radius %s"
 }

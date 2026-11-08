@@ -18,6 +18,18 @@ public final class ModSlashArts {
                 return art;
             });
 
+    /**
+     * 熹微复用斩星的 ComboState 与斩击特效；实际伤害/恢复在 MistletoeCombat 里按 blade 分流。
+     */
+    public static final RegistryObject<SlashArts> XIWEI = SLASH_ARTS.register("xiwei",
+            () -> {
+                SlashArts art = new SlashArts(user -> ModComboStates.SLASH_ART.getId())
+                        .setComboStateJust(user -> ModComboStates.SLASH_ART_JUST.getId())
+                        .setComboStateSuper(user -> ModComboStates.SUPER.getId());
+                art.setProudSoulCost(0);
+                return art;
+            });
+
     private ModSlashArts() {
     }
 }

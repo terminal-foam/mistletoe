@@ -13,6 +13,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -98,6 +99,10 @@ public final class MistletoeDamage {
         if (attacker.level().isClientSide() || event.getEntity() == attacker) {
             return;
         }
+        // 朝露不套暮色的生命差公式；它的普攻保持低面板，只有熹微是固定 12。
+        if (MistletoeBlade.isDawn(attacker.getMainHandItem())) {
+            return;
+        }
         ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
         if (type != null && TerminalBlade.MOD_ID.equals(type.location().getNamespace())) {
             return;
@@ -158,7 +163,7 @@ public final class MistletoeDamage {
     }
 
     public static void drainHealth(LivingEntity entity, float amount) {
-        if (entity.level().isClientSide() || amount <= 0.0F || !entity.isAlive()) {
+        if (isProtectedPlayer(entity) || entity.level().isClientSide() || amount <= 0.0F || !entity.isAlive()) {
             return;
         }
         float next = Math.max(0.0F, entity.getHealth() - amount);
@@ -173,7 +178,7 @@ public final class MistletoeDamage {
     }
 
     public static void finish(LivingEntity entity, ResourceKey<DamageType> type) {
-        if (!entity.isAlive()) {
+        if (isProtectedPlayer(entity) || !entity.isAlive()) {
             return;
         }
         DamageSource source = source(entity, type);
@@ -199,6 +204,10 @@ public final class MistletoeDamage {
     public static boolean forceKill(LivingEntity user, LivingEntity target, ResourceKey<DamageType> type) {
         if (user == null || target == null || target == user || target.isRemoved()) {
             return target != null && target.isRemoved();
+        }
+        // 创造/旁观玩家永远不走强制处决；目标选择已排除，这里是给外部调用兜底。
+        if (isProtectedPlayer(target)) {
+            return false;
         }
         Set<UUID> active = FORCE_KILLING.get();
         UUID id = target.getUUID();
@@ -248,6 +257,10 @@ public final class MistletoeDamage {
     public static void clearSlashStack() {
         ACTIVE_SLASH.remove();
         NORMAL_FORMULA_APPLIED.remove();
+    }
+
+    private static boolean isProtectedPlayer(LivingEntity entity) {
+        return entity instanceof Player player && (player.isCreative() || player.isSpectator());
     }
 
     public static DamageSource source(Entity attacker, ResourceKey<DamageType> type) {

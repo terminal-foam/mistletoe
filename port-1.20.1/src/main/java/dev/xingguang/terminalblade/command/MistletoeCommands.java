@@ -7,14 +7,15 @@ import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.event.RegisterCommandsEvent;
 
+import static dev.xingguang.terminalblade.blade.MistletoeBlade.DAWN_NAME;
 import static dev.xingguang.terminalblade.blade.MistletoeBlade.NAME;
 
 @EventBusSubscriber(modid = dev.xingguang.terminalblade.TerminalBlade.MOD_ID)
@@ -25,9 +26,13 @@ public final class MistletoeCommands {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
         var give = Commands.literal("give")
-                .executes(ctx -> give(ctx.getSource().getPlayerOrException()))
+                .executes(ctx -> give(ctx.getSource().getPlayerOrException(), NAME, "commands.mistletoe.give"))
                 .then(Commands.argument("player", EntityArgument.player())
-                        .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"))));
+                        .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"), NAME, "commands.mistletoe.give")));
+        var giveDawn = Commands.literal("dawn")
+                .executes(ctx -> give(ctx.getSource().getPlayerOrException(), DAWN_NAME, "commands.mistletoe.give.dawn"))
+                .then(Commands.argument("player", EntityArgument.player())
+                        .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"), DAWN_NAME, "commands.mistletoe.give.dawn")));
         var audit = Commands.literal("audit")
                 .then(Commands.argument("target_max", FloatArgumentType.floatArg(0.0F))
                         .then(Commands.argument("player_current", FloatArgumentType.floatArg(0.0F))
@@ -40,20 +45,25 @@ public final class MistletoeCommands {
         event.getDispatcher().register(Commands.literal("mistletoe")
                 .requires(source -> source.hasPermission(2))
                 .then(give)
+                .then(giveDawn)
                 .then(audit));
     }
 
-    private static int give(ServerPlayer player) {
-        ResourceKey<SlashBladeDefinition> key = ResourceKey.create(SlashBladeDefinition.REGISTRY_KEY, NAME);
+    private static int give(ServerPlayer player, ResourceLocation name, String messageKey) {
+        ResourceKey<SlashBladeDefinition> key = ResourceKey.create(SlashBladeDefinition.REGISTRY_KEY, name);
         ItemStack blade = player.server.registryAccess()
                 .lookupOrThrow(SlashBladeDefinition.REGISTRY_KEY)
                 .getOrThrow(key)
                 .value()
                 .getBlade(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new ResourceLocation("slashblade", "slashblade")));
+        if (DAWN_NAME.equals(name) && !blade.isEmpty() && !blade.hasCustomHoverName()) {
+            // 刀铭：未附魔仍是封刀，附魔后满足“印咒 + 赋铭”直接变妖。
+            blade.setHoverName(dev.xingguang.terminalblade.blade.MistletoeBlade.dawnName());
+        }
         if (blade.isEmpty() || !player.addItem(blade)) {
             player.drop(blade, false);
         }
-        player.displayClientMessage(Component.translatable("commands.mistletoe.give", player.getDisplayName()), false);
+        player.displayClientMessage(Component.translatable(messageKey, player.getDisplayName()), false);
         return 1;
     }
 
