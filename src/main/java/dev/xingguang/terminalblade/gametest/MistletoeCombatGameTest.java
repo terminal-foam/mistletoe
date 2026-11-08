@@ -25,6 +25,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.animal.Pig;
@@ -33,6 +34,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+import java.util.UUID;
 
 @GameTestHolder(TerminalBlade.MOD_ID)
 public class MistletoeCombatGameTest {
@@ -297,6 +300,27 @@ public class MistletoeCombatGameTest {
         MistletoeCombat.frostBladeHit(caster, 0);
 
         helper.assertTrue(target.getHealth() >= 100.0F, "换刀后霜刃仍然结算了伤害");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostBladeSkipsPetWithOfflineOwner(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Wolf pet = helper.spawnWithNoFreeWill(EntityType.WOLF, 2, 1, 4);
+        pet.setTame(true, true);
+        pet.setOwnerUUID(UUID.randomUUID());
+        setMaxHealth(pet, 100.0D);
+        pet.setHealth(100.0F);
+        caster.setYRot(0.0F);
+        caster.setYBodyRot(0.0F);
+        caster.setYHeadRot(0.0F);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        MistletoeCombat.beginFrostBlade(caster);
+
+        MistletoeCombat.frostBladeHit(caster, 0);
+
+        helper.assertTrue(pet.getHealth() >= 100.0F, "主人不在世界中的宠物被霜刃误伤");
         helper.succeed();
     }
 

@@ -71,7 +71,7 @@ public final class MistletoeTargets {
         if (user.getTeam() != null && user.getTeam() == target.getTeam()) {
             return false;
         }
-        if (target instanceof OwnableEntity ownable && ownable.getOwner() != null) {
+        if (target instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
             return false;
         }
         Vec3 to = target.getEyePosition().subtract(user.getEyePosition());
