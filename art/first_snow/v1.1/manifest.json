@@ -1,0 +1,293 @@
+{
+  "artifact": "mistletoe:first_snow",
+  "version": "v1.1",
+  "generated_by": "cd first_snow_pipeline && python build_all.py",
+  "python_stdlib_only": true,
+  "repo_written": false,
+  "layout": "解压即根目录：脚本在顶层，ref/ wiring/ out/ 按相对位置随包；assets/ source/ preview/ 是方便取用的分类副本",
+  "reproduce": "cd <解压目录> && python build_all.py --verify",
+  "files": {
+    "pipeline_root": [
+      "build_all.py",
+      "make_first_snow.py",
+      "build.py",
+      "obj_to_bbmodel.py",
+      "make_wiring_texture.py",
+      "check_ingame.py",
+      "check.py",
+      "png_util.py",
+      "manifest.json"
+    ],
+    "assets": [
+      "first_snow.obj",
+      "first_snow.png"
+    ],
+    "source": [
+      "demo_model.obj",
+      "demo_atlas.png",
+      "first_snow.bbmodel",
+      "demo_model_blockbench.obj",
+      "materials.mtl"
+    ],
+    "preview": [
+      "demo_render.png",
+      "demo_render_sheathed.png",
+      "demo_overlay.png",
+      "demo_icon.png",
+      "demo_icon_single.png",
+      "demo_emblem.png",
+      "demo_saya_compare.png",
+      "demo_particles.png",
+      "icon16_preview.png"
+    ],
+    "ref": [
+      "ref/dawn.obj"
+    ],
+    "wiring_drafts": [
+      "wiring/FrostSlashBinding.java",
+      "wiring/frost_slash.png"
+    ]
+  },
+  "hashes": {
+    "first_snow.obj": "3ba5ed6b007d",
+    "first_snow.png": "60b0de26151b",
+    "demo_model.obj": "3ba5ed6b007d",
+    "demo_atlas.png": "60b0de26151b",
+    "first_snow.bbmodel": "ee35473dc53c",
+    "demo_model_blockbench.obj": "b1adedb30d03",
+    "materials.mtl": "28edfaad922c"
+  },
+  "baseline": {
+    "path": "ref/dawn.obj",
+    "md5": "77a3892fd73c",
+    "purpose": "几何血缘比对；缺失时 check.py 降级为 WARN"
+  },
+  "atlas_tiles": {
+    "blade": {
+      "tile": "blade",
+      "obj_samples": 1404,
+      "obj_groups": [
+        "blade",
+        "blade_damaged",
+        "item_blade",
+        "item_bladens",
+        "item_damaged"
+      ],
+      "binding": "ACTIVE",
+      "note": "blade / blade_damaged / item_* 实体组"
+    },
+    "blade_luminous": {
+      "tile": "blade_luminous",
+      "obj_samples": 768,
+      "obj_groups": [
+        "blade_damaged_luminous",
+        "blade_luminous",
+        "item_blade_luminous",
+        "item_bladens_luminous",
+        "item_damaged_luminous"
+      ],
+      "binding": "ACTIVE",
+      "note": "*_luminous 加色层"
+    },
+    "handle": {
+      "tile": "handle",
+      "obj_samples": 600,
+      "obj_groups": [
+        "blade",
+        "item_blade",
+        "item_bladens",
+        "item_damaged"
+      ],
+      "binding": "ACTIVE",
+      "note": "柄卷 / item_* 柄"
+    },
+    "tsuba": {
+      "tile": "tsuba",
+      "obj_samples": 738,
+      "obj_groups": [
+        "blade",
+        "item_blade",
+        "item_bladens",
+        "item_damaged"
+      ],
+      "binding": "ACTIVE",
+      "note": "blade 组镡盘 / item_* 镡"
+    },
+    "sheath": {
+      "tile": "sheath",
+      "obj_samples": 3936,
+      "obj_groups": [
+        "item_blade",
+        "item_bladens",
+        "sheath"
+      ],
+      "binding": "ACTIVE",
+      "note": "sheath 组 + item_* 鞘"
+    },
+    "sheath_luminous": {
+      "tile": "sheath_luminous",
+      "obj_samples": 576,
+      "obj_groups": [
+        "item_blade_luminous",
+        "item_bladens_luminous",
+        "sheath_luminous"
+      ],
+      "binding": "ACTIVE",
+      "note": "sheath_luminous / item_*_luminous"
+    },
+    "leaf": {
+      "tile": "leaf",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "DESIGN_ONLY",
+      "note": "贴图纹样；v1.1 已无悬空叶几何"
+    },
+    "berry": {
+      "tile": "berry",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "DESIGN_ONLY",
+      "note": "贴图纹样；v1.1 已无白果几何"
+    },
+    "effect": {
+      "tile": "effect",
+      "obj_samples": 2880,
+      "obj_groups": [
+        "effect"
+      ],
+      "binding": "CONDITIONAL",
+      "note": "effect 组；本体仅右键 isCharged() 触发，Super SA 不触发"
+    },
+    "p_leaf": {
+      "tile": "p_leaf",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "NOT_WIRED",
+      "note": "粒子贴图走独立 particle JSON，主图集此格无加载入口"
+    },
+    "p_berry": {
+      "tile": "p_berry",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "NOT_WIRED",
+      "note": "同上"
+    },
+    "emblem": {
+      "tile": "emblem",
+      "obj_samples": 12,
+      "obj_groups": [
+        "item_blade",
+        "item_bladens"
+      ],
+      "binding": "ACTIVE",
+      "note": "item_* 菱形背板（仅 SHEATHED）"
+    },
+    "slash_ring": {
+      "tile": "slash_ring",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "NOT_WIRED",
+      "note": "霜刃走 DriveRenderer 写死的 slashblade:model/util/ss.png"
+    },
+    "slash_sphere": {
+      "tile": "slash_sphere",
+      "obj_samples": 0,
+      "obj_groups": [],
+      "binding": "NOT_WIRED",
+      "note": "同上"
+    },
+    "branch": {
+      "tile": "branch",
+      "obj_samples": 342,
+      "obj_groups": [
+        "item_blade",
+        "item_bladens",
+        "item_damaged"
+      ],
+      "binding": "ACTIVE",
+      "note": "item_* 描边 / BROKEN 背板 / 断面"
+    },
+    "habaki": {
+      "tile": "habaki",
+      "obj_samples": 642,
+      "obj_groups": [
+        "blade",
+        "item_blade",
+        "item_bladens",
+        "item_damaged",
+        "sheath"
+      ],
+      "binding": "ACTIVE",
+      "note": "鎺 / 鞘尻 / 断口"
+    }
+  },
+  "atlas_tile_summary": {
+    "total": 16,
+    "sampled_by_obj": 10,
+    "active": [
+      "blade",
+      "blade_luminous",
+      "handle",
+      "tsuba",
+      "sheath",
+      "sheath_luminous",
+      "emblem",
+      "branch",
+      "habaki"
+    ],
+    "conditional": [
+      "effect"
+    ],
+    "design_only": [
+      "leaf",
+      "berry"
+    ],
+    "not_wired": [
+      "p_leaf",
+      "p_berry",
+      "slash_ring",
+      "slash_sphere"
+    ]
+  },
+  "runtime_binding": {
+    "status": "PARTIAL",
+    "wired_now": [
+      "OBJ 的 13 个固定组由 LayerMainBlade / LayerSlashBlade / SlashBladeTEISR 按组名渲染",
+      "first_snow.png 由 first_snow.json 的 texture 字段加载"
+    ],
+    "not_wired": [
+      {
+        "item": "slash_ring / slash_sphere（霜刃刀光）",
+        "finding": "MistletoeCombat.spawnSlash -> AttackManager.doSlash -> EntityDrive；DriveRenderer.render 第 66 行把贴图写死为 slashblade:model/util/ss.png (32x32)，getTextureLocation(entity) 在该 render 里未被调用，所以改实体的 textureLoc 不生效。",
+        "only_hook": "RenderOverrideEvent.setTexture()，由 BladeRenderState.renderOverrided 在取 VertexConsumer 之前 post；可用 getOriginalTexture()/getOriginalTarget() 判定 drive 的 'base'。",
+        "extra_constraint": "drive.obj 的 UV 仅 u 0.069..0.675 / v 0.304..0.604，所以霜刃刀光必须是独立的 32x32 贴图且图形落在该窗口，不能直接用 1024 图集里的 256x256 分区。",
+        "draft": "wiring/FrostSlashBinding.java（未编译、未接入）",
+        "draft_texture": "wiring/frost_slash.png（32x32 预置素材，未绑定）"
+      },
+      {
+        "item": "p_leaf / p_berry（粒子）",
+        "finding": "粒子贴图由各自的 particle JSON + ParticleProvider 独立加载，不读主模型图集；仓库现有 berry/petal/spark 三张独立粒子贴图。",
+        "action": "如需霜化粒子，另建 particle JSON 与纹理注册；主图集这两格仅为设计稿。"
+      },
+      {
+        "item": "effect 分区（充能壳）",
+        "finding": "effect 组几何存在，但本体 renderChargeEffect 由 isCharged() = getTicksUsingItem()>9 (右键蓄力) 触发；Super SA 是按键保持，不产生 use tick，因此该层在 Super SA 期间不亮。",
+        "action": "若要 Super SA 期间出现，需另挂客户端渲染事件（见 growth addon 方案）。"
+      },
+      {
+        "item": "first_snow.json 模型指向",
+        "finding": "仓库当前 first_snow.json 的 render.model 仍指 dawn.obj。",
+        "action": "按清单第 6 节改为 mistletoe:model/named/first_snow.obj，并把 first_snow.obj / first_snow.png 放进 assets/mistletoe/model/named/。"
+      }
+    ]
+  },
+  "verification": {
+    "check_ingame": "PASS / FAIL 0",
+    "check_py": "PASS / 13 组 / 血缘 / 造型收敛 / 16 格 / 配色 / 16x16 量化",
+    "needs_runClient": [
+      "16x16 真实 GUI 缩放下的辨识度",
+      "GUI 本体耐久菱形层与冷白图标的配色协调",
+      "霜纹在浅漆面上的可见度"
+    ]
+  }
+}
