@@ -258,6 +258,38 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void legendaryMonstersBossTakesMistletoeSlashDamage(GameTestHelper helper) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(
+                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin"));
+        if (type == null) {
+            helper.succeed();
+            return;
+        }
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        var entity = type.create(helper.getLevel());
+        if (!(entity instanceof LivingEntity boss)) {
+            helper.succeed();
+            return;
+        }
+        boss.moveTo(2.5D, 1.0D, 4.5D, 0.0F, 0.0F);
+        if (boss instanceof Mob mob) {
+            mob.setNoAi(true);
+        }
+        helper.getLevel().addFreshEntity(boss);
+        float before = boss.getHealth();
+
+        boolean hit = MistletoeDamage.hurt(caster, boss, MistletoeDamage.SLASH, 100.0F);
+        float after = boss.getHealth();
+        TerminalBlade.LOGGER.info("[GameTest] LM Boss 普通 SA：before={} after={} hit={}", before, after, hit);
+
+        helper.assertTrue(hit, "LM Boss 拒绝了槲寄生 SA 的伤害事件");
+        helper.assertTrue(after < before, "LM Boss 吃到 SA 后生命值没有下降");
+        boss.discard();
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void legendaryMonstersBossRejectsFakeForceKill(GameTestHelper helper) {
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(
                 ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin"));
