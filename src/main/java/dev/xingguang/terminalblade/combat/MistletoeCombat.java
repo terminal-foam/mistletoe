@@ -56,6 +56,7 @@ public final class MistletoeCombat {
     private static final String FROST_ARMED = "mistletoe:frost_armed";
     private static final String FROST_COMBO = "mistletoe:frost_combo";
     private static final String FROST_ACTIVE = "mistletoe:frost_active";
+    private static final String FROST_DAMAGE = "mistletoe:frost_damage";
 
     private MistletoeCombat() {
     }
@@ -163,8 +164,9 @@ public final class MistletoeCombat {
     }
 
     public static void beginFrostBlade(LivingEntity user) {
-        if (user.level().isClientSide() || !user.isAlive() || !MistletoeBlade.isFirstSnow(user)) {
-            disarm(user, FROST_ARMED);
+        if (user.level().isClientSide() || !user.isAlive() || !MistletoeBlade.isFirstSnow(user)
+                || MistletoeBlade.isBrokenOrSealed(user.getMainHandItem())) {
+            abortFrostBlade(user);
             return;
         }
         if (!arm(user, FROST_TOKEN, FROST_ARMED)) {
@@ -173,6 +175,8 @@ public final class MistletoeCombat {
         CompoundTag tag = user.getPersistentData();
         tag.putString(FROST_COMBO, comboId(user));
         tag.putBoolean(FROST_ACTIVE, false);
+        // 七刀共用起手时的攻击力快照，避免中途属性变化导致七段不同伤。
+        tag.putFloat(FROST_DAMAGE, (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE));
         if (user.level() instanceof ServerLevel level) {
             MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
         }
@@ -181,10 +185,13 @@ public final class MistletoeCombat {
 
     /**
      * 霜刃的单段斩击。第 0 段负责认领本次施法，之后每 2 tick 追加一段；
-     * 伤害走普通攻击属性，不套暮色的生命差/真伤公式。
+     * 伤害走起手快照的普通攻击属性，不套暮色的生命差/真伤公式。
      */
     public static void frostBladeHit(LivingEntity user, int index) {
-        if (user.level().isClientSide() || index < 0 || index >= FROST_HITS || !MistletoeBlade.isFirstSnow(user)) {
+        if (user.level().isClientSide() || index < 0 || index >= FROST_HITS
+                || !user.isAlive() || !MistletoeBlade.isFirstSnow(user)
+                || MistletoeBlade.isBrokenOrSealed(user.getMainHandItem())) {
+            abortFrostBlade(user);
             return;
         }
         CompoundTag tag = user.getPersistentData();
@@ -192,14 +199,18 @@ public final class MistletoeCombat {
             if (!claim(user, FROST_ARMED)) {
                 return;
             }
-            tag.putString(FROST_COMBO, comboId(user));
+            // 不覆盖起手时保存的连段 ID；换刀/切连段后旧回调必须失效。
             tag.putBoolean(FROST_ACTIVE, true);
         } else if (!tag.getBoolean(FROST_ACTIVE)) {
             return;
         }
         String expected = tag.getString(FROST_COMBO);
-        if (!expected.equals(comboId(user))) {
-            tag.putBoolean(FROST_ACTIVE, false);
+        if (expected.isEmpty() || !expected.equals(comboId(user))) {
+            abortFrostBlade(user);
+            return;
+        }
+        if (!tag.contains(FROST_DAMAGE)) {
+            abortFrostBlade(user);
             return;
         }
 
@@ -210,21 +221,29 @@ public final class MistletoeCombat {
         List<LivingEntity> targets = MistletoeTargets.selectFrostBladeTargets(
                 user, FROST_RANGE, FROST_CONE_DEGREES);
         if (!targets.isEmpty()) {
-            float damage = (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            float damage = Math.max(1.0F, tag.getFloat(FROST_DAMAGE));
             DamageSource source = MistletoeDamage.source(user, MistletoeDamage.FROST_BLADE);
             for (LivingEntity target : targets) {
                 // 不重置 invulnerableTime；霜刃伤害类型只带 bypasses_cooldown，
                 // 因此能连续命中，但不绕过实体无敌、阶段锁或护甲。
-                target.hurt(source, Math.max(1.0F, damage));
+                target.hurt(source, damage);
             }
         }
         level.playSound(null, user.getX(), user.getY(), user.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.55F, 1.35F + index * 0.03F);
 
         if (index == FROST_HITS - 1) {
-            tag.putBoolean(FROST_ACTIVE, false);
+            abortFrostBlade(user);
         }
         log(user, "hit", "frost_blade", false);
+    }
+
+    private static void abortFrostBlade(LivingEntity user) {
+        CompoundTag tag = user.getPersistentData();
+        tag.putBoolean(FROST_ACTIVE, false);
+        tag.remove(FROST_COMBO);
+        tag.remove(FROST_DAMAGE);
+        disarm(user, FROST_ARMED);
     }
 
     public static void beginSuper(LivingEntity user) {

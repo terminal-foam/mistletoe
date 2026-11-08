@@ -285,6 +285,23 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostBladeStopsAfterBladeRemoved(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 100.0D);
+        target.setHealth(100.0F);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        MistletoeCombat.beginFrostBlade(caster);
+
+        caster.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        MistletoeCombat.frostBladeHit(caster, 0);
+
+        helper.assertTrue(target.getHealth() >= 100.0F, "换刀后霜刃仍然结算了伤害");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void legendaryMonstersBossTakesMistletoeSlashDamage(GameTestHelper helper) {
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(
                 ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin")).orElse(null);

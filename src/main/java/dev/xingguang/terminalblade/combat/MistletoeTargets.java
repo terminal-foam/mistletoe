@@ -64,6 +64,16 @@ public final class MistletoeTargets {
         if (!isStrikeable(user, target) || user.distanceTo(target) > range) {
             return false;
         }
+        // 默认不打玩家、同队目标和有主宠物；也不做墙体遮挡判定（允许穿墙）。
+        if (target instanceof Player) {
+            return false;
+        }
+        if (user.getTeam() != null && user.getTeam() == target.getTeam()) {
+            return false;
+        }
+        if (target instanceof OwnableEntity ownable && ownable.getOwner() != null) {
+            return false;
+        }
         Vec3 to = target.getEyePosition().subtract(user.getEyePosition());
         double length = to.length();
         if (length < 1.0E-4D) {
