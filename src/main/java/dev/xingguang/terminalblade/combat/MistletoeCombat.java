@@ -3,6 +3,7 @@ package dev.xingguang.terminalblade.combat;
 import dev.xingguang.terminalblade.TerminalBlade;
 import dev.xingguang.terminalblade.TerminalBladeConfig;
 import dev.xingguang.terminalblade.blade.MistletoeBlade;
+import dev.xingguang.terminalblade.combat.execution.SuperExecutionChannel;
 import dev.xingguang.terminalblade.combat.execution.SuperSaExecutionService;
 import dev.xingguang.terminalblade.registry.ModComboStates;
 import dev.xingguang.terminalblade.registry.ModSounds;
@@ -203,6 +204,10 @@ public final class MistletoeCombat {
                     TerminalBlade.LOGGER.warn("[槲寄生] Super SA 没有完成处决：{} ({})",
                             target.getName().getString(),
                             net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(target.getType()));
+                    // 有限伤/阶段窗口/自定义生命值 Boss：不伪造死亡，改为有时限地重复绝对伤害。
+                    if (target.isAlive() && !(target instanceof Player)) {
+                        SuperExecutionChannel.start(user, target);
+                    }
                 }
                 case SKIPPED -> {
                     // 目标已经不在/同一施法者；不计入失败。

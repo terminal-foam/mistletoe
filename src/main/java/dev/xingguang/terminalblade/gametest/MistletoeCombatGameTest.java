@@ -5,6 +5,7 @@ import dev.xingguang.terminalblade.TerminalBladeConfig;
 import dev.xingguang.terminalblade.blade.MistletoeBlade;
 import dev.xingguang.terminalblade.combat.MistletoeCombat;
 import dev.xingguang.terminalblade.combat.MistletoeDamage;
+import dev.xingguang.terminalblade.combat.execution.SuperExecutionChannel;
 import dev.xingguang.terminalblade.registry.ModComboStates;
 import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
@@ -275,7 +276,6 @@ public class MistletoeCombatGameTest {
         if (boss instanceof Mob mob) {
             mob.setNoAi(true);
         }
-        helper.getLevel().addFreshEntity(boss);
         float before = boss.getHealth();
 
         boolean hit = MistletoeDamage.hurt(caster, boss, MistletoeDamage.SLASH, 100.0F);
@@ -286,6 +286,21 @@ public class MistletoeCombatGameTest {
         helper.assertTrue(after < before, "LM Boss 吃到 SA 后生命值没有下降");
         boss.discard();
         helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty", timeoutTicks = 120)
+    public static void persistentExecutionKillsTarget(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 300.0D);
+
+        SuperExecutionChannel.start(caster, target);
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(!target.isAlive() || target.isRemoved(),
+                    "持续处决没有在 30 tick 内杀死 300 HP 目标");
+            helper.succeed();
+        });
     }
 
     @PrefixGameTestTemplate(false)
@@ -307,7 +322,6 @@ public class MistletoeCombatGameTest {
         if (boss instanceof Mob mob) {
             mob.setNoAi(true);
         }
-        helper.getLevel().addFreshEntity(boss);
         float before = boss.getHealth();
 
         boolean killed = MistletoeDamage.forceKill(caster, boss, MistletoeDamage.GODSLAYER_ABSOLUTE);

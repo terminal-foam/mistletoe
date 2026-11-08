@@ -25,6 +25,9 @@ public final class TerminalBladeConfig {
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_PLAYERS;
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_TAMED;
     public static final ModConfigSpec.BooleanValue SUPER_AFFECT_PASSIVE;
+    public static final ModConfigSpec.BooleanValue SUPER_PERSISTENT_EXECUTION;
+    public static final ModConfigSpec.IntValue SUPER_PERSISTENT_TICKS;
+    public static final ModConfigSpec.IntValue SUPER_PERSISTENT_INTERVAL;
     public static final ModConfigSpec.BooleanValue LOG_DAMAGE;
 
     static {
@@ -85,6 +88,15 @@ public final class TerminalBladeConfig {
         SUPER_AFFECT_PASSIVE = builder
                 .comment("是否影响非敌对生物。默认只处理实现了 Enemy 的敌对生物。")
                 .define("affect_passive", false);
+        SUPER_PERSISTENT_EXECUTION = builder
+                .comment("Super SA 首次绝对伤害没有杀死目标时，是否开启有时限的持续处决。用于有限伤、阶段窗口或自定义生命值 Boss。")
+                .define("persistent_execution", true);
+        SUPER_PERSISTENT_TICKS = builder
+                .comment("持续处决最长持续时间（tick）。0 表示不限制，但不建议。")
+                .defineInRange("persistent_ticks", 200, 0, 1200);
+        SUPER_PERSISTENT_INTERVAL = builder
+                .comment("持续处决两次绝对伤害之间的间隔（tick）。")
+                .defineInRange("persistent_interval", 5, 1, 40);
         builder.pop();
 
         builder.push("debug");
@@ -161,6 +173,18 @@ public final class TerminalBladeConfig {
 
     public static boolean superAffectPassive() {
         return SUPER_AFFECT_PASSIVE.get();
+    }
+
+    public static boolean superPersistentExecution() {
+        return SUPER_PERSISTENT_EXECUTION.get();
+    }
+
+    public static int superPersistentTicks() {
+        return SUPER_PERSISTENT_TICKS.get();
+    }
+
+    public static int superPersistentInterval() {
+        return SUPER_PERSISTENT_INTERVAL.get();
     }
 
     public static boolean logDamage() {
