@@ -22,6 +22,8 @@
   "death.attack.mistletoe_sacrifice": "%1$s gave their life to the mistletoe",
   "death.attack.mistletoe_godslayer": "%1$s was pierced by the mistletoe's exception",
   "death.attack.mistletoe_godslayer.player": "%1$s was pierced by %2$s through mistletoe",
+  "death.attack.mistletoe_frost_blade": "%1$s was cut open by Frost Blade",
+  "death.attack.mistletoe_frost_blade.player": "%1$s was cut open by %2$s's Frost Blade",
   "commands.mistletoe.give": "Gave Mistletoe to %s",
   "commands.mistletoe.give.dawn": "Gave Mistletoe -Dew- to %s",
   "commands.mistletoe.give.first_snow": "Gave Mistletoe -First Snow- to %s",

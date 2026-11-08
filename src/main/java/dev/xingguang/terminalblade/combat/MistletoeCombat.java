@@ -42,6 +42,8 @@ public final class MistletoeCombat {
     public static final int FROST_HITS = 7;
     public static final int FROST_FIRST_TICK = 4;
     public static final int FROST_INTERVAL = 2;
+    public static final double FROST_RANGE = 6.0D;
+    public static final double FROST_CONE_DEGREES = 100.0D;
 
     private static final String SA_TOKEN = "mistletoe:sa_token";
     private static final String SA_ARMED = "mistletoe:sa_armed";
@@ -202,17 +204,19 @@ public final class MistletoeCombat {
         }
 
         ServerLevel level = (ServerLevel) user.level();
-        spawnSlash(user, -35.0F + index * 12.0F, true);
+        spawnSlash(user, -35.0F + index * 12.0F, true, 0xDDEFFF);
         MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 5, 0.2D);
 
-        LivingEntity target = MistletoeTargets.selectSlashArtTarget(user, TerminalBladeConfig.slashArtRange());
-        if (target != null) {
+        List<LivingEntity> targets = MistletoeTargets.selectFrostBladeTargets(
+                user, FROST_RANGE, FROST_CONE_DEGREES);
+        if (!targets.isEmpty()) {
             float damage = (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE);
-            target.invulnerableTime = 0;
-            DamageSource source = user instanceof Player player
-                    ? user.damageSources().playerAttack(player)
-                    : user.damageSources().mobAttack(user);
-            target.hurt(source, Math.max(1.0F, damage));
+            DamageSource source = MistletoeDamage.source(user, MistletoeDamage.FROST_BLADE);
+            for (LivingEntity target : targets) {
+                // 不重置 invulnerableTime；霜刃伤害类型只带 bypasses_cooldown，
+                // 因此能连续命中，但不绕过实体无敌、阶段锁或护甲。
+                target.hurt(source, Math.max(1.0F, damage));
+            }
         }
         level.playSound(null, user.getX(), user.getY(), user.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.55F, 1.35F + index * 0.03F);
@@ -417,9 +421,13 @@ public final class MistletoeCombat {
     }
 
     private static void spawnSlash(LivingEntity user, float roll, boolean critical) {
+        spawnSlash(user, roll, critical, 0xF4FFF6);
+    }
+
+    private static void spawnSlash(LivingEntity user, float roll, boolean critical, int color) {
         var slash = AttackManager.doSlash(user, roll, true, critical, 0.0D);
         if (slash != null) {
-            slash.setColor(0xF4FFF6);
+            slash.setColor(color);
             slash.setBaseSize(critical ? 2.4F : 1.8F);
             slash.setLifetime(8);
         }

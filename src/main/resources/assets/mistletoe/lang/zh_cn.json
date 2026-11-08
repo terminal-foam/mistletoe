@@ -22,6 +22,8 @@
   "death.attack.mistletoe_sacrifice": "%1$s把生命交给了槲寄生",
   "death.attack.mistletoe_godslayer": "%1$s被槲寄生的例外贯穿",
   "death.attack.mistletoe_godslayer.player": "%1$s被%2$s以槲寄生贯穿",
+  "death.attack.mistletoe_frost_blade": "%1$s被霜刃切开了",
+  "death.attack.mistletoe_frost_blade.player": "%1$s被%2$s的霜刃切开了",
   "commands.mistletoe.give": "已将槲寄生交给 %s",
   "commands.mistletoe.give.dawn": "已将槲寄生「朝露」交给 %s",
   "commands.mistletoe.give.first_snow": "已将槲寄生「初雪」交给 %s",

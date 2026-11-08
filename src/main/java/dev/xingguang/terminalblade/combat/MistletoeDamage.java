@@ -36,6 +36,8 @@ public final class MistletoeDamage {
     public static final ResourceKey<DamageType> SLASH = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_slash"));
     /** 强化 SA 的最大生命加成段；只穿防御，不改变 Super 的阶段锁语义。 */
     public static final ResourceKey<DamageType> SLASH_TRUE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_slash_true"));
+    /** 霜刃：只绕受击冷却，不绕护甲/抗性/无敌/阶段锁。 */
+    public static final ResourceKey<DamageType> FROST_BLADE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_frost_blade"));
     public static final ResourceKey<DamageType> SACRIFICE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_sacrifice"));
     public static final ResourceKey<DamageType> GODSLAYER = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer"));
     public static final ResourceKey<DamageType> GODSLAYER_ABSOLUTE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer_absolute"));

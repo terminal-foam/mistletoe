@@ -42,8 +42,37 @@ public final class MistletoeTargets {
                 .orElse(null);
     }
 
-    public static List<LivingEntity> selectSuperTargets(LivingEntity user, double radius) {
-        Vec3 center = center(user);
+    /**
+     * 霜刃的扇形目标：每一刀命中锥形范围内的全部可打击目标。
+     * 判断使用眼睛到目标的归一化向量，角度是完整的锥角。
+     */
+    public static List<LivingEntity> selectFrostBladeTargets(LivingEntity user, double range, double coneDegrees) {
+        Vec3 rawLook = user.getLookAngle();
+        double lookLength = rawLook.length();
+        if (lookLength < 1.0E-4D) {
+            return List.of();
+        }
+        Vec3 direction = rawLook.scale(1.0D / lookLength);
+        double cosHalf = Math.cos(Math.toRadians(Math.max(1.0D, coneDegrees) * 0.5D));
+        AABB box = user.getBoundingBox().inflate(range);
+        return user.level().getEntitiesOfClass(LivingEntity.class, box,
+                entity -> acceptsFrostBlade(user, entity, range, direction, cosHalf));
+    }
+
+    private static boolean acceptsFrostBlade(LivingEntity user, LivingEntity target, double range,
+                                             Vec3 look, double cosHalf) {
+        if (!isStrikeable(user, target) || user.distanceTo(target) > range) {
+            return false;
+        }
+        Vec3 to = target.getEyePosition().subtract(user.getEyePosition());
+        double length = to.length();
+        if (length < 1.0E-4D) {
+            return true;
+        }
+        return look.dot(to.scale(1.0D / length)) >= cosHalf;
+    }
+
+    public static List<LivingEntity> selectSuperTargets(LivingEntity user, double radius) {        Vec3 center = center(user);
         AABB box = new AABB(center, center).inflate(radius);
         List<LivingEntity> found = new ArrayList<>();
         for (LivingEntity entity : user.level().getEntitiesOfClass(LivingEntity.class, box, entity -> acceptsSuper(user, entity))) {

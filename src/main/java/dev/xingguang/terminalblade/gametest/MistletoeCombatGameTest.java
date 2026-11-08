@@ -259,6 +259,32 @@ public class MistletoeCombatGameTest {
 
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostBladeHitsConeTargets(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig left = helper.spawnWithNoFreeWill(EntityType.PIG, 1, 1, 4);
+        Pig right = helper.spawnWithNoFreeWill(EntityType.PIG, 3, 1, 4);
+        setMaxHealth(left, 300.0D);
+        setMaxHealth(right, 300.0D);
+        left.setHealth(300.0F);
+        right.setHealth(300.0F);
+        caster.setYRot(0.0F);
+        caster.setYBodyRot(0.0F);
+        caster.setYHeadRot(0.0F);
+        caster.setXRot(0.0F);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+
+        MistletoeCombat.beginFrostBlade(caster);
+        for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
+            MistletoeCombat.frostBladeHit(caster, i);
+        }
+
+        helper.assertTrue(left.getHealth() < 300.0F, "霜刃没有命中左侧扇形目标");
+        helper.assertTrue(right.getHealth() < 300.0F, "霜刃没有命中右侧扇形目标");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void legendaryMonstersBossTakesMistletoeSlashDamage(GameTestHelper helper) {
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(
                 ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin")).orElse(null);
