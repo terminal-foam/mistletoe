@@ -1,7 +1,7 @@
 {
   "name": "mistletoe:mistletoe",
   "properties": {
-    "attack_base": 8.0,
+    "attack_base": 5.0,
     "max_damage": 80,
     "slash_art": "mistletoe:godslayer",
     "sword_type": [
