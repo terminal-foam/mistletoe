@@ -222,6 +222,17 @@ public final class MistletoeDamage {
         try {
             DamageSource source = source(user, type);
             target.setHealth(0.0F);
+            // 有些 Boss 把生命值托管给自己的伤害累计字段，setHealth 在服务端是空操作。
+            // 这时如果继续 die()，会只播放死亡动画、tickDeath 却因为 getHealth()>0 不启动，
+            // 实体就卡在“已死亡动画但没死”的隐身状态。放弃强制处决比伪造死亡安全。
+            if (target.getHealth() > 0.0F) {
+                if (TerminalBladeConfig.logDamage()) {
+                    TerminalBlade.LOGGER.warn(
+                            "[槲寄生] 强制处决被自定义生命值模型拒绝：{} 剩余生命={}",
+                            target.getName().getString(), target.getHealth());
+                }
+                return false;
+            }
             target.die(source);
             // 如果另一个模组在 LivingDeathEvent 里把目标治疗回来，死亡逻辑已经跑完，
             // 但目标还活着；把生命压回 0，让它进入原版的 DYING/tickDeath 流程。

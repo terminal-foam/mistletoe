@@ -10,6 +10,7 @@ import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.registry.combo.ComboState;
 import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -20,6 +21,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -251,6 +253,38 @@ public class MistletoeCombatGameTest {
         helper.assertFalse(sacrifice.lethal(), "创造模式玩家被判定为 Super SA 致死");
         helper.assertTrue(caster.isAlive(), "创造模式玩家被 Super SA 献祭杀死");
         helper.assertValueEqual(2.0F, caster.getHealth(), "创造模式玩家仍然被扣了 Super SA 生命");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void legendaryMonstersBossRejectsFakeForceKill(GameTestHelper helper) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(
+                ResourceLocation.fromNamespaceAndPath("legendary_monsters", "posessed_paladin"));
+        if (type == null) {
+            helper.succeed();
+            return;
+        }
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        var entity = type.create(helper.getLevel());
+        if (!(entity instanceof LivingEntity boss)) {
+            helper.succeed();
+            return;
+        }
+        boss.moveTo(2.5D, 1.0D, 4.5D, 0.0F, 0.0F);
+        if (boss instanceof Mob mob) {
+            mob.setNoAi(true);
+        }
+        helper.getLevel().addFreshEntity(boss);
+        float before = boss.getHealth();
+
+        boolean killed = MistletoeDamage.forceKill(caster, boss, MistletoeDamage.GODSLAYER_ABSOLUTE);
+
+        helper.assertFalse(killed, "LM Boss 的自定义生命值模型被误判为强制处决成功");
+        helper.assertTrue(boss.isAlive(), "LM Boss 被伪造死亡，卡进了死亡动画");
+        helper.assertTrue(boss.getHealth() > 0.0F, "LM Boss 生命值被 setHealth(0) 假清零");
+        helper.assertTrue(before > 0.0F, "LM Boss 生成时生命值异常");
+        boss.discard();
         helper.succeed();
     }
 
