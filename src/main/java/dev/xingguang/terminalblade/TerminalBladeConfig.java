@@ -35,8 +35,8 @@ public final class TerminalBladeConfig {
 
         builder.push("normal_attack");
         BASE_DAMAGE = builder
-                .comment("普通攻击基础伤害 D0。设计文档的测试占位是 8，尚未最终确认。")
-                .defineInRange("base_damage", 8.0D, 0.0D, 100000.0D);
+                .comment("普通攻击基础伤害 D0。默认 5，与暮色 attack_base 对齐；朝露不走这个公式。")
+                .defineInRange("base_damage", 5.0D, 0.0D, 100000.0D);
         GAP_COEFFICIENT = builder
                 .comment("生命差额系数 k。伤害 = D0 + k × max(0, 目标最大生命 − 玩家当前生命)。")
                 .defineInRange("gap_coefficient", 0.2D, -1000.0D, 1000.0D);
