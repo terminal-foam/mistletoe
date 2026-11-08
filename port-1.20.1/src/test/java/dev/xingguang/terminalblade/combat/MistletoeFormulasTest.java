@@ -47,6 +47,24 @@ class MistletoeFormulasTest {
     }
 
     @Test
+    void maxHealthBonusIsSplitOutAsTrueDamage() {
+        MistletoeFormulas.SlashArtDamage enhanced = MistletoeFormulas.slashArtDamageSplit(
+                D0, K, 300.0F, 18.0F, true, 100.0F, 0.20F, 1.0F);
+        assertEquals(64.4F, enhanced.normal(), 1.0E-3F);
+        assertEquals(60.0F, enhanced.trueDamage(), 1.0E-3F);
+        assertEquals(124.4F, enhanced.total(), 1.0E-3F);
+        assertEquals(enhanced.total(),
+                MistletoeFormulas.slashArtDamage(D0, K, 300.0F, 18.0F, true, 100.0F, 0.20F, 1.0F),
+                1.0E-3F);
+
+        MistletoeFormulas.SlashArtDamage basic = MistletoeFormulas.slashArtDamageSplit(
+                D0, K, 100.0F, 20.0F, true, 100.0F, 0.20F, 1.0F);
+        assertEquals(24.0F, basic.normal(), 1.0E-3F);
+        assertEquals(0.0F, basic.trueDamage(), 1.0E-3F);
+        assertEquals(24.0F, basic.total(), 1.0E-3F);
+    }
+
+    @Test
     void justSlashArtOnlyAppliesTheConfiguredMultiplier() {
         float base = MistletoeFormulas.slashArtDamage(D0, K, 40.0F, 20.0F, true, 100.0F, 0.20F, 1.0F);
         float unchanged = MistletoeFormulas.slashArtDamage(D0, K, 40.0F, 20.0F, true, 100.0F, 0.20F, 1.0F);

@@ -111,7 +111,7 @@ public final class MistletoeCombat {
                 : 0.0F;
         float healthForGap = enhanced ? Math.max(0.0F, current - cost) : current;
         float multiplier = just ? TerminalBladeConfig.justMultiplier() : 1.0F;
-        float damage = MistletoeFormulas.slashArtDamage(
+        MistletoeFormulas.SlashArtDamage split = MistletoeFormulas.slashArtDamageSplit(
                 TerminalBladeConfig.baseDamage(),
                 TerminalBladeConfig.gapCoefficient(),
                 targetMax,
@@ -125,7 +125,13 @@ public final class MistletoeCombat {
             paySlashArt(user, level, cost);
             log(user, "sacrifice", just ? "just_sa" : "sa", false);
         }
-        boolean connected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, damage);
+        boolean connected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH, split.normal());
+        boolean trueConnected = false;
+        // 普通段命中后才追加真伤段：保留“SA 打中才结算”的旧语义，
+        // 避免普通段被取消/挡下时，20% 真伤单独漏出去。
+        if (connected && enhanced && split.trueDamage() > 0.0F && target.isAlive()) {
+            trueConnected = MistletoeDamage.hurt(user, target, MistletoeDamage.SLASH_TRUE, split.trueDamage());
+        }
         if (enhanced && payHealth && connected && !TerminalBladeConfig.slashArtPayOnWhiff() && user.isAlive()) {
             paySlashArt(user, level, cost);
             // 普通 SA 的献祭固定是当前生命的 10%，不会致死；true 只属于 Super SA。
@@ -136,9 +142,9 @@ public final class MistletoeCombat {
         }
         if (TerminalBladeConfig.logDamage()) {
             TerminalBlade.LOGGER.info(
-                    "[槲寄生] 普通 SA just={} 强化={} 目标最大生命={} 献祭={} 命中={} 公式伤害={}",
+                    "[槲寄生] 普通 SA just={} 强化={} 目标最大生命={} 献祭={} 命中={} 普通段={} 真伤段={} 真伤命中={} 公式伤害={}",
                     just, enhanced, targetMax, enhanced && (connected || TerminalBladeConfig.slashArtPayOnWhiff()) ? cost : 0.0F,
-                    connected, damage);
+                    connected, split.normal(), split.trueDamage(), trueConnected, split.total());
         }
     }
 

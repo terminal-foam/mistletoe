@@ -12,6 +12,13 @@ public final class MistletoeFormulas {
     public record SuperSacrifice(float cost, float remainingHealth, boolean lethal) {
     }
 
+    /**
+     * 强化 SA 拆成两段：普通段仍吃护甲/抗性/保护，最大生命加成段作为真伤单独结算。
+     * total 保留旧公式的总量，方便命令预览和测试对照。
+     */
+    public record SlashArtDamage(float normal, float trueDamage, float total) {
+    }
+
     public static float lifeGap(float targetMaxHealth, float playerCurrentHealth, boolean clampNegative) {
         float gap = targetMaxHealth - playerCurrentHealth;
         if (clampNegative && gap < 0.0F) {
@@ -45,15 +52,26 @@ public final class MistletoeFormulas {
     /**
      * 强化 SA：D = D0 + k × (目标最大生命 − 献祭后玩家当前生命) + 额外比例 × 目标最大生命。
      * 未强化时退回普通攻击公式，不附加最大生命伤害。
+     *
+     * <p>最大生命加成段单独返回，由战斗层用无视防御的伤害类型结算；
+     * {@link #slashArtDamage} 仍返回两段之和，保持旧接口和命令预览不变。</p>
      */
+    public static SlashArtDamage slashArtDamageSplit(float baseDamage, float gapCoefficient, float targetMaxHealth,
+                                                      float playerHealthForGap, boolean clampNegative, float threshold,
+                                                      float maxHealthBonusRatio, float justMultiplier) {
+        float normal = normalDamage(baseDamage, gapCoefficient, targetMaxHealth, playerHealthForGap, clampNegative)
+                * justMultiplier;
+        float trueDamage = isEnhancedSlashArt(targetMaxHealth, threshold)
+                ? maxHealthBonusRatio * targetMaxHealth * justMultiplier
+                : 0.0F;
+        return new SlashArtDamage(normal, trueDamage, normal + trueDamage);
+    }
+
     public static float slashArtDamage(float baseDamage, float gapCoefficient, float targetMaxHealth,
                                         float playerHealthForGap, boolean clampNegative, float threshold,
                                         float maxHealthBonusRatio, float justMultiplier) {
-        float damage = normalDamage(baseDamage, gapCoefficient, targetMaxHealth, playerHealthForGap, clampNegative);
-        if (isEnhancedSlashArt(targetMaxHealth, threshold)) {
-            damage += maxHealthBonusRatio * targetMaxHealth;
-        }
-        return damage * justMultiplier;
+        return slashArtDamageSplit(baseDamage, gapCoefficient, targetMaxHealth, playerHealthForGap,
+                clampNegative, threshold, maxHealthBonusRatio, justMultiplier).total();
     }
 
     /**

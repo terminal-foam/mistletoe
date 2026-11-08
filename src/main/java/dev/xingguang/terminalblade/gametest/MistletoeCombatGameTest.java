@@ -303,6 +303,13 @@ public class MistletoeCombatGameTest {
                 "普通 godslayer 类型仍是非穿透变体，阶段锁血目标用的就是这种保守语义");
         helper.assertTrue(lookup.getOrThrow(MistletoeDamage.GODSLAYER_ABSOLUTE).is(DamageTypeTags.BYPASSES_INVULNERABILITY),
                 "0.1.2 起 Super SA 的默认伤害类型 absolute 必须绕过无敌标签");
+        var slashTrue = lookup.getOrThrow(MistletoeDamage.SLASH_TRUE);
+        helper.assertTrue(slashTrue.is(DamageTypeTags.BYPASSES_ARMOR),
+                "强化 SA 的 20% 最大生命真伤段必须绕过护甲");
+        helper.assertTrue(slashTrue.is(DamageTypeTags.BYPASSES_EFFECTS),
+                "强化 SA 的 20% 最大生命真伤段必须绕过抗性");
+        helper.assertTrue(slashTrue.is(DamageTypeTags.BYPASSES_ENCHANTMENTS),
+                "强化 SA 的 20% 最大生命真伤段必须绕过保护附魔");
         helper.assertTrue(lookup.getOrThrow(MistletoeDamage.SACRIFICE).is(DamageTypeTags.BYPASSES_ARMOR),
                 "自身献祭应绕过护甲");
         helper.succeed();
