@@ -5,6 +5,7 @@ import dev.xingguang.terminalblade.combat.MistletoeCombat;
 import mods.flammpfeil.slashblade.init.DefaultResources;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.registry.combo.ComboState;
+import mods.flammpfeil.slashblade.util.TimeValueHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -72,6 +73,10 @@ public final class ModComboStates {
      */
     private static ComboState fastGround(DeferredHolder<ComboState, ComboState> base) {
         ComboState original = base.get();
+        int frames = Math.abs(original.getEndFrame() - original.getStartFrame());
+        int fastActionMs = (int) (TimeValueHelper.getMSecFromFrames(frames)
+                / (original.getSpeed() * FAST_GROUND_SPEED));
+        int timeout = Math.max(0, original.getTimeoutMS() - fastActionMs);
         ComboState.Builder builder = ComboState.Builder.newInstance()
                 .startAndEnd(original.getStartFrame(), original.getEndFrame())
                 .priority(original.getPriority())
@@ -79,7 +84,7 @@ public final class ModComboStates {
                 .motionLoc(original.getMotionLoc())
                 .next(original::getNext)
                 .nextOfTimeout(original::getNextOfTimeout)
-                .timeout(0)
+                .timeout(timeout)
                 .setHoldAction(original::holdAction)
                 .setTickAction(original::tickAction)
                 .clickAction(original::clickAction)
