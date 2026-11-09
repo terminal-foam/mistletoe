@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
  */
 @EventBusSubscriber(modid = TerminalBlade.MOD_ID)
 public final class FirstSnowAttributes {
-    private static final double ATTACK_SPEED_BONUS = 2.0D;
+    private static final double ATTACK_SPEED_BONUS = 9.0D;
 
     private FirstSnowAttributes() {
     }
@@ -29,7 +29,7 @@ public final class FirstSnowAttributes {
                 new AttributeModifier(
                         TerminalBlade.id("first_snow_attack_speed"),
                         ATTACK_SPEED_BONUS,
-                        AttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE),
                 EquipmentSlotGroup.MAINHAND);
     }
 }
