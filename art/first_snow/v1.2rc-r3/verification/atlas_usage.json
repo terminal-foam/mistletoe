@@ -1,0 +1,163 @@
+{
+  "blade": {
+    "tile": "blade",
+    "obj_samples": 1404,
+    "obj_groups": [
+      "blade",
+      "blade_damaged",
+      "item_blade",
+      "item_bladens",
+      "item_damaged"
+    ],
+    "binding": "ACTIVE",
+    "note": "blade / blade_damaged / item_* 实体组"
+  },
+  "blade_luminous": {
+    "tile": "blade_luminous",
+    "obj_samples": 768,
+    "obj_groups": [
+      "blade_damaged_luminous",
+      "blade_luminous",
+      "item_blade_luminous",
+      "item_bladens_luminous",
+      "item_damaged_luminous"
+    ],
+    "binding": "ACTIVE",
+    "note": "*_luminous 加色层"
+  },
+  "handle": {
+    "tile": "handle",
+    "obj_samples": 600,
+    "obj_groups": [
+      "blade",
+      "item_blade",
+      "item_bladens",
+      "item_damaged"
+    ],
+    "binding": "ACTIVE",
+    "note": "柄卷 / item_* 柄"
+  },
+  "tsuba": {
+    "tile": "tsuba",
+    "obj_samples": 1314,
+    "obj_groups": [
+      "blade",
+      "item_blade",
+      "item_bladens",
+      "item_damaged"
+    ],
+    "binding": "ACTIVE",
+    "note": "blade 组镡盘 / item_* 镡"
+  },
+  "sheath": {
+    "tile": "sheath",
+    "obj_samples": 3936,
+    "obj_groups": [
+      "item_blade",
+      "item_bladens",
+      "sheath"
+    ],
+    "binding": "ACTIVE",
+    "note": "sheath 组 + item_* 鞘"
+  },
+  "sheath_luminous": {
+    "tile": "sheath_luminous",
+    "obj_samples": 576,
+    "obj_groups": [
+      "item_blade_luminous",
+      "item_bladens_luminous",
+      "sheath_luminous"
+    ],
+    "binding": "ACTIVE",
+    "note": "sheath_luminous / item_*_luminous"
+  },
+  "leaf": {
+    "tile": "leaf",
+    "obj_samples": 240,
+    "obj_groups": [
+      "sheath"
+    ],
+    "binding": "ACTIVE",
+    "note": "r3 立体流苏双面带（sheath 组几何采样）"
+  },
+  "berry": {
+    "tile": "berry",
+    "obj_samples": 1872,
+    "obj_groups": [
+      "sheath"
+    ],
+    "binding": "ACTIVE",
+    "note": "r3 结扣与末端冰珠（sheath 组几何采样）"
+  },
+  "effect": {
+    "tile": "effect",
+    "obj_samples": 2880,
+    "obj_groups": [
+      "effect"
+    ],
+    "binding": "CONDITIONAL",
+    "note": "effect 组；本体仅右键 isCharged() 触发，Super SA 不触发"
+  },
+  "p_leaf": {
+    "tile": "p_leaf",
+    "obj_samples": 0,
+    "obj_groups": [],
+    "binding": "NOT_WIRED",
+    "note": "粒子贴图走独立 particle JSON，主图集此格无加载入口"
+  },
+  "p_berry": {
+    "tile": "p_berry",
+    "obj_samples": 0,
+    "obj_groups": [],
+    "binding": "NOT_WIRED",
+    "note": "同上"
+  },
+  "emblem": {
+    "tile": "emblem",
+    "obj_samples": 12,
+    "obj_groups": [
+      "item_blade",
+      "item_bladens"
+    ],
+    "binding": "ACTIVE",
+    "note": "item_* 菱形背板（仅 SHEATHED）"
+  },
+  "slash_ring": {
+    "tile": "slash_ring",
+    "obj_samples": 0,
+    "obj_groups": [],
+    "binding": "NOT_WIRED",
+    "note": "霜刃走 DriveRenderer 写死的 slashblade:model/util/ss.png"
+  },
+  "slash_sphere": {
+    "tile": "slash_sphere",
+    "obj_samples": 0,
+    "obj_groups": [],
+    "binding": "NOT_WIRED",
+    "note": "同上"
+  },
+  "branch": {
+    "tile": "branch",
+    "obj_samples": 342,
+    "obj_groups": [
+      "item_blade",
+      "item_bladens",
+      "item_damaged"
+    ],
+    "binding": "ACTIVE",
+    "note": "item_* 描边 / BROKEN 背板 / 断面"
+  },
+  "habaki": {
+    "tile": "habaki",
+    "obj_samples": 642,
+    "obj_groups": [
+      "blade",
+      "item_blade",
+      "item_bladens",
+      "item_damaged",
+      "sheath"
+    ],
+    "binding": "ACTIVE",
+    "note": "鎺 / 鞘尻 / 断口"
+  }
+}

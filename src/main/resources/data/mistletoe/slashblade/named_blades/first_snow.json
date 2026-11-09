@@ -10,7 +10,7 @@
   },
   "render": {
     "carry_type": "katana",
-    "model": "mistletoe:model/named/dawn.obj",
+    "model": "mistletoe:model/named/first_snow.obj",
     "texture": "mistletoe:model/named/first_snow.png",
     "summon_sword_color": 12247799
   },

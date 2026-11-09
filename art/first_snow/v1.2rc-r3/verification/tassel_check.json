@@ -1,0 +1,22 @@
+{
+  "artifact": "mistletoe:first_snow",
+  "subject": "立体下垂流苏 + 冰珠",
+  "addon_triangles": 704,
+  "leaf_triangles": 80,
+  "berry_triangles": 624,
+  "sheath_group_segments": 1,
+  "min_shell_ellipse_q": 1.1377,
+  "min_q_at": [
+    -185.5,
+    -7.5,
+    4.0
+  ],
+  "blade_overlap_vertices": 0,
+  "blade_zmax": 2.312,
+  "addon_zmin": 3.45,
+  "berry_open_edges": 0,
+  "ribbon_unpaired_triangles": 0,
+  "fails": [],
+  "status": "PASS",
+  "note": "挂件属于 sheath 组；拔刀态 sheath 不渲染，挂件随之隐藏，符合「挂在鞘上」语义。"
+}

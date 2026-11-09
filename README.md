@@ -2,7 +2,7 @@
 
 **SlashBlade Expansion: Mistletoe**
 
-Minecraft 1.21.1 / NeoForge 附属模组。它加两把原创拔刀剑「槲寄生『暮色』」和「槲寄生『朝露』」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.0.7–2.1.9（主目标 2.1.9），不修改、不重新打包本体。
+Minecraft 1.21.1 / NeoForge 附属模组。它加三把原创拔刀剑「槲寄生『暮色』」「槲寄生『朝露』」和「槲寄生『初雪』」，依赖 [SlashBlade: Resharped](https://modrinth.com/mod/slashblade-resharped) 2.0.7–2.1.9（主目标 2.1.9），不修改、不重新打包本体。
 
 主题来自巴德尔神话里的槲寄生：平时克制，面对越庞大的生命，切口越深。Super SA 以自己的大部分生命换一次球形即死。
 
@@ -17,8 +17,8 @@ Minecraft 1.21.1 / NeoForge 附属模组。它加两把原创拔刀剑「槲寄�
 
 ## 怎么拿到刀
 
-- 创造模式：拔刀剑物品栏里的「槲寄生『暮色』」和「槲寄生『朝露』」
-- 命令：`/mistletoe give`（暮色）、`/mistletoe give dawn`（朝露）
+- 创造模式：拔刀剑物品栏里的「槲寄生『暮色』」「槲寄生『朝露』」和「槲寄生『初雪』」
+- 命令：`/mistletoe give`（暮色）、`/mistletoe dawn`（朝露）、`/mistletoe first_snow`（初雪）
 - 合成：白鞘拔刀剑居中，上下是发光浆果，左右是铁锭，四角是橡树树叶
 
 ## 怎么打
@@ -79,6 +79,6 @@ Super SA 会先查询 Boss 阶段锁血：锁血目标既不承受无敌穿透�
 - OBJ 补了本体充能渲染需要的 `effect` 组。
 - 斩击来源栈增加服务端 tick 兜底清空，避免异常 tick 污染下一次伤害判定。
 - 新增阶段锁血接口、静态保护标签、处决 GameTest 和耐久顺序测试。
-- 新增槲寄生「朝露」与「初雪」：朝露走固定 12 点熹微 + 再生；初雪是 attack_base 12 的速攻刀，霜刃 7 段高速斩击，攻速 +0.5。
+- 新增槲寄生「朝露」与「初雪」：朝露走固定 12 点熹微 + 再生；初雪是 attack_base 12 的速攻刀，霜刃 7 段高速斩击，攻速 +0.5；v1.2rc-r3 雪花刀镡、收敛刀鞘和立体流苏已接入。
 
 旧 D-02/D-03 已由 0.1.2 的 Super SA 规则取代；其余未确认项和新增 D-09（耐久附魔）见 `docs/技术决策.md`。0.1.2 已通过 JUnit 12/12、GameTest 26/26 和 NeoForge 21.1.264 专服加载；客户端画面/真人按键验收仍未执行，所以暂不打 `v0.1.2` release tag。
