@@ -305,6 +305,33 @@ public class MistletoeCombatGameTest {
                 from + " 的下一段不是 " + expected + "，实际：" + actual);
     }
 
+    /**
+     * 初雪常态（无力量/饥饿）迅冲斩也应能无限续段：已经在 rapid_slash 里再点，
+     * 重定向到 rapid_slash_quick；首次触发（待机 → rapid_slash）保持原样。
+     */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void firstSnowRapidSlashChainsWithoutPower(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
+
+        state.setComboSeq(ComboStateRegistry.RAPID_SLASH.getId());
+        var chain = new SlashBladeEvent.NextComboEvent(
+                caster.getMainHandItem(), state, caster, ComboStateRegistry.RAPID_SLASH.getId());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(chain);
+        helper.assertTrue(ComboStateRegistry.RAPID_SLASH_QUICK.getId().equals(chain.getNextCombo()),
+                "初雪常态迅冲斩没有续到 rapid_slash_quick，实际：" + chain.getNextCombo());
+
+        state.setComboSeq(ComboStateRegistry.STANDBY.getId());
+        var first = new SlashBladeEvent.NextComboEvent(
+                caster.getMainHandItem(), state, caster, ComboStateRegistry.RAPID_SLASH.getId());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(first);
+        helper.assertTrue(ComboStateRegistry.RAPID_SLASH.getId().equals(first.getNextCombo()),
+                "首次触发被误改，实际：" + first.getNextCombo());
+        helper.succeed();
+    }
+
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void frostBladeHitsConeTargets(GameTestHelper helper) {
