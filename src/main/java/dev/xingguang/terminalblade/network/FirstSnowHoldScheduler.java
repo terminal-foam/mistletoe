@@ -67,7 +67,10 @@ public final class FirstSnowHoldScheduler {
             int interval = attackInterval(player);
             if (now - state.lastAttack >= interval) {
                 target.invulnerableTime = 0;
-                player.attack(target);
+                float damage = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+                target.hurt(player.damageSources().playerAttack(player), Math.max(1.0F, damage));
+                target.invulnerableTime = 0;
+                player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
                 state.lastAttack = now;
             }
             return false;
