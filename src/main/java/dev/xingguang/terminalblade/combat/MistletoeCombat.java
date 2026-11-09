@@ -215,7 +215,7 @@ public final class MistletoeCombat {
         }
 
         ServerLevel level = (ServerLevel) user.level();
-        spawnSlash(user, -35.0F + index * 12.0F, true, 0xDDEFFF);
+        spawnSlash(user, -35.0F + index * 12.0F, true, 0xA9D8FF);
         MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 5, 0.2D);
 
         List<LivingEntity> targets = MistletoeTargets.selectFrostBladeTargets(
