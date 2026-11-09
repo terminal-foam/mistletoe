@@ -38,6 +38,8 @@ public final class MistletoeCombat {
     /** 熹微：固定伤害、固定恢复时长，不参与暮色的生命差/最大生命公式。 */
     public static final float XIWEI_DAMAGE = 12.0F;
     public static final int XIWEI_REGEN_TICKS = 100;
+    /** 霜刃单独使用更短的施法冷却，不影响暮色/朝露/Super。 */
+    public static final long FROST_CAST_COOLDOWN_TICKS = 4L;
     /** 霜刃：7 段高速斩击，固定 tick 间隔。 */
     public static final int FROST_HITS = 7;
     public static final int FROST_FIRST_TICK = 4;
@@ -169,7 +171,7 @@ public final class MistletoeCombat {
             abortFrostBlade(user);
             return;
         }
-        if (!arm(user, FROST_TOKEN, FROST_ARMED)) {
+        if (!arm(user, FROST_TOKEN, FROST_ARMED, FROST_CAST_COOLDOWN_TICKS)) {
             return;
         }
         CompoundTag tag = user.getPersistentData();
@@ -465,9 +467,13 @@ public final class MistletoeCombat {
     }
 
     private static boolean arm(LivingEntity user, String tokenKey, String armedKey) {
+        return arm(user, tokenKey, armedKey, CAST_COOLDOWN_TICKS);
+    }
+
+    private static boolean arm(LivingEntity user, String tokenKey, String armedKey, long cooldownTicks) {
         CompoundTag tag = user.getPersistentData();
         long now = user.level().getGameTime();
-        if (MistletoeCastGate.isCoolingDown(tag.contains(tokenKey), tag.getLong(tokenKey), now, CAST_COOLDOWN_TICKS)) {
+        if (MistletoeCastGate.isCoolingDown(tag.contains(tokenKey), tag.getLong(tokenKey), now, cooldownTicks)) {
             tag.putBoolean(armedKey, false);
             return false;
         }
