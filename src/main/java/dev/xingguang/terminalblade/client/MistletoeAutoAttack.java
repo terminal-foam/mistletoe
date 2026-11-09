@@ -50,7 +50,8 @@ public final class MistletoeAutoAttack {
             TerminalBlade.LOGGER.info("[GameTest] AutoAttack：{} 按住左键 scale={} target={}",
                     blade, scale, target == null ? "null" : target.getType());
         }
-        if (scale < 0.9F) {
+        // 初雪做无冷却提交测试；朝露保持攻击冷却条件。
+        if (!"初雪".equals(blade) && scale < 0.9F) {
             return;
         }
         if (!(target instanceof LivingEntity living) || !living.isAlive() || living == client.player) {
