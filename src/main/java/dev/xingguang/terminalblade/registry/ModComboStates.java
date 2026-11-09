@@ -39,7 +39,7 @@ public final class ModComboStates {
                 }
                 return ComboState.Builder.newInstance()
                         .startAndEnd(400, 449)
-                        .speed(2.0F)
+                        .speed(2.4F)
                         .priority(40)
                         .motionLoc(DefaultResources.ExMotionLocation)
                         .next(entity -> ComboStateRegistry.NONE.getId())
