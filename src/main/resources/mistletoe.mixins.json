@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "SuperSlashArtsMixin",
-    "EntitySlashEffectMixin"
+    "EntitySlashEffectMixin",
+    "LivingEntityHurtMixin"
   ],
   "injectors": {
     "defaultRequire": 1

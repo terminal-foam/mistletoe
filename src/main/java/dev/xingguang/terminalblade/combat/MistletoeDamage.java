@@ -18,15 +18,12 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -93,24 +90,6 @@ public final class MistletoeDamage {
             origin = ORIGIN_MISTLETOE;
         }
         data.putString(ORIGIN, origin);
-    }
-
-    @SubscribeEvent
-    public static void onDamagePost(LivingDamageEvent.Post event) {
-        if (event.getEntity().level().isClientSide()
-                || !(event.getSource().getEntity() instanceof LivingEntity attacker)
-                || !MistletoeBlade.isFirstSnow(attacker.getMainHandItem())) {
-            return;
-        }
-        ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
-        // 霜刃自己已有 bypasses_cooldown；这里只处理初雪的普通攻击。
-        if (FROST_BLADE.equals(type)) {
-            return;
-        }
-        // 初雪普攻不吞受击无敌帧：命中后清空，下一次自动攻击才能真正进伤害。
-        event.getEntity().invulnerableTime = 0;
-        FIRST_SNOW_IFRAME_TARGETS.put(event.getEntity(),
-                event.getEntity().level().getGameTime() + 2L);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -292,25 +271,10 @@ public final class MistletoeDamage {
      * 兜底：EntitySlashEffect.tick 抛异常时 Mixin 的 RETURN pop 不会执行。
      * 每个服务端 tick 结束清空当前线程的斩击栈，避免上一 tick 的斩击污染下一次伤害判定。
      */
-    private static final Map<LivingEntity, Long> FIRST_SNOW_IFRAME_TARGETS = new HashMap<>();
-
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         ACTIVE_SLASH.remove();
         NORMAL_FORMULA_APPLIED.remove();
-        long now = event.getServer().overworld().getGameTime();
-        FIRST_SNOW_IFRAME_TARGETS.entrySet().removeIf(entry -> {
-            LivingEntity target = entry.getKey();
-            if (target == null || !target.isAlive() || target.level().isClientSide()) {
-                return true;
-            }
-            if (entry.getValue() >= now) {
-                // hurt 可能在事件返回后才写入 invulnerableTime；下一 tick 再清一次。
-                target.invulnerableTime = 0;
-                return false;
-            }
-            return true;
-        });
     }
 
     public static void clearSlashStack() {
