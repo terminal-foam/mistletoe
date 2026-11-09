@@ -103,8 +103,14 @@ public final class MistletoeDamage {
         if (attacker.level().isClientSide() || event.getEntity() == attacker) {
             return;
         }
+        if (MistletoeBlade.isFirstSnow(attacker.getMainHandItem())) {
+            TerminalBlade.LOGGER.info("[GameTest] 初雪普攻命中：{} 伤害={} 来源={}",
+                    event.getEntity(), event.getAmount(), event.getSource().getMsgId());
+        }
         // 朝露不套暮色的生命差公式；它的普攻保持低面板，只有熹微是固定 12。
         if (MistletoeBlade.isDawn(attacker.getMainHandItem())) {
+            TerminalBlade.LOGGER.info("[GameTest] 朝露普攻命中：{} 伤害={} 来源={}",
+                    event.getEntity(), event.getAmount(), event.getSource().getMsgId());
             return;
         }
         ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
