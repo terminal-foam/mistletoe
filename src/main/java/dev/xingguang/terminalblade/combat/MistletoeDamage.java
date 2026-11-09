@@ -18,6 +18,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -90,6 +91,22 @@ public final class MistletoeDamage {
             origin = ORIGIN_MISTLETOE;
         }
         data.putString(ORIGIN, origin);
+    }
+
+    @SubscribeEvent
+    public static void onDamagePost(LivingDamageEvent.Post event) {
+        if (event.getEntity().level().isClientSide()
+                || !(event.getSource().getEntity() instanceof LivingEntity attacker)
+                || !MistletoeBlade.isFirstSnow(attacker.getMainHandItem())) {
+            return;
+        }
+        ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
+        // 霜刃自己已有 bypasses_cooldown；这里只处理初雪的普通攻击。
+        if (FROST_BLADE.equals(type)) {
+            return;
+        }
+        // 初雪普攻不吞受击无敌帧：命中后清空，下一次自动攻击才能真正进伤害。
+        event.getEntity().invulnerableTime = 0;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
