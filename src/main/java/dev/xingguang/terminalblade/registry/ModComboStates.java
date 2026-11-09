@@ -73,7 +73,10 @@ public final class ModComboStates {
             () -> fastGround(ComboStateRegistry.COMBO_A2, 3, entity -> TerminalBlade.id("combo_a3_fast"),
                     ComboStateRegistry.COMBO_A2.get()::tickAction));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A3 = COMBO_STATES.register("combo_a3_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A3, 5, entity -> TerminalBlade.id("combo_a4_fast"),
+            () -> fastGround(ComboStateRegistry.COMBO_A3, 5,
+                    entity -> AttackManager.isPowered(entity)
+                            ? TerminalBlade.id("combo_a4_ex_fast")
+                            : TerminalBlade.id("combo_a4_fast"),
                     comboHits(timeline -> timeline
                             .put(1, user -> AttackManager.doSlash(user, -61.0F, false, false, 0.44F))
                             .put(2, user -> AttackManager.doSlash(user, 138.0F, false, false, 0.44F)))));
@@ -82,6 +85,15 @@ public final class ModComboStates {
                     comboHits(timeline -> timeline
                             .put(2, user -> AttackManager.doSlash(user, 45.0F, false, false, 0.44F))
                             .put(3, user -> AttackManager.doSlash(user, 50.0F, true, false, 0.44F)))));
+    /**
+     * 力量（DAMAGE_BOOST）/ 饥饿（HUNGER）状态下的强化第 4 段，对应原版 combo_a4_ex。
+     * 原版由 A3.next 的 isPowered 分支进入；A4_EX 的下一段是 A5。
+     */
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A4_EX = COMBO_STATES.register("combo_a4_ex_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A4_EX, 6, entity -> TerminalBlade.id("combo_a5_fast"),
+                    comboHits(timeline -> timeline
+                            .put(2, user -> AttackManager.doSlash(user, 70.0F, false, false, 1.0))
+                            .put(3, user -> AttackManager.doSlash(user, 255.0F, false, false, 1.0)))));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A5 = COMBO_STATES.register("combo_a5_fast",
             () -> fastGround(ComboStateRegistry.COMBO_A5, 8, entity -> TerminalBlade.id("combo_a1_fast"),
                     comboHits(timeline -> timeline

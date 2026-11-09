@@ -52,6 +52,7 @@ public final class MistletoePlayerAnimations {
                 installOne(animations, vmd, supplierStyle, "combo_a2_fast", 100.0, 151.0);
                 installOne(animations, vmd, supplierStyle, "combo_a3_fast", 200.0, 306.0);
                 installOne(animations, vmd, supplierStyle, "combo_a4_fast", 500.0, 608.0);
+                installOne(animations, vmd, supplierStyle, "combo_a4_ex_fast", 800.0, 894.0);
                 installOne(animations, vmd, supplierStyle, "combo_a5_fast", 900.0, 1061.0);
                 TerminalBlade.LOGGER.info("[槲寄生] 已为初雪快速连段注册 {} 个玩家动画", 5);
             } catch (Throwable throwable) {

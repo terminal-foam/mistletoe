@@ -30,6 +30,7 @@ public final class FastComboBridge {
             ComboStateRegistry.COMBO_A2.getId(), ModComboStates.FAST_COMBO_A2.getId(),
             ComboStateRegistry.COMBO_A3.getId(), ModComboStates.FAST_COMBO_A3.getId(),
             ComboStateRegistry.COMBO_A4.getId(), ModComboStates.FAST_COMBO_A4.getId(),
+            ComboStateRegistry.COMBO_A4_EX.getId(), ModComboStates.FAST_COMBO_A4_EX.getId(),
             ComboStateRegistry.COMBO_A5.getId(), ModComboStates.FAST_COMBO_A5.getId());
 
     private FastComboBridge() {
