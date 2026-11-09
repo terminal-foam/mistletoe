@@ -14,11 +14,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * 初雪的普通地面 A 连段重定向。
+ * 初雪的地面 A 连段入口重定向。
  *
- * SlashBlade 的 ComboCommands 默认把左键映射到 slashblade:combo_a1，不能按刀改。
- * 这里不改全局映射，只在 NextComboEvent 里把 A1..A5 换成 mistletoe 的快速副本；
- * 后续 next 仍走原版逻辑，但每次进入 A1..A5 都会被再次重定向。
+ * <p>SlashBlade 的 ComboCommands 默认把地面攻击映射到 slashblade:combo_a1，不能按刀改。
+ * 这里不改全局映射，只在 NextComboEvent / NextOfTimeOutComboEvent 里把 A1..A5 换成
+ * mistletoe 的快速副本。快速副本内部已经自闭环
+ * （fast_a1 → fast_a2 → … → fast_a5 → fast_a1），本桥只负责：
+ * 1. 待机/超时后重新起步时进入 fast_a1；
+ * 2. 原版 end 状态（combo_aN_end）超时或点击后仍能进入 fast 段。</p>
  */
 @EventBusSubscriber(modid = TerminalBlade.MOD_ID)
 public final class FastComboBridge {

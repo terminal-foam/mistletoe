@@ -4,8 +4,6 @@ import dev.xingguang.terminalblade.registry.ModComboStates;
 import dev.xingguang.terminalblade.registry.ModParticles;
 import dev.xingguang.terminalblade.registry.ModSlashArts;
 import dev.xingguang.terminalblade.registry.ModSounds;
-import dev.xingguang.terminalblade.network.FirstSnowHoldPayload;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.minecraft.resources.ResourceLocation;
 import dev.xingguang.terminalblade.client.TerminalBladeClient;
 import net.neoforged.api.distmarker.Dist;
@@ -28,11 +26,6 @@ public class TerminalBlade {
         ModParticles.PARTICLES.register(modBus);
         ModComboStates.COMBO_STATES.register(modBus);
         ModSlashArts.SLASH_ARTS.register(modBus);
-        modBus.addListener(RegisterPayloadHandlersEvent.class, event ->
-                event.registrar("1").playToServer(
-                        FirstSnowHoldPayload.TYPE,
-                        FirstSnowHoldPayload.STREAM_CODEC,
-                        FirstSnowHoldPayload::handle));
         if (FMLEnvironment.dist == Dist.CLIENT) {
             modBus.addListener(TerminalBladeClient::registerParticles);
         }

@@ -23,9 +23,7 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -107,17 +105,19 @@ public final class MistletoeDamage {
         }
         ResourceKey<DamageType> type = event.getSource().typeHolder().unwrapKey().orElse(null);
         boolean mistletoeType = type != null && TerminalBlade.MOD_ID.equals(type.location().getNamespace());
+        // 初雪不套暮色的生命差公式；普通攻击保持 attack_base 面板，只有 log_damage 打开时才记录命中。
         if (MistletoeBlade.isFirstSnow(attacker.getMainHandItem()) && !mistletoeType) {
-            TerminalBlade.LOGGER.info("[GameTest] 初雪普攻命中：{} 伤害={} 来源={}",
-                    event.getEntity(), event.getAmount(), event.getSource().getMsgId());
-            event.getEntity().invulnerableTime = 0;
-            FIRST_SNOW_IFRAME_TARGETS.put(event.getEntity(),
-                    event.getEntity().level().getGameTime() + 2L);
+            if (TerminalBladeConfig.logDamage()) {
+                TerminalBlade.LOGGER.info("[槲寄生] 初雪普攻命中：{} 伤害={}", event.getEntity(), event.getAmount());
+            }
+            return;
         }
         // 朝露不套暮色的生命差公式；它的普攻保持低面板，只有熹微是固定 12。
         if (MistletoeBlade.isDawn(attacker.getMainHandItem())) {
-            TerminalBlade.LOGGER.info("[GameTest] 朝露普攻命中：{} 伤害={} 来源={}",
-                    event.getEntity(), event.getAmount(), event.getSource().getMsgId());
+            if (TerminalBladeConfig.logDamage()) {
+                TerminalBlade.LOGGER.info("[槲寄生] 朝露普攻命中：{} 伤害={} 来源={}",
+                        event.getEntity(), event.getAmount(), event.getSource().getMsgId());
+            }
             return;
         }
         if (mistletoeType) {
@@ -273,8 +273,6 @@ public final class MistletoeDamage {
         }
     }
 
-    private static final Map<LivingEntity, Long> FIRST_SNOW_IFRAME_TARGETS = new HashMap<>();
-
     /**
      * 兜底：EntitySlashEffect.tick 抛异常时 Mixin 的 RETURN pop 不会执行。
      * 每个服务端 tick 结束清空当前线程的斩击栈，避免上一 tick 的斩击污染下一次伤害判定。
@@ -283,18 +281,6 @@ public final class MistletoeDamage {
     public static void onServerTick(ServerTickEvent.Post event) {
         ACTIVE_SLASH.remove();
         NORMAL_FORMULA_APPLIED.remove();
-        long now = event.getServer().overworld().getGameTime();
-        FIRST_SNOW_IFRAME_TARGETS.entrySet().removeIf(entry -> {
-            LivingEntity target = entry.getKey();
-            if (target == null || !target.isAlive() || target.level().isClientSide()) {
-                return true;
-            }
-            if (entry.getValue() >= now) {
-                target.invulnerableTime = 0;
-                return false;
-            }
-            return true;
-        });
     }
 
     public static void clearSlashStack() {

@@ -2,15 +2,19 @@ package dev.xingguang.terminalblade.registry;
 
 import dev.xingguang.terminalblade.TerminalBlade;
 import dev.xingguang.terminalblade.combat.MistletoeCombat;
+import mods.flammpfeil.slashblade.ability.ArrowReflector;
 import mods.flammpfeil.slashblade.init.DefaultResources;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
 import mods.flammpfeil.slashblade.registry.combo.ComboState;
-import mods.flammpfeil.slashblade.util.TimeValueHelper;
+import mods.flammpfeil.slashblade.util.AttackManager;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class ModComboStates {
     public static final DeferredRegister<ComboState> COMBO_STATES =
@@ -51,42 +55,64 @@ public final class ModComboStates {
                         .build();
             });
 
+    /**
+     * 初雪的地面快速连段。
+     *
+     * <p>原版 combo_aN 的「下一段最早什么时候能接上」由 TimeoutNext.buildFromFrame(N) 决定，
+     * 单位是游戏 tick，和 ComboState.speed 无关；只放大 speed 或只修 timeout 都不会改变出刀节奏。
+     * 这里把每个 fast 段的分支窗口直接压到 2~5 tick，并且 next 直接指向下一个 fast 段（自闭环），
+     * 不再经过原版 3 tick 窗口；timeout 归零，让 getTimeoutMS = 帧数/speed 随 speed 自然缩短。</p>
+     *
+     * <p>分支窗口按「本段最后一段命中 tick + 1」取值：A1/A2 命中在进入时（0），A3 命中 1/2，
+     * A4 命中 2/3，A5 命中 2/3/4，保证换段前本段的多段伤害已经落地。</p>
+     */
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A1 = COMBO_STATES.register("combo_a1_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A1));
+            () -> fastGround(ComboStateRegistry.COMBO_A1, 3, entity -> TerminalBlade.id("combo_a2_fast"),
+                    ComboStateRegistry.COMBO_A1.get()::tickAction));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A2 = COMBO_STATES.register("combo_a2_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A2));
+            () -> fastGround(ComboStateRegistry.COMBO_A2, 3, entity -> TerminalBlade.id("combo_a3_fast"),
+                    ComboStateRegistry.COMBO_A2.get()::tickAction));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A3 = COMBO_STATES.register("combo_a3_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A3));
+            () -> fastGround(ComboStateRegistry.COMBO_A3, 5, entity -> TerminalBlade.id("combo_a4_fast"),
+                    comboHits(timeline -> timeline
+                            .put(1, user -> AttackManager.doSlash(user, -61.0F, false, false, 0.44F))
+                            .put(2, user -> AttackManager.doSlash(user, 138.0F, false, false, 0.44F)))));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A4 = COMBO_STATES.register("combo_a4_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A4));
+            () -> fastGround(ComboStateRegistry.COMBO_A4, 6, entity -> TerminalBlade.id("combo_a5_fast"),
+                    comboHits(timeline -> timeline
+                            .put(2, user -> AttackManager.doSlash(user, 45.0F, false, false, 0.44F))
+                            .put(3, user -> AttackManager.doSlash(user, 50.0F, true, false, 0.44F)))));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A5 = COMBO_STATES.register("combo_a5_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A5));
+            () -> fastGround(ComboStateRegistry.COMBO_A5, 8, entity -> TerminalBlade.id("combo_a1_fast"),
+                    comboHits(timeline -> timeline
+                            .put(2, user -> Optional.ofNullable(AttackManager.doSlash(user, 35.0F, false, true, 1.0))
+                                    .ifPresent(slash -> slash.setBaseSize(2.0F)))
+                            .put(3, user -> Optional.ofNullable(AttackManager.doSlash(user, 40.0F, true, true, 1.0))
+                                    .ifPresent(slash -> slash.setBaseSize(2.0F)))
+                            .put(4, user -> Optional.ofNullable(AttackManager.doSlash(user, 30.0F, true, true, 1.0))
+                                    .ifPresent(slash -> slash.setBaseSize(2.0F))))));
 
-    private static final float FAST_GROUND_SPEED = 2.0F;
+    /** 初雪连段动作倍率。先保守 1.5，实测后再往 1.75 / 2.0 调。 */
+    private static final float FAST_GROUND_SPEED = 1.5F;
 
     private ModComboStates() {
     }
 
-    /**
-     * 复制一个原版地面连段，只提高动作速度；命中/点击/超时回调仍委托给原状态。
-     * 由 FastComboBridge 在 NextComboEvent 中把 slashblade:combo_aN 换成 mistletoe:combo_aN_fast。
-     */
-    private static ComboState fastGround(DeferredHolder<ComboState, ComboState> base) {
+    private static ComboState fastGround(DeferredHolder<ComboState, ComboState> base, int branchFrames,
+                                         Function<LivingEntity, ResourceLocation> fastNext,
+                                         Consumer<LivingEntity> tickAction) {
         ComboState original = base.get();
-        int frames = Math.abs(original.getEndFrame() - original.getStartFrame());
-        int fastActionMs = (int) (TimeValueHelper.getMSecFromFrames(frames)
-                / (original.getSpeed() * FAST_GROUND_SPEED));
-        int timeout = Math.max(0, original.getTimeoutMS() - fastActionMs);
+        ComboState.TimeoutNext branch = ComboState.TimeoutNext.buildFromFrame(branchFrames, fastNext);
         ComboState.Builder builder = ComboState.Builder.newInstance()
                 .startAndEnd(original.getStartFrame(), original.getEndFrame())
                 .priority(original.getPriority())
                 .speed(original.getSpeed() * FAST_GROUND_SPEED)
                 .motionLoc(original.getMotionLoc())
-                .next(original::getNext)
+                .next(branch)
                 .nextOfTimeout(original::getNextOfTimeout)
-                .timeout(timeout)
+                .timeout(0)
                 .setHoldAction(original::holdAction)
-                .setTickAction(original::tickAction)
+                .setTickAction(tickAction)
                 .clickAction(original::clickAction)
                 .setHitEffect(original::hitEffect)
                 .releaseAction(original::releaseAction);
@@ -97,6 +123,18 @@ public final class ModComboStates {
             builder.aerial();
         }
         return builder.build();
+    }
+
+    /**
+     * 时间轴命中与 ArrowReflector 的组合，等价于原版 Builder 默认 tickAction 再追加 TimeLineTickAction。
+     */
+    private static Consumer<LivingEntity> comboHits(
+            Consumer<ComboState.TimeLineTickAction.TimeLineTickActionBuilder> configure) {
+        ComboState.TimeLineTickAction.TimeLineTickActionBuilder timeline = ComboState.TimeLineTickAction.getBuilder();
+        configure.accept(timeline);
+        return ComboState.EMPTY_TICK_ACTION
+                .andThen(ArrowReflector::doTicks)
+                .andThen(timeline.build());
     }
 
     /**
