@@ -25,7 +25,7 @@ public final class ModComboStates {
             () -> art(1900, 1960, 20, MistletoeCombat::beginSuper, MistletoeCombat::resolveSuper));
 
     /**
-     * 初雪「霜刃」：同一段原版动作模板加速到 1.6 倍，7 个固定 tick 各斩一刀。
+     * 初雪「霜刃」：同一段原版动作模板加速到 2.4 倍，7 个固定 tick 各斩一刀。
      * 命中 tick 与动作速度一起调过，避免动作变快后命中点漂移。
      */
     public static final DeferredHolder<ComboState, ComboState> FROST_BLADE = COMBO_STATES.register("frost_blade",
@@ -50,7 +50,48 @@ public final class ModComboStates {
                         .build();
             });
 
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A1 = COMBO_STATES.register("combo_a1_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A1));
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A2 = COMBO_STATES.register("combo_a2_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A2));
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A3 = COMBO_STATES.register("combo_a3_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A3));
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A4 = COMBO_STATES.register("combo_a4_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A4));
+    public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A5 = COMBO_STATES.register("combo_a5_fast",
+            () -> fastGround(ComboStateRegistry.COMBO_A5));
+
+    private static final float FAST_GROUND_SPEED = 2.0F;
+
     private ModComboStates() {
+    }
+
+    /**
+     * 复制一个原版地面连段，只提高动作速度；命中/点击/超时回调仍委托给原状态。
+     * 由 FastComboBridge 在 NextComboEvent 中把 slashblade:combo_aN 换成 mistletoe:combo_aN_fast。
+     */
+    private static ComboState fastGround(DeferredHolder<ComboState, ComboState> base) {
+        ComboState original = base.get();
+        ComboState.Builder builder = ComboState.Builder.newInstance()
+                .startAndEnd(original.getStartFrame(), original.getEndFrame())
+                .priority(original.getPriority())
+                .speed(original.getSpeed() * FAST_GROUND_SPEED)
+                .motionLoc(original.getMotionLoc())
+                .next(original::getNext)
+                .nextOfTimeout(original::getNextOfTimeout)
+                .timeout(0)
+                .setHoldAction(original::holdAction)
+                .setTickAction(original::tickAction)
+                .clickAction(original::clickAction)
+                .setHitEffect(original::hitEffect)
+                .releaseAction(original::releaseAction);
+        if (original.getLoop()) {
+            builder.loop();
+        }
+        if (original.isAerial()) {
+            builder.aerial();
+        }
+        return builder.build();
     }
 
     /**

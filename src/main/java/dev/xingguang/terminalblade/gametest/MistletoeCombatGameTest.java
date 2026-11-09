@@ -9,6 +9,7 @@ import dev.xingguang.terminalblade.combat.execution.SuperExecutionChannel;
 import dev.xingguang.terminalblade.registry.ModComboStates;
 import mods.flammpfeil.slashblade.capability.slashblade.ISlashBladeState;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
+import mods.flammpfeil.slashblade.event.SlashBladeEvent;
 import mods.flammpfeil.slashblade.registry.combo.ComboState;
 import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -257,6 +258,23 @@ public class MistletoeCombatGameTest {
         helper.assertFalse(sacrifice.lethal(), "创造模式玩家被判定为 Super SA 致死");
         helper.assertTrue(caster.isAlive(), "创造模式玩家被 Super SA 献祭杀死");
         helper.assertValueEqual(2.0F, caster.getHealth(), "创造模式玩家仍然被扣了 Super SA 生命");
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void fastGroundComboRedirectsFirstA1(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
+        state.setComboSeq(ComboStateRegistry.STANDBY.getId());
+
+        var event = new SlashBladeEvent.NextComboEvent(
+                caster.getMainHandItem(), state, caster, ComboStateRegistry.COMBO_A1.getId());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+
+        helper.assertTrue(ModComboStates.FAST_COMBO_A1.getId().equals(event.getNextCombo()),
+                "初雪 A1 没有重定向到快速 A1，实际：" + event.getNextCombo());
         helper.succeed();
     }
 

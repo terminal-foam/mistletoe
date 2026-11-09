@@ -1,0 +1,451 @@
+WARN StatusConsoleListener Advanced terminal features are not available in this environment
+[12:42:44] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserverdev, --gameDir, E:\dsh\terminalblade\run-gametest, --fml.fmlVersion, 4.0.45, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.248, --fml.neoFormVersion, 20240808.144430]
+[12:42:44] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: JVM identified as Oracle Corporation Java HotSpot(TM) 64-Bit Server VM 21.0.10+8-LTS-217
+[12:42:44] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.10 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+[12:42:44] [main/DEBUG] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Found launch services [minecraft,forgeclient,forgedatauserdev,testharness,forgeserverdev,forgeserveruserdev,forgejunitdev,forgeclientdev,forgeclientuserdev,forgeserver,forgejunituserdev,forgedatadev]
+[12:42:44] [main/DEBUG] [cp.mo.mo.LaunchPluginHandler/MODLAUNCHER]: Found launch plugins: [mixin,slf4jfixer,runtime_enum_extender,accesstransformer,runtimedistcleaner]
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Discovering transformation services
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path GAMEDIR is E:\dsh\terminalblade\run-gametest
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path MODSDIR is E:\dsh\terminalblade\run-gametest\mods
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path CONFIGDIR is E:\dsh\terminalblade\run-gametest\config
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path FMLCONFIG is E:\dsh\terminalblade\run-gametest\config\fml.toml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ta.CommonLaunchHandler/CORE]: Got mod coordinates mistletoe%%E:\dsh\terminalblade\build-1.21.1\classes from env
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ta.CommonLaunchHandler/CORE]: Found supplied mod coordinates [{mistletoe=[E:\dsh\terminalblade\build-1.21.1\classes]}]
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Found additional transformation services from discovery services: 
+[12:42:44] [main/INFO] [ne.ne.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserverdev
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Found transformer services : [mixin,fml]
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Transformation services loading
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Loading service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Loaded service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Loading service fml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: FML 4.0.45 loading
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: FML found ModLauncher version : 11.0.5+main.901c6ea8
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: FML found AccessTransformer version : 10.0.1+139da711
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: FML found EventBus version : null
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: Found Runtime Dist Cleaner
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Loaded service fml
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Configuring option handling for services
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Received command line version data  : VersionInfo[neoForgeVersion=21.1.248, fmlVersion=4.0.45, mcVersion=1.21.1, neoFormVersion=20240808.144430]
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Transformation services initializing
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initializing transformation service mixin
+[12:42:44] [main/DEBUG] [mixin/]: MixinService [ModLauncher] was successfully booted in cpw.mods.cl.ModuleClassLoader@4667ae56
+[12:42:44] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/E:/dsh/tmp/neo-server-test/libraries/net/fabricmc/sponge-mixin/0.16.4+mixin.0.8.7/sponge-mixin-0.16.4+mixin.0.8.7.jar%2394!/ Service=ModLauncher Env=SERVER
+[12:42:44] [main/DEBUG] [mixin/]: Initialising Mixin Platform Manager
+[12:42:44] [main/DEBUG] [mixin/]: Adding mixin platform agents for container ModLauncher Root Container(ModLauncher:4f56a0a2)
+[12:42:44] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for ModLauncher Root Container(ModLauncher:4f56a0a2)
+[12:42:44] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container ModLauncher Root Container(ModLauncher:4f56a0a2)
+[12:42:44] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for ModLauncher Root Container(ModLauncher:4f56a0a2)
+[12:42:44] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container ModLauncher Root Container(ModLauncher:4f56a0a2)
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initialized transformation service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initializing transformation service fml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Setting up basic FML game directories
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path GAMEDIR is E:\dsh\terminalblade\run-gametest
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path MODSDIR is E:\dsh\terminalblade\run-gametest\mods
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path CONFIGDIR is E:\dsh\terminalblade\run-gametest\config
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLPaths/CORE]: Path FMLCONFIG is E:\dsh\terminalblade\run-gametest\config\fml.toml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Loading configuration
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Preparing launch handler
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLLoader/CORE]: Using forgeserverdev as launch service
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initialized transformation service fml
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Transformation services begin scanning
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Beginning scan trigger - transformation service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: End scan trigger - transformation service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Beginning scan trigger - transformation service fml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Initiating mod scan
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ta.CommonLaunchHandler/CORE]: Got mod coordinates mistletoe%%E:\dsh\terminalblade\build-1.21.1\classes from env
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ta.CommonLaunchHandler/CORE]: Found supplied mod coordinates [{mistletoe=[E:\dsh\terminalblade\build-1.21.1\classes]}]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ta.CommonDevLaunchHandler/]: Launching with NeoForge from E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: Found 4 implementations of IModFileCandidateLocator:
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	       0 - [built-in] net.neoforged.fml.loading.moddiscovery.locators.NeoForgeDevProvider from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	       0 - net.neoforged.fml.loading.moddiscovery.locators.ModsFolderLocator from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	       0 - net.neoforged.fml.loading.moddiscovery.locators.MavenDirectoryLocator from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	   -1000 - [built-in] net.neoforged.fml.loading.moddiscovery.locators.UserdevLocator from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: Found 2 implementations of IModFileReader:
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	       0 - net.neoforged.fml.loading.moddiscovery.readers.JarModsDotTomlModFileReader from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	   -1000 - net.neoforged.fml.loading.moddiscovery.readers.NestedLibraryModReader from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: Found 1 implementations of IDependencyLocator:
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	       0 - net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file neoforge-21.1.248-merged.jar with {minecraft} mods - versions {1.21.1}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file neoforge-21.1.248-merged.jar with {neoforge} mods - versions {21.1.248}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\terminalblade\run-gametest\mods\SlashBladeResharped-2.1.9-1.21.1.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file SlashBladeResharped-2.1.9-1.21.1.jar with {slashblade} mods - versions {2.1.9-1.21.1}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModListHandler/CORE]: Found mod coordinates from lists: []
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\terminalblade\build-1.21.1\classes
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file classes with {mistletoe} mods - versions {0.1.2}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file neoforge-21.1.248-merged.jar with {neoforge} mods - versions {21.1.248}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.UniqueModListBuilder/]: Found 2 mods for first modid neoforge, selecting most recent based on version data
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.UniqueModListBuilder/]: Selected file neoforge-21.1.248-merged.jar for modid neoforge with version 21.1.248
+[12:42:44] [main/INFO] [ne.ne.fm.lo.mo.lo.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[12:42:44] [main/INFO] [ne.ne.fm.lo.mo.ModDiscoverer/]: 
+     Mod List:
+		Name Version (Mod Id)
+
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.248 (neoforge)
+		Slash Blade:Resharpened 2.1.9-1.21.1 (slashblade)
+		拔刀剑扩展：槲寄生 / SlashBlade Expansion: Mistletoe 0.1.2 (mistletoe)
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file neoforge-21.1.248-merged.jar with {minecraft} mods - versions {1.21.1}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Loading mod file E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar with languages [LanguageSpec[languageName=minecraft, acceptedVersions=1]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\terminalblade\run-gametest\mods\SlashBladeResharped-2.1.9-1.21.1.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file SlashBladeResharped-2.1.9-1.21.1.jar with {slashblade} mods - versions {2.1.9-1.21.1}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Loading mod file E:\dsh\terminalblade\run-gametest\mods\SlashBladeResharped-2.1.9-1.21.1.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[1,)]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=slashblade.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=slashblade.ar.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=slashblade.emi.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=slashblade.patchouli.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=slashblade.thetwilightforest.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\terminalblade\build-1.21.1\classes
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file classes with {mistletoe} mods - versions {0.1.2}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Loading mod file E:\dsh\terminalblade\build-1.21.1\classes with languages [LanguageSpec[languageName=javafml, acceptedVersions=[1,)]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=mistletoe.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileParser/LOADING]: Considering mod file candidate E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFileInfo/LOADING]: Found valid mod file neoforge-21.1.248-merged.jar with {neoforge} mods - versions {21.1.248}
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Loading mod file E:\dsh\envenom\build\moddev\artifacts\neoforge-21.1.248-merged.jar with languages [LanguageSpec[languageName=javafml, acceptedVersions=[3,]]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Found mixin config MixinConfig[config=neoforge.mixins.json, requiredMods=[]]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.mo.ModFile/LOADING]: Loading mod file  with languages []
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: End scan trigger - transformation service fml
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: Found 3 implementations of IModLanguageLoader:
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	net.neoforged.fml.javafmlmod.FMLJavaModLanguageProvider from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	net.neoforged.fml.lowcodemod.LowCodeModLanguageProvider from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	net.neoforged.fml.mclanguageprovider.MinecraftModLanguageProvider from loader-4.0.45.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.LanguageProviderLoader/CORE]: Found language provider javafml, version 4.0.45
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.LanguageProviderLoader/CORE]: Found language provider lowcodefml, version 4.0.45
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.LanguageProviderLoader/CORE]: Found language provider minecraft, version 4.0.45
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ModSorter/]: Configured system mods: [minecraft, neoforge]
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ModSorter/]: Found system mod: minecraft
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ModSorter/]: Found system mod: neoforge
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ModSorter/LOADING]: Found 5 mod requirements (5 mandatory, 0 optional)
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.ModSorter/LOADING]: Found 0 mod requirements missing (0 mandatory, 0 optional)
+[12:42:44] [main/DEBUG] [mixin/]: Adding mixin platform agents for container net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent accepted container net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServicesHandler/MODLAUNCHER]: Transformation services loading transformers
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initializing transformers for transformation service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initialized transformers for transformation service mixin
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initializing transformers for transformation service fml
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/LOADING]: Loading coremod transformers
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Not loading coremod script-engine since no mod requested it
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: Found 1 implementations of ICoreMod:
+[12:42:44] [main/DEBUG] [ne.ne.fm.ut.ServiceLoaderUtil/CORE]: 	net.neoforged.neoforge.coremods.NeoForgeCoreMod from neoforge-21.1.248-merged.jar > net.neoforged.neoforge-coremods-21.1.248.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Adding [Target[className=net.minecraft.world.level.biome.Biome, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86]] transformer from core-mod net.neoforged.neoforge.coremods.NeoForgeCoreMod@68809cc7 in neoforge-21.1.248-merged.jar > net.neoforged.neoforge-coremods-21.1.248.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Adding [Target[className=net.minecraft.world.level.levelgen.structure.Structure, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86]] transformer from core-mod net.neoforged.neoforge.coremods.NeoForgeCoreMod@68809cc7 in neoforge-21.1.248-merged.jar > net.neoforged.neoforge-coremods-21.1.248.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Adding [Target[className=net.minecraft.world.level.block.FlowerPotBlock, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86]] transformer from core-mod net.neoforged.neoforge.coremods.NeoForgeCoreMod@68809cc7 in neoforge-21.1.248-merged.jar > net.neoforged.neoforge-coremods-21.1.248.jar
+[12:42:44] [main/DEBUG] [ne.ne.fm.lo.FMLServiceProvider/CORE]: Adding [Target[className=net/minecraft/world/level/levelgen/structure/structures/WoodlandMansionPieces$WoodlandMansionPiece, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/server/commands/SummonCommand, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/npc/CatSpawner, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/NaturalSpawner, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/PhantomSpawner, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/npc/Villager, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/monster/Strider, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/animal/horse/SkeletonTrapGoal, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/structure/structures/OceanRuinPieces$OceanRuinPiece, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/EntityType, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/ai/village/VillageSiege, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/PatrolSpawner, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/monster/Evoker$EvokerSummonSpellGoal, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/server/commands/RaidCommand, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/structure/structures/SwampHutPiece, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/animal/frog/Tadpole, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/monster/Spider, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/raid/Raid, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/monster/Zombie, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/entity/monster/ZombieVillager, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86], Target[className=net/minecraft/world/level/levelgen/structure/structures/OceanMonumentPieces$OceanMonumentPiece, elementName=, elementDescriptor=, targetType=cpw.mods.modlauncher.api.TargetType@6c0d9d86]] transformer from core-mod net.neoforged.neoforge.coremods.NeoForgeCoreMod@68809cc7 in neoforge-21.1.248-merged.jar > net.neoforged.neoforge-coremods-21.1.248.jar
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.ReplaceFieldWithGetterAccess@29314cc9 to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/biome/Biome;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.ReplaceFieldWithGetterAccess@13a37e2a to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/Structure;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.ReplaceFieldWithGetterAccess@a50ae65 to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/block/FlowerPotBlock;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/structures/WoodlandMansionPieces$WoodlandMansionPiece;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/server/commands/SummonCommand;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/npc/CatSpawner;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/NaturalSpawner;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/PhantomSpawner;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/npc/Villager;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/monster/Strider;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/animal/horse/SkeletonTrapGoal;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/structures/OceanRuinPieces$OceanRuinPiece;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/EntityType;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/ai/village/VillageSiege;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/PatrolSpawner;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplate;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/monster/Evoker$EvokerSummonSpellGoal;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/server/commands/RaidCommand;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/structures/SwampHutPiece;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/animal/frog/Tadpole;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/monster/Spider;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/raid/Raid;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/monster/Zombie;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/entity/monster/ZombieVillager;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformStore/MODLAUNCHER]: Adding transformer net.neoforged.neoforge.coremods.MethodRedirector@1280851e to Target : cpw.mods.modlauncher.api.TargetType@6c0d9d86 {Lnet/minecraft/world/level/levelgen/structure/structures/OceanMonumentPieces$OceanMonumentPiece;} {} {V}
+[12:42:44] [main/DEBUG] [cp.mo.mo.TransformationServiceDecorator/MODLAUNCHER]: Initialized transformers for transformation service fml
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:ModLauncher Root Container(ModLauncher:4f56a0a2)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70]
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[FMLMixinPlatformAgent:null]
+[12:42:45] [main/DEBUG] [mixin/]: Compatibility level JAVA_21 specified by slashblade.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[12:42:45] [main/INFO] [mixin/]: Compatibility level set to JAVA_21
+[12:42:45] [main/DEBUG] [mixin/]: Processing launch tasks for PlatformAgent[MixinPlatformAgentDefault:ModLauncher Root Container(ModLauncher:4f56a0a2)]
+[12:42:45] [main/DEBUG] [mixin/]: Adding mixin platform agents for container SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent rejected container SecureJarResource(mixin_synthetic)
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mixin_synthetic)]
+[12:42:45] [main/DEBUG] [mixin/]: Adding mixin platform agents for container SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent rejected container SecureJarResource(minecraft)
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(minecraft)]
+[12:42:45] [main/DEBUG] [mixin/]: Adding mixin platform agents for container SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent rejected container SecureJarResource(slashblade)
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(slashblade)]
+[12:42:45] [main/DEBUG] [mixin/]: Adding mixin platform agents for container SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent rejected container SecureJarResource(mistletoe)
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mistletoe)]
+[12:42:45] [main/DEBUG] [mixin/]: Adding mixin platform agents for container SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentMinecraftForge for SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentMinecraftForge rejected container SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new MixinPlatformAgentDefault for SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: MixinPlatformAgentDefault accepted container SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: Instancing new FMLMixinPlatformAgent for SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: FMLMixinPlatformAgent rejected container SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: Processing prepare() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mixinextras.neoforge)]
+[12:42:45] [main/DEBUG] [mixin/]: Registering mixin config: mixinextras.init.mixins.json source=SecureJarResource(mixinextras.neoforge)
+[12:42:45] [main/DEBUG] [mixin/]: inject() running with 7 agents
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:ModLauncher Root Container(ModLauncher:4f56a0a2)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:net.neoforged.fml.loading.mixin.FMLMixinContainerHandle@55ea2d70]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[FMLMixinPlatformAgent:null]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mixin_synthetic)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(minecraft)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(slashblade)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mistletoe)]
+[12:42:45] [main/DEBUG] [mixin/]: Processing inject() for PlatformAgent[MixinPlatformAgentDefault:SecureJarResource(mixinextras.neoforge)]
+[12:42:45] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserverdev' with arguments [--gameDir, E:\dsh\terminalblade\run-gametest]
+[12:42:45] [main/DEBUG] [mixin/]: Preparing mixins for MixinEnvironment[DEFAULT]
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config slashblade.mixins.json
+[12:42:45] [main/WARN] [mixin/]: Reference map 'slashblade.refmap.json' for slashblade.mixins.json could not be read. If this is a development environment you can ignore this message
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config slashblade.ar.mixins.json
+[12:42:45] [main/WARN] [mixin/]: Reference map 'slashblade.refmap.json' for slashblade.ar.mixins.json could not be read. If this is a development environment you can ignore this message
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config slashblade.emi.mixins.json
+[12:42:45] [main/WARN] [mixin/]: Reference map 'slashblade.refmap.json' for slashblade.emi.mixins.json could not be read. If this is a development environment you can ignore this message
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config slashblade.patchouli.mixins.json
+[12:42:45] [main/WARN] [mixin/]: Reference map 'slashblade.refmap.json' for slashblade.patchouli.mixins.json could not be read. If this is a development environment you can ignore this message
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config slashblade.thetwilightforest.mixins.json
+[12:42:45] [main/WARN] [mixin/]: Reference map 'slashblade.refmap.json' for slashblade.thetwilightforest.mixins.json could not be read. If this is a development environment you can ignore this message
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config mistletoe.mixins.json
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config neoforge.mixins.json
+[12:42:45] [main/DEBUG] [mixin/]: Selecting config mixinextras.init.mixins.json
+[12:42:45] [main/DEBUG] [MixinExtras|Service/]: com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3) is taking over from null
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @Inject with org.spongepowered.asm.mixin.injection.struct.CallbackInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @ModifyArg with org.spongepowered.asm.mixin.injection.struct.ModifyArgInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @ModifyArgs with org.spongepowered.asm.mixin.injection.struct.ModifyArgsInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @Redirect with org.spongepowered.asm.mixin.injection.struct.RedirectInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @ModifyVariable with org.spongepowered.asm.mixin.injection.struct.ModifyVariableInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Registering new injector for @ModifyConstant with org.spongepowered.asm.mixin.injection.struct.ModifyConstantInjectionInfo
+[12:42:46] [main/DEBUG] [mixin/]: Preparing slashblade.mixins.json (1)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing slashblade.ar.mixins.json (1)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing slashblade.emi.mixins.json (2)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing slashblade.patchouli.mixins.json (1)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing slashblade.thetwilightforest.mixins.json (1)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing mistletoe.mixins.json (2)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing neoforge.mixins.json (2)
+[12:42:46] [main/DEBUG] [mixin/]: Preparing mixinextras.init.mixins.json (0)
+[12:42:46] [main/DEBUG] [mixin/]: Prepared 5 mixins in 0.439 sec (87.8ms avg) (0ms load, 0ms transform, 0ms plugin)
+[12:42:46] [main/DEBUG] [io.ne.ut.in.lo.InternalLoggerFactory/]: Using SLF4J as the default logging framework
+[12:42:46] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.level: simple
+[12:42:46] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.targetRecords: 4
+[12:42:46] [main/DEBUG] [os.ut.FileUtil/]: No oshi.properties file found from ClassLoader cpw.mods.modlauncher.TransformingClassLoader@6dd93a21
+[12:42:46] [main/DEBUG] [os.ut.FileUtil/]: No oshi.properties file found from ClassLoader jdk.internal.loader.ClassLoaders$AppClassLoader@7c3df479
+[12:42:47] [main/DEBUG] [os.ut.FileUtil/]: No oshi.architecture.properties file found from ClassLoader cpw.mods.modlauncher.TransformingClassLoader@6dd93a21
+[12:42:47] [main/DEBUG] [os.ut.FileUtil/]: No oshi.architecture.properties file found from ClassLoader jdk.internal.loader.ClassLoaders$AppClassLoader@7c3df479
+[12:42:48] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[12:42:48] [main/DEBUG] [mixin/]: Registering new injector for @SugarWrapper with com.llamalad7.mixinextras.sugar.impl.SugarWrapperInjectionInfo
+[12:42:48] [main/DEBUG] [mixin/]: Registering new injector for @FactoryRedirectWrapper with com.llamalad7.mixinextras.wrapper.factory.FactoryRedirectWrapperInjectionInfo
+[12:42:48] [main/DEBUG] [mixin/]: Registering new injector for @ExpressionInjectorWrapper with com.llamalad7.mixinextras.expression.impl.wrapper.ExpressionInjectorWrapperInjectionInfo
+[12:42:48] [main/DEBUG] [mixin/]: Mixing MappedRegistryAccessor from neoforge.mixins.json into net.minecraft.core.MappedRegistry
+[12:42:48] [main/DEBUG] [mixin/]: Mixing MixinBlockBehaviour from slashblade.mixins.json into net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase
+[12:42:48] [main/DEBUG] [mixin/]: slashblade.mixins.json:MixinBlockBehaviour from mod slashblade->@Inject::getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V does use it's CallbackInfoReturnable
+[12:42:48] [main/DEBUG] [mixin/]: slashblade.mixins.json:MixinBlockBehaviour from mod slashblade->@Inject::getVisualShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V does use it's CallbackInfoReturnable
+[12:42:49] [main/DEBUG] [mixin/]: Mixing BlockEntityTypeAccessor from neoforge.mixins.json into net.minecraft.world.level.block.entity.BlockEntityType
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: -Dio.netty.noUnsafe: false
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: Java version: 21
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.theUnsafe: available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.copyMemory: available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.storeFence: available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Buffer.address: available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: direct buffer constructor: unavailable: Reflective setAccessible(true) disabled
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Bits.unaligned: available, true
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable: class io.netty.util.internal.PlatformDependent0$7 (in module io.netty.common) cannot access class jdk.internal.misc.Unsafe (in module java.base) because module java.base does not export jdk.internal.misc to module io.netty.common
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: sun.misc.Unsafe: available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: maxDirectMemory: 8493465600 bytes (maybe)
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.tmpdir: C:\Users\TERMIN~1\AppData\Local\Temp (java.io.tmpdir)
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.bitMode: 64 (sun.arch.data.model)
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: Platform: Windows
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.maxDirectMemory: -1 bytes
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.uninitializedArrayAllocationThreshold: -1
+[12:42:51] [main/DEBUG] [io.ne.ut.in.CleanerJava9/]: java.nio.ByteBuffer.cleaner(): available
+[12:42:51] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.noPreferDirect: false
+[12:42:54] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[12:42:54] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[12:42:54] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[12:42:54] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[12:42:54] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[12:42:54] [main/DEBUG] [ne.ne.fm.ModWorkManager/LOADING]: Using 32 threads for parallel mod-loading
+[12:42:54] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [mods.flammpfeil.slashblade.SlashBlade]
+[12:42:54] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [dev.xingguang.terminalblade.TerminalBlade]
+[12:42:54] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [net.neoforged.neoforge.common.NeoForgeMod]
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found NeoForge version 21.1.248
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found FML version 4.0.45
+[12:42:54] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.248, for MC 1.21.1
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file slashblade-common.toml for slashblade tracking
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-client.toml for neoforge tracking
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-server.toml for neoforge tracking
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-common.toml for neoforge tracking
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: Mixing EntitySlashEffectMixin from mistletoe.mixins.json into mods.flammpfeil.slashblade.entity.EntitySlashEffect
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$pushSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V doesn't use it's CallbackInfo
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$pushSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V has 0 override(s) in child classes
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$pushSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V won't be passed a CallbackInfo as a result
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$popSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V doesn't use it's CallbackInfo
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$popSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V has 0 override(s) in child classes
+[12:42:54] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:EntitySlashEffectMixin from mod mistletoe->@Inject::terminalblade$popSlash(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V won't be passed a CallbackInfo as a result
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for neoforge
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.filters.GenericPacketSplitter for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.ut.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@2b8be1b3
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 64
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 64
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[12:42:54] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for slashblade
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.RegistryEvents for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/filters/GenericPacketSplitter; to the mod event bus of mod neoforge
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.NetworkInitialization for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/NetworkInitialization; to the mod event bus of mod neoforge
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.ConfigurationInitialization for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/ConfigurationInitialization; to the mod event bus of mod neoforge
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.MonsterRoomHooks for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/MonsterRoomHooks; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/RegistryEvents; to the mod event bus of mod slashblade
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.DeferredSpawnEggItem$CommonHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.registry.specialeffects.WitherEdge for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/DeferredSpawnEggItem$CommonHandler; to the mod event bus of mod neoforge
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/registry/specialeffects/WitherEdge; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentSync for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.handler.SlashBladeEventHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/handler/SlashBladeEventHandler; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.handler.RegistryHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/handler/RegistryHandler; to the mod event bus of mod slashblade
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentSync; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentInternals for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.handler.FallHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentInternals; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/handler/FallHandler; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.handler.EntitySpawnEventHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/handler/EntitySpawnEventHandler; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.handler.AdvancementsHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/handler/AdvancementsHandler; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.drop.EntityDropEvent for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/drop/EntityDropEvent; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.event.bladestand.BlandStandEventHandler for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/event/bladestand/BlandStandEventHandler; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.data.DataGen for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/data/DataGen; to the mod event bus of mod slashblade
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class mods.flammpfeil.slashblade.ability.LockOnManager for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lmods/flammpfeil/slashblade/ability/LockOnManager; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file mistletoe-common.toml for mistletoe tracking
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for mistletoe
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.combat.execution.SuperExecutionChannel for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/combat/execution/SuperExecutionChannel; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.combat.FastComboBridge for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/combat/FastComboBridge; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.combat.FirstSnowAttributes for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/combat/FirstSnowAttributes; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.combat.MistletoeDamage for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/combat/MistletoeDamage; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.combat.MistletoeHooks for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/combat/MistletoeHooks; to the game event bus
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class dev.xingguang.terminalblade.command.MistletoeCommands for @SubscribeEvent-annotated methods
+[12:42:54] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Ldev/xingguang/terminalblade/command/MistletoeCommands; to the game event bus
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loading configs type COMMON
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loaded TOML config file E:\dsh\terminalblade\run-gametest\config\slashblade-common.toml
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Watching TOML config file E:\dsh\terminalblade\run-gametest\config\slashblade-common.toml for changes
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.ne.co.NeoForgeConfig/FORGEMOD]: Loaded NeoForge config file neoforge-common.toml
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loaded TOML config file E:\dsh\terminalblade\run-gametest\config\neoforge-common.toml
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Watching TOML config file E:\dsh\terminalblade\run-gametest\config\neoforge-common.toml for changes
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loaded TOML config file E:\dsh\terminalblade\run-gametest\config\mistletoe-common.toml
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Watching TOML config file E:\dsh\terminalblade\run-gametest\config\mistletoe-common.toml for changes
+[12:42:55] [modloading-worker-0/DEBUG] [mixin/]: Mixing SuperSlashArtsMixin from mistletoe.mixins.json into mods.flammpfeil.slashblade.ability.SuperSlashArts
+[12:42:55] [modloading-worker-0/DEBUG] [mixin/]: mistletoe.mixins.json:SuperSlashArtsMixin from mod mistletoe->@Inject::terminalblade$releaseMistletoe(Lnet/minecraft/server/level/ServerPlayer;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V does use it's CallbackInfo
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.DeferredWorkQueue/LOADING]: Dispatching synchronous work for work queue Common setup: 1 jobs
+[12:42:55] [modloading-sync-worker/DEBUG] [ne.ne.fm.DeferredWorkQueue/LOADING]: Synchronous work queue completed in 1.410 ms
+[12:42:55] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[12:42:55] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/E:/dsh/envenom/build/moddev/artifacts/neoforge-21.1.248-merged.jar%23126!/assets/.mcassetsroot' uses unexpected schema
+[12:42:55] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/E:/dsh/envenom/build/moddev/artifacts/neoforge-21.1.248-merged.jar%23126!/data/.mcassetsroot' uses unexpected schema
+[12:42:55] [main/INFO] [ne.ne.ne.ga.GameTestHooks/]: Enabled Gametest Namespaces: [mistletoe]
+[12:42:56] [main/INFO] [minecraft/RecipeManager]: Loaded 1330 recipes
+[12:42:56] [main/INFO] [minecraft/AdvancementTree]: Loaded 1474 advancements
+[12:42:56] [Server thread/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loading configs type SERVER
+[12:42:56] [Server thread/DEBUG] [ne.ne.ne.co.NeoForgeConfig/FORGEMOD]: Loaded NeoForge config file neoforge-server.toml
+[12:42:56] [Server thread/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Loaded TOML config file E:\dsh\terminalblade\run-gametest\config\neoforge-server.toml
+[12:42:56] [Server thread/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Watching TOML config file E:\dsh\terminalblade\run-gametest\config\neoforge-server.toml for changes
+[12:42:57] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[12:42:57] [worldgen/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[12:42:57] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 211 ms
+[12:42:57] [Server thread/INFO] [minecraft/GameTestServer]: Started game test server
+[12:42:57] [Server thread/DEBUG] [ne.ne.ne.se.LanguageHook/]: Loaded 5 language files for en_us
+[12:42:57] [Server thread/INFO] [ne.ne.ne.se.pe.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[12:42:57] [Server thread/INFO] [minecraft/GameTestServer]: 27 tests are now running at position 2930274, -59, -3586582!
+[12:42:58] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'defaultBatch:0' (27 tests)...
+[12:42:58] [Server thread/INFO] [minecraft/GameTestServer]: [                           ]
+[12:42:58] [Server thread/INFO] [minecraft/GameTestServer]: [+++++                      ]
+[12:42:58] [Server thread/INFO] [TerminalBlade/]: [GameTest] 同一目标 平A掉血=64.0 强化SA掉血=124.399994 施法者献祭后=18.0 目标剩余=175.6
+[12:42:58] [Server thread/INFO] [TerminalBlade/]: [GameTest] 同一 tick 两次平A事件：第一次=64.0 第二次=8.0 目标剩余=228.0
+[12:42:58] [Server thread/INFO] [TerminalBlade/]: [GameTest] 熹微固定伤害掉血=12.0 恢复=100 目标剩余=88.0
+[12:42:58] [Server thread/INFO] [minecraft/PlayerList]: test-mock-player[embedded] logged in with entity id 55 at (9.5, -60.0, 8.5)
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.maxCapacityPerThread: 4096
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.ratio: 8
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.chunkSize: 32
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.blocking: false
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.batchFastThreadLocalOnly: true
+[12:42:58] [Server thread/DEBUG] [io.ne.ut.in.PlatformDependent/]: org.jctools-core.MpscChunkedArrayQueue: available
+[12:42:58] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player joined the game
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player has made the advancement [Anonymity -Nameless-]
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player has made the advancement [Blade MoveSets]
+[12:42:59] [Server thread/INFO] [minecraft/PlayerList]: test-mock-player[embedded] logged in with entity id 82 at (-8.5, -60.0, 5.5)
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player joined the game
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player has made the advancement [Anonymity -Nameless-]
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player has made the advancement [Blade MoveSets]
+[12:42:59] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++_++++++++++++++++]
+[12:42:59] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++]
+[12:42:59] [Server thread/INFO] [minecraft/GameTestServer]: ========= 27 GAME TESTS COMPLETE IN 1.414 s ======================
+[12:42:59] [Server thread/INFO] [minecraft/GameTestServer]: All 27 required tests passed :)
+[12:42:59] [Server thread/INFO] [minecraft/GameTestServer]: ====================================================
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[12:42:59] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: test-mock-player lost connection: Server closed
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: test-mock-player left the game
+[12:42:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:overworld
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_end
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_nether
+[12:43:00] [Server thread/DEBUG] [ne.ne.ne.co.CommonHooks/WP]: Gathered mod list to write to world save Test Level
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[12:43:00] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[12:43:00] [Server thread/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+[12:43:00] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
