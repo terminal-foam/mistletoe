@@ -44,19 +44,30 @@ public final class MistletoeTargets {
 
     /**
      * 霜刃的扇形目标：每一刀命中锥形范围内的全部可打击目标。
-     * 判断使用眼睛到目标的归一化向量，角度是完整的锥角。
+     *
+     * <p>「前方 100° 扇形」按水平朝向判定，不受抬头/低头影响：旧实现用
+     * 「眼睛→眼睛」的 3D 向量，贴脸时玩家的眼睛和目标的眼高差很大，
+     * 目标会被推出锥角，表现为贴脸打不到。这里只比较水平偏移与水平朝向。</p>
      */
     public static List<LivingEntity> selectFrostBladeTargets(LivingEntity user, double range, double coneDegrees) {
-        Vec3 rawLook = user.getLookAngle();
-        double lookLength = rawLook.length();
-        if (lookLength < 1.0E-4D) {
-            return List.of();
-        }
-        Vec3 direction = rawLook.scale(1.0D / lookLength);
+        Vec3 horizontal = horizontalLook(user);
         double cosHalf = Math.cos(Math.toRadians(Math.max(1.0D, coneDegrees) * 0.5D));
         AABB box = user.getBoundingBox().inflate(range);
         return user.level().getEntitiesOfClass(LivingEntity.class, box,
-                entity -> acceptsFrostBlade(user, entity, range, direction, cosHalf));
+                entity -> acceptsFrostBlade(user, entity, range, horizontal, cosHalf));
+    }
+
+    /**
+     * 水平朝向：取 look 的 x/z 分量再归一化；几乎垂直上下看时退回 yaw。
+     */
+    private static Vec3 horizontalLook(LivingEntity user) {
+        Vec3 look = user.getLookAngle();
+        double length = Math.hypot(look.x, look.z);
+        if (length >= 1.0E-4D) {
+            return new Vec3(look.x / length, 0.0D, look.z / length);
+        }
+        double yaw = Math.toRadians(user.getYRot());
+        return new Vec3(-Math.sin(yaw), 0.0D, Math.cos(yaw));
     }
 
     private static boolean acceptsFrostBlade(LivingEntity user, LivingEntity target, double range,
@@ -74,7 +85,8 @@ public final class MistletoeTargets {
         if (target instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
             return false;
         }
-        Vec3 to = target.getEyePosition().subtract(user.getEyePosition());
+        // 只比较水平偏移：贴脸（水平距离接近 0）或正上正下时直接命中。
+        Vec3 to = new Vec3(target.getX() - user.getX(), 0.0D, target.getZ() - user.getZ());
         double length = to.length();
         if (length < 1.0E-4D) {
             return true;

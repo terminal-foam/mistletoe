@@ -304,6 +304,32 @@ public class MistletoeCombatGameTest {
         helper.succeed();
     }
 
+    /**
+     * 贴脸回归：目标就在正前方 1 格，玩家低头 70° 看它。
+     * 旧的眼睛→眼睛 3D 锥角会把目标推出 100°，这里必须仍然命中。
+     */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostBladeHitsPointBlankWhenLookingDown(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Zombie target = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 3);
+        setMaxHealth(target, 300.0D);
+        target.setHealth(300.0F);
+        caster.setYRot(0.0F);
+        caster.setYBodyRot(0.0F);
+        caster.setYHeadRot(0.0F);
+        caster.setXRot(70.0F);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+
+        MistletoeCombat.beginFrostBlade(caster);
+        for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
+            MistletoeCombat.frostBladeHit(caster, i);
+        }
+
+        helper.assertTrue(target.getHealth() < 300.0F, "贴脸低头时霜刃没有命中正前方目标");
+        helper.succeed();
+    }
+
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void frostBladeStopsAfterBladeRemoved(GameTestHelper helper) {
