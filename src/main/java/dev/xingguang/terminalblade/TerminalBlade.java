@@ -5,6 +5,7 @@ import dev.xingguang.terminalblade.registry.ModParticles;
 import dev.xingguang.terminalblade.registry.ModSlashArts;
 import dev.xingguang.terminalblade.registry.ModSounds;
 import net.minecraft.resources.ResourceLocation;
+import dev.xingguang.terminalblade.client.MistletoePlayerAnimations;
 import dev.xingguang.terminalblade.client.TerminalBladeClient;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -28,6 +29,7 @@ public class TerminalBlade {
         ModSlashArts.SLASH_ARTS.register(modBus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             modBus.addListener(TerminalBladeClient::registerParticles);
+            modBus.addListener(MistletoePlayerAnimations::install);
         }
     }
 
