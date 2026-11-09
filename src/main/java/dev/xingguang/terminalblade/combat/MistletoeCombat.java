@@ -40,10 +40,10 @@ public final class MistletoeCombat {
     public static final int XIWEI_REGEN_TICKS = 100;
     /** 霜刃单独使用更短的施法冷却，不影响暮色/朝露/Super。 */
     public static final long FROST_CAST_COOLDOWN_TICKS = 2L;
-    /** 霜刃：7 段高速斩击，固定 tick 间隔。 */
+    /** 霜刃：7 段高速斩击，固定 tick 间隔。第 2 tick 起每 tick 一刀。 */
     public static final int FROST_HITS = 7;
-    public static final int FROST_FIRST_TICK = 4;
-    public static final int FROST_INTERVAL = 2;
+    public static final int FROST_FIRST_TICK = 2;
+    public static final int FROST_INTERVAL = 1;
     public static final double FROST_RANGE = 6.0D;
     public static final double FROST_CONE_DEGREES = 100.0D;
 

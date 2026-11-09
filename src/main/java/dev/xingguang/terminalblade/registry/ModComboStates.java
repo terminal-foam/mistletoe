@@ -46,14 +46,14 @@ public final class ModComboStates {
                 }
                 return ComboState.Builder.newInstance()
                         .startAndEnd(400, 449)
-                        .speed(2.4F)
+                        .speed(3.0F)
                         .priority(40)
                         .motionLoc(DefaultResources.ExMotionLocation)
                         .next(entity -> ComboStateRegistry.NONE.getId())
                         .nextOfTimeout(entity -> ComboStateRegistry.NONE.getId())
                         .clickAction(MistletoeCombat::beginFrostBlade)
                         .addTickAction(timeline.build())
-                        .timeout(400)
+                        .timeout(200)
                         .build();
             });
 
@@ -64,7 +64,7 @@ public final class ModComboStates {
      *
      * <p>仅 2.1.9+ 生效：2.0.7 的 VmdAnimation 没有 setSpeed，客户端会按 1x 播放。</p>
      */
-    public static final float FAST_GROUND_SPEED = 3.0F;
+    public static final float FAST_GROUND_SPEED = 2.0F;
 
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A1 = COMBO_STATES.register("combo_a1_fast",
             () -> fastGround(ComboStateRegistry.COMBO_A1, 2, entity -> TerminalBlade.id("combo_a2_fast")));
