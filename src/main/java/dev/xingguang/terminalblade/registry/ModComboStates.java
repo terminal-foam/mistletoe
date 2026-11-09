@@ -64,7 +64,10 @@ public final class ModComboStates {
      * 不再经过原版 3 tick 窗口；timeout 归零，让 getTimeoutMS = 帧数/speed 随 speed 自然缩短。</p>
      *
      * <p>分支窗口按「本段最后一段命中 tick + 1」取值：A1/A2 命中在进入时（0），A3 命中 1/2，
-     * A4 命中 2/3，A5 命中 2/3/4，保证换段前本段的多段伤害已经落地。</p>
+     * A4 命中 2/3，A4_EX 命中 2/3，A5 命中 2/3/4，保证换段前本段的多段伤害已经落地。</p>
+     *
+     * <p>固定 6 段：A1→A2→A3→A4→A4_EX→A5→A1。原版 A4_EX 是力量/饥饿时替换 A4 的分支；
+     * 初雪按需求把 A4 和 A4_EX 都串进链里。</p>
      */
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A1 = COMBO_STATES.register("combo_a1_fast",
             () -> fastGround(ComboStateRegistry.COMBO_A1, 3, entity -> TerminalBlade.id("combo_a2_fast"),
@@ -73,21 +76,18 @@ public final class ModComboStates {
             () -> fastGround(ComboStateRegistry.COMBO_A2, 3, entity -> TerminalBlade.id("combo_a3_fast"),
                     ComboStateRegistry.COMBO_A2.get()::tickAction));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A3 = COMBO_STATES.register("combo_a3_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A3, 5,
-                    entity -> AttackManager.isPowered(entity)
-                            ? TerminalBlade.id("combo_a4_ex_fast")
-                            : TerminalBlade.id("combo_a4_fast"),
+            () -> fastGround(ComboStateRegistry.COMBO_A3, 5, entity -> TerminalBlade.id("combo_a4_fast"),
                     comboHits(timeline -> timeline
                             .put(1, user -> AttackManager.doSlash(user, -61.0F, false, false, 0.44F))
                             .put(2, user -> AttackManager.doSlash(user, 138.0F, false, false, 0.44F)))));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A4 = COMBO_STATES.register("combo_a4_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A4, 6, entity -> TerminalBlade.id("combo_a5_fast"),
+            () -> fastGround(ComboStateRegistry.COMBO_A4, 6, entity -> TerminalBlade.id("combo_a4_ex_fast"),
                     comboHits(timeline -> timeline
                             .put(2, user -> AttackManager.doSlash(user, 45.0F, false, false, 0.44F))
                             .put(3, user -> AttackManager.doSlash(user, 50.0F, true, false, 0.44F)))));
     /**
-     * 力量（DAMAGE_BOOST）/ 饥饿（HUNGER）状态下的强化第 4 段，对应原版 combo_a4_ex。
-     * 原版由 A3.next 的 isPowered 分支进入；A4_EX 的下一段是 A5。
+     * 第 5 段，对应原版 combo_a4_ex（力量/饥饿状态下的强化突进斩）。
+     * 初雪的快速链把 A4 和 A4_EX 都串进链里：A1→A2→A3→A4→A4_EX→A5，共 6 段。
      */
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A4_EX = COMBO_STATES.register("combo_a4_ex_fast",
             () -> fastGround(ComboStateRegistry.COMBO_A4_EX, 6, entity -> TerminalBlade.id("combo_a5_fast"),

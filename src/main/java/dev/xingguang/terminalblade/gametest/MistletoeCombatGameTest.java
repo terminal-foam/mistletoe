@@ -20,7 +20,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -280,25 +279,30 @@ public class MistletoeCombatGameTest {
     }
 
     /**
-     * 原版 A3.next 在力量/饥饿状态下会进入 combo_a4_ex；快速连段必须同样支持这条强化分支，
-     * 否则有增益时第 4 段会掉回普通 A4（甚至不加速）。
+     * 初雪快速链固定 6 段：A1→A2→A3→A4→A4_EX→A5→A1。
      */
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
-    public static void fastComboSwitchesToA4ExWhenPowered(GameTestHelper helper) {
+    public static void fastComboChainHasSixStages(GameTestHelper helper) {
         Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
         giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
         ISlashBladeState state = MistletoeBlade.state(caster.getMainHandItem());
         state.setLastActionTime(caster.level().getGameTime() - 100L);
-        ComboState fastA3 = ModComboStates.FAST_COMBO_A3.get();
 
-        helper.assertTrue(TerminalBlade.id("combo_a4_fast").equals(fastA3.getNext(caster)),
-                "无增益时 A3 没有指向快速 A4，实际：" + fastA3.getNext(caster));
-
-        caster.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 0, false, false, false));
-        helper.assertTrue(TerminalBlade.id("combo_a4_ex_fast").equals(fastA3.getNext(caster)),
-                "有力量时 A3 没有指向快速 A4_EX，实际：" + fastA3.getNext(caster));
+        assertNext(helper, "combo_a1_fast", ModComboStates.FAST_COMBO_A1.get(), caster, "combo_a2_fast");
+        assertNext(helper, "combo_a2_fast", ModComboStates.FAST_COMBO_A2.get(), caster, "combo_a3_fast");
+        assertNext(helper, "combo_a3_fast", ModComboStates.FAST_COMBO_A3.get(), caster, "combo_a4_fast");
+        assertNext(helper, "combo_a4_fast", ModComboStates.FAST_COMBO_A4.get(), caster, "combo_a4_ex_fast");
+        assertNext(helper, "combo_a4_ex_fast", ModComboStates.FAST_COMBO_A4_EX.get(), caster, "combo_a5_fast");
+        assertNext(helper, "combo_a5_fast", ModComboStates.FAST_COMBO_A5.get(), caster, "combo_a1_fast");
         helper.succeed();
+    }
+
+    private static void assertNext(GameTestHelper helper, String from, ComboState state,
+                                   LivingEntity user, String expected) {
+        ResourceLocation actual = state.getNext(user);
+        helper.assertTrue(TerminalBlade.id(expected).equals(actual),
+                from + " 的下一段不是 " + expected + "，实际：" + actual);
     }
 
     @PrefixGameTestTemplate(false)
