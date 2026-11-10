@@ -2,6 +2,8 @@ package dev.xingguang.terminalblade.registry;
 
 import dev.xingguang.terminalblade.TerminalBlade;
 import dev.xingguang.terminalblade.combat.MistletoeCombat;
+import dev.xingguang.terminalblade.combat.FastComboTiming;
+import net.neoforged.fml.ModList;
 import mods.flammpfeil.slashblade.ability.ArrowReflector;
 import mods.flammpfeil.slashblade.init.DefaultResources;
 import mods.flammpfeil.slashblade.registry.ComboStateRegistry;
@@ -32,7 +34,7 @@ public final class ModComboStates {
             () -> art(1900, 1960, 20, MistletoeCombat::beginSuper, MistletoeCombat::resolveSuper));
 
     /**
-     * 初雪「霜刃」：同一段原版动作模板加速到 2.4 倍，7 个固定 tick 各斩一刀。
+     * 初雪「霜刃」：同一段原版动作模板加速到 3.0 倍，7 个固定 tick 各斩一刀。
      * 命中 tick 与动作速度一起调过，避免动作变快后命中点漂移。
      */
     public static final DeferredHolder<ComboState, ComboState> FROST_BLADE = COMBO_STATES.register("frost_blade",
@@ -62,14 +64,21 @@ public final class ModComboStates {
      * 客户端用同一个值加速 VMD；命中 tick 按 {@code 原 tick / 倍率} 缩放，分支窗口取缩放后
      * “最后一段命中 + 1”，让动作、伤害、连段推进三者同步。
      *
-     * <p>仅 2.1.9+ 生效：2.0.7 的 VmdAnimation 没有 setSpeed，客户端会按 1x 播放。</p>
+     * <p>仅 2.1.9+ 生效：2.0.7 的 VmdAnimation 没有 setSpeed，客户端和服务端统一按 1x 播放。</p>
      */
-    public static final float FAST_GROUND_SPEED = 2.0F;
+    public static final float FAST_GROUND_SPEED = resolveGroundSpeed();
+
+    private static float resolveGroundSpeed() {
+        var version = ModList.get().getModContainerById("slashblade").orElseThrow()
+                .getModInfo().getVersion();
+        return FastComboTiming.speedForVersion(version.getMajorVersion(),
+                version.getMinorVersion(), version.getIncrementalVersion());
+    }
 
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A1 = COMBO_STATES.register("combo_a1_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A1, 2, entity -> TerminalBlade.id("combo_a2_fast")));
+            () -> fastGround(ComboStateRegistry.COMBO_A1, scaledTick(4), entity -> TerminalBlade.id("combo_a2_fast")));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A2 = COMBO_STATES.register("combo_a2_fast",
-            () -> fastGround(ComboStateRegistry.COMBO_A2, 2, entity -> TerminalBlade.id("combo_a3_fast")));
+            () -> fastGround(ComboStateRegistry.COMBO_A2, scaledTick(4), entity -> TerminalBlade.id("combo_a3_fast")));
     public static final DeferredHolder<ComboState, ComboState> FAST_COMBO_A3 = COMBO_STATES.register("combo_a3_fast",
             () -> fastGround(ComboStateRegistry.COMBO_A3, -1, entity -> TerminalBlade.id("combo_a4_fast"),
                     new Hit(2, user -> AttackManager.doSlash(user, -61.0F, false, false, 0.44F)),

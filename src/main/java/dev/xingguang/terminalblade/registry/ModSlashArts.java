@@ -22,7 +22,7 @@ public final class ModSlashArts {
     public static final DeferredHolder<SlashArts, SlashArts> XIWEI = SLASH_ARTS.register("xiwei",
             () -> new SlashArts(user -> ModComboStates.SLASH_ART.getId())
                     .setComboStateJust(user -> ModComboStates.SLASH_ART_JUST.getId())
-                    .setComboStateSuper(user -> ModComboStates.SUPER.getId())
+                    .setComboStateSuper(user -> ComboStateRegistry.NONE.getId())
                     .setProudSoulCost(0));
 
     /**
