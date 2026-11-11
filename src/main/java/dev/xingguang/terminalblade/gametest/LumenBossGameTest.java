@@ -61,17 +61,17 @@ public final class LumenBossGameTest {
         setMaxHealth(target, 1000.0D);
 
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 995.0F) < 0.01F, "朝露普攻不是 5：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 985.0F) < 0.01F, "朝露三连不是 3×5：" + target.getHealth());
 
         boss.setPhase(LumenPhase.FIRST_SNOW);
         target.setHealth(1000.0F);
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 994.0F) < 0.01F, "初雪普攻不是 6：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 976.0F) < 0.01F, "初雪四连不是 4×6：" + target.getHealth());
 
         boss.setPhase(LumenPhase.MISTLETOE);
         target.setHealth(1000.0F);
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 900.0F) < 0.01F,
+        helper.assertTrue(Math.abs(target.getHealth() - 800.0F) < 0.01F,
                 "暮色普攻不是玩家最大生命的 10%：" + target.getHealth());
         helper.succeed();
     }
@@ -184,6 +184,21 @@ public final class LumenBossGameTest {
             helper.assertTrue(boss.getPhase() == LumenPhase.FIRST_SNOW, "没有进入初雪：" + boss.getPhase());
             helper.assertTrue(target.getHealth() < 1000.0F,
                     "转阶段没有立刻放霜刃，目标生命：" + target.getHealth());
+            helper.succeed();
+        });
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossMeleeChainHitsThreeTimesInDawn(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        boss.setNoAi(true);
+        boss.doHurtTarget(target);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(Math.abs(target.getHealth() - 985.0F) < 0.01F,
+                    "朝露三连没有打出 3×5：" + target.getHealth());
             helper.succeed();
         });
     }

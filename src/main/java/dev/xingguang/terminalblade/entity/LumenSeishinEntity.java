@@ -101,6 +101,11 @@ public class LumenSeishinEntity extends Monster {
     private int frostHitsLeft;
     private int frostHitIndex;
     private long nextFrostTick;
+    /** A 连段：段数、当前段、下一刀时间、锁定的目标。 */
+    private int meleeHitsLeft;
+    private int meleeHitIndex;
+    private int meleeCooldownTicks;
+    private LivingEntity meleeTarget;
     private long frostCooldownUntil;
     private long slashWindupUntil;
     private long slashCooldownUntil;
@@ -198,6 +203,7 @@ public class LumenSeishinEntity extends Monster {
         this.lockTicks = 0;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
+        this.meleeHitsLeft = 0;
         refreshBlade(phase);
     }
 
@@ -343,6 +349,7 @@ public class LumenSeishinEntity extends Monster {
         this.finalChargeLeft = FINAL_CHARGE_TICKS;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
+        this.meleeHitsLeft = 0;
         playAction(LumenAction.CHARGE);
         getNavigation().stop();
         setTarget(null);
@@ -413,13 +420,13 @@ public class LumenSeishinEntity extends Monster {
     }
 
     private void tickSkills() {
+        long now = this.level().getGameTime();
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive()) {
             this.frostHitsLeft = 0;
             this.slashWindupUntil = 0L;
             return;
         }
-        long now = this.level().getGameTime();
 
         if (this.frostHitsLeft > 0) {
             if (now >= this.nextFrostTick) {
@@ -472,14 +479,49 @@ public class LumenSeishinEntity extends Monster {
                 || !(target instanceof LivingEntity living) || !living.isAlive()) {
             return false;
         }
-        float amount = meleeDamage(living);
+        // A 连段：整套在本次攻击里打完，保证一定出全。
+        this.meleeTarget = living;
+        this.meleeHitIndex = 0;
+        this.meleeHitsLeft = meleeChainLength();
+        while (this.meleeHitsLeft > 0) {
+            meleeHit();
+        }
+        return true;
+    }
+
+    /** 朝露三连、初雪四连、暮色两连（文档的 A 连段）。 */
+    private int meleeChainLength() {
+        return switch (getPhase()) {
+            case DAWN -> 3;
+            case FIRST_SNOW -> 4;
+            case MISTLETOE -> 2;
+        };
+    }
+
+    private long meleeInterval() {
+        return switch (getPhase()) {
+            case DAWN -> 9L;
+            case FIRST_SNOW -> 5L;
+            case MISTLETOE -> 10L;
+        };
+    }
+
+    /** 连段的单刀：目标丢失、超出 3 格或死亡就中断，不积压。 */
+    private void meleeHit() {
+        LivingEntity target = this.meleeTarget;
+        if (target == null || !target.isAlive() || distanceToSqr(target) > 9.0D) {
+            this.meleeHitsLeft = 0;
+            return;
+        }
+        long now = this.level().getGameTime();
+        float amount = meleeDamage(target);
         playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, phaseColor(getPhase()));
-        boolean hurt = living.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
-        if (hurt) {
-            playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.0F);
-        }
-        return hurt;
+        target.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
+        playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.0F);
+        this.meleeHitIndex++;
+        this.meleeHitsLeft--;
+        this.meleeCooldownTicks = (int) meleeInterval();
     }
 
     private float meleeDamage(LivingEntity target) {
@@ -600,12 +642,23 @@ public class LumenSeishinEntity extends Monster {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide() && this.tickCount == 1) {
-            refreshBlade(getPhase());
-            TerminalBlade.LOGGER.debug("[流明·星] spawned phase={}", getPhase());
+        if (!this.level().isClientSide()) {
+            if (this.tickCount == 1) {
+                refreshBlade(getPhase());
+            }
+            tickMeleeChain();
         }
     }
 
+    /** A 连段推进：放在 tick 里用简单计数器，不依赖目标/技能状态。 */
+    private void tickMeleeChain() {
+        if (this.meleeHitsLeft <= 0) {
+            return;
+        }
+        if (--this.meleeCooldownTicks <= 0) {
+            meleeHit();
+        }
+    }
     @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_seishin");
