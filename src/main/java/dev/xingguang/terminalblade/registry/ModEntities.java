@@ -14,7 +14,7 @@ public final class ModEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<LumenSeishinEntity>> LUMEN_SEISHIN =
             ENTITIES.register("lumen_seishin", () -> EntityType.Builder
-                    .of(LumenSeishinEntity::new, MobCategory.MONSTER)
+                    .of(LumenSeishinEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F)
                     .clientTrackingRange(10)
                     .build("lumen_seishin"));

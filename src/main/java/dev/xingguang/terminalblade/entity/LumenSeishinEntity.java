@@ -27,6 +27,11 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -52,7 +57,7 @@ import java.util.List;
  *
  * <p>当前实现：M1 实体 + 三阶段，M2 招式（普攻、霜刃 7×2、暮色斩星 25%、朝露回血）。</p>
  */
-public class LumenSeishinEntity extends Monster implements GeoAnimatable {
+public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     public static final float MAX_HEALTH = 360.0F;
     private static final int PHASE_LOCK_TICKS = 20;
 
@@ -133,7 +138,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private float chargeYaw;
     private boolean finalChargeDone;
 
-    public LumenSeishinEntity(EntityType<? extends Monster> type, Level level) {
+    public LumenSeishinEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
         this.xpReward = 500;
         this.setPersistenceRequired();
@@ -229,8 +234,18 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+        // 驯服后：跟随主人、替主人作战
+        this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.0D, 10.0F, 3.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(3, new OwnerHurtTargetGoal(this));
+        // 野生时主动攻击玩家；臣服后不再攻击玩家
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<Player>(this, Player.class, true) {
+            @Override
+            public boolean canUse() {
+                return !isTame() && super.canUse();
+            }
+        });
     }
 
     // ── 阶段 ────────────────────────────────────────────────────────────
@@ -376,7 +391,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             tickFinalCharge();
             return;
         }
-        if (getPhase() == LumenPhase.MISTLETOE && !this.finalChargeDone && getHealth() <= FINAL_CHARGE_THRESHOLD) {
+        if (!this.isTame() && getPhase() == LumenPhase.MISTLETOE && !this.finalChargeDone
+                && getHealth() <= FINAL_CHARGE_THRESHOLD) {
             startFinalCharge();
             return;
         }
@@ -654,7 +670,10 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
+        // 已臣服的随从不再显示 Boss 血条
+        if (!this.isTame()) {
+            this.bossEvent.addPlayer(player);
+        }
     }
 
     @Override
@@ -742,6 +761,69 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             meleeHit();
         }
     }
+    // ── 臣服 / 友方 ─────────────────────────────────────────────────────
+
+    /** 被玩家打出致死一击时不死，而是当场臣服，成为该玩家的随从。 */
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (!this.level().isClientSide() && !this.isTame()
+                && source.getEntity() instanceof Player player
+                && this.getHealth() - amount <= 0.0F) {
+            this.subdueTo(player);
+            return true;
+        }
+        return super.hurt(source, amount);
+    }
+
+    /** 臣服：满血的一半、回到朝露、收起 Boss 血条、清空所有招式状态。 */
+    private void subdueTo(Player player) {
+        this.setTame(true, true);
+        this.setOwnerUUID(player.getUUID());
+        this.setHealth(this.getMaxHealth() * 0.5F);
+        this.setPhase(LumenPhase.DAWN);
+        this.meleeHitsLeft = 0;
+        this.frostHitsLeft = 0;
+        this.slashWindupUntil = 0L;
+        this.actionTicksLeft = 0;
+        this.entityData.set(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
+        this.setTarget(null);
+        this.finalChargeDone = false;
+        this.bossEvent.removeAllPlayers();
+        this.bossEvent.setVisible(false);
+        playPhaseChangeEffect(LumenPhase.DAWN);
+        this.playSound(net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 1.2F, 1.3F);
+    }
+
+    @Override
+    public boolean isAlliedTo(Entity entity) {
+        if (super.isAlliedTo(entity)) {
+            return true;
+        }
+        if (this.isTame() && entity instanceof LumenSeishinEntity other) {
+            return java.util.Objects.equals(this.getOwnerUUID(), other.getOwnerUUID());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        if (this.isTame() && target instanceof Player player
+                && player.getUUID().equals(this.getOwnerUUID())) {
+            return false;
+        }
+        return super.canAttack(target);
+    }
+
+    @Override
+    public boolean isFood(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public AgeableMob getBreedOffspring(net.minecraft.server.level.ServerLevel level, AgeableMob other) {
+        return null;
+    }
+
     @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_seishin");
