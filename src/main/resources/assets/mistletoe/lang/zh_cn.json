@@ -1,4 +1,7 @@
 {
+  "entity.mistletoe.lumen_seishin": "流明·星",
+  "item.mistletoe.lumen_seishin_spawn_egg": "流明·星 刷怪蛋",
+  "commands.mistletoe.boss": "已召唤流明·星",
   "item.mistletoe.mistletoe": "槲寄生「暮色」",
   "item.mistletoe.mistletoe.desc": "被忽略的枝条。它越是面对庞大的生命，切口就越深。",
   "item.mistletoe.mistletoe.hint": "右键蓄力释放精准处决。长按特殊动作键（默认 V）约一秒，献祭最大生命并绽放球形即死。",

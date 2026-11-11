@@ -1,6 +1,8 @@
 package dev.xingguang.terminalblade;
 
 import dev.xingguang.terminalblade.registry.ModComboStates;
+import dev.xingguang.terminalblade.registry.ModEntities;
+import dev.xingguang.terminalblade.registry.ModItems;
 import dev.xingguang.terminalblade.registry.ModParticles;
 import dev.xingguang.terminalblade.registry.ModSlashArts;
 import dev.xingguang.terminalblade.registry.ModSounds;
@@ -27,8 +29,11 @@ public class TerminalBlade {
         ModParticles.PARTICLES.register(modBus);
         ModComboStates.COMBO_STATES.register(modBus);
         ModSlashArts.SLASH_ARTS.register(modBus);
+        ModEntities.ENTITIES.register(modBus);
+        ModItems.ITEMS.register(modBus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             modBus.addListener(TerminalBladeClient::registerParticles);
+            modBus.addListener(TerminalBladeClient::registerEntityRenderers);
             modBus.addListener(MistletoePlayerAnimations::install);
         }
     }

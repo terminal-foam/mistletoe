@@ -3,14 +3,18 @@ package dev.xingguang.terminalblade.command;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import dev.xingguang.terminalblade.TerminalBladeConfig;
 import dev.xingguang.terminalblade.combat.MistletoeFormulas;
+import dev.xingguang.terminalblade.entity.LumenSeishinEntity;
+import dev.xingguang.terminalblade.registry.ModEntities;
 import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -38,8 +42,9 @@ public final class MistletoeCommands {
                 .executes(ctx -> give(ctx.getSource().getPlayerOrException(), FIRST_SNOW_NAME, "commands.mistletoe.give.first_snow"))
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"), FIRST_SNOW_NAME, "commands.mistletoe.give.first_snow")));
-        var audit = Commands.literal("audit")
-                .then(Commands.argument("target_max", FloatArgumentType.floatArg(0.0F))
+        var boss = Commands.literal("boss")
+                .executes(ctx -> spawnBoss(ctx.getSource()));
+        var audit = Commands.literal("audit")                .then(Commands.argument("target_max", FloatArgumentType.floatArg(0.0F))
                         .then(Commands.argument("player_current", FloatArgumentType.floatArg(0.0F))
                                 .then(Commands.argument("player_max", FloatArgumentType.floatArg(0.1F))
                                         .executes(ctx -> audit(
@@ -52,7 +57,22 @@ public final class MistletoeCommands {
                 .then(give)
                 .then(giveDawn)
                 .then(giveFirstSnow)
+                .then(boss)
                 .then(audit));
+    }
+
+    private static int spawnBoss(net.minecraft.commands.CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        LumenSeishinEntity boss = ModEntities.LUMEN_SEISHIN.get().create(level);
+        if (boss == null) {
+            return 0;
+        }
+        Vec3 pos = source.getPosition();
+        boss.moveTo(pos.x, pos.y, pos.z, source.getRotation().y, 0.0F);
+        boss.setPersistenceRequired();
+        level.addFreshEntity(boss);
+        source.sendSuccess(() -> Component.translatable("commands.mistletoe.boss"), true);
+        return 1;
     }
 
     private static int give(ServerPlayer player, net.minecraft.resources.ResourceLocation name, String messageKey) {

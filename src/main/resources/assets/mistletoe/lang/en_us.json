@@ -1,4 +1,7 @@
 {
+  "entity.mistletoe.lumen_seishin": "Lumen Seishin",
+  "item.mistletoe.lumen_seishin_spawn_egg": "Lumen Seishin Spawn Egg",
+  "commands.mistletoe.boss": "Summoned Lumen Seishin",
   "item.mistletoe.mistletoe": "Mistletoe -Twilight-",
   "item.mistletoe.mistletoe.desc": "An overlooked branch. The greater the life before it, the deeper the cut.",
   "item.mistletoe.mistletoe.hint": "Charge right click for the precise cut. Hold the special move key (V) for about a second to bloom.",
