@@ -63,7 +63,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
 
     /** 朝露普通三连：每刀 5。 */
     /** 随从形态：最大生命 20，普攻与玩家初雪一致。 */
-    public static final float TAME_MAX_HEALTH = 20.0F;
+    public static final float TAME_MAX_HEALTH = 100.0F;
     private static final int TAME_REGEN_INTERVAL = 40;
 
     private static final float MELEE_DAWN = 5.0F;
@@ -114,6 +114,8 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             BossEvent.BossBarColor.BLUE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int lockTicks;
+    /** 随从的物品栏：36 格（9×4），用原版箱子界面打开。 */
+    private final net.minecraft.world.SimpleContainer inventory = new net.minecraft.world.SimpleContainer(36);
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
     private int lastAnimSeq = -1;
@@ -731,6 +733,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.put("LumenInventory", this.inventory.createTag(this.registryAccess()));
         tag.putInt("LumenPhase", getPhase().ordinal());
         tag.putInt("LumenLock", this.lockTicks);
         tag.putFloat("LumenHealed", this.healedTotal);
@@ -744,6 +747,9 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("LumenInventory")) {
+            this.inventory.fromTag(tag.getList("LumenInventory", 10), this.registryAccess());
+        }
         this.entityData.set(DATA_PHASE, LumenPhase.byOrdinal(tag.getInt("LumenPhase")).ordinal());
         this.lockTicks = tag.getInt("LumenLock");
         this.healedTotal = tag.getFloat("LumenHealed");
@@ -822,6 +828,13 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             }
             return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
         }
+        // 手上有东西：打开物品栏（可以直接往里放东西）
+        if (!player.getItemInHand(hand).isEmpty()) {
+            if (!this.level().isClientSide()) {
+                this.openInventory(player);
+            }
+            return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
+        }
         if (this.isOrderedToSit()) {
             return net.minecraft.world.InteractionResult.PASS;
         }
@@ -829,6 +842,14 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             player.startRiding(this);
         }
         return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
+    }
+
+    /** 用原版 9×4 箱子界面打开随从的物品栏。 */
+    private void openInventory(Player player) {
+        player.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (id, playerInv, p) -> new net.minecraft.world.inventory.ChestMenu(
+                        net.minecraft.world.inventory.MenuType.GENERIC_9x4, id, playerInv, this.inventory, 4),
+                this.getDisplayName()));
     }
 
     @Override
