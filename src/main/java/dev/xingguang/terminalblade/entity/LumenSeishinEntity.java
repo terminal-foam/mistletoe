@@ -66,8 +66,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     public static final float TAME_MAX_HEALTH = 20.0F;
     public static final float TAME_MELEE_DAMAGE = 12.0F;
     private static final int TAME_REGEN_INTERVAL = 40;
-    /** 蓄力结束后多少格内有玩家就臣服。 */
-    private static final double SURRENDER_RANGE = 24.0D;
 
     private static final float MELEE_DAWN = 5.0F;
     /** 初雪普通四连：每刀 6。 */
@@ -491,12 +489,11 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     /**
-     * 结局 A：蓄力期间被击杀 → 本方法不会执行（实体已死亡）。
+     * 结局 A：蓄力期间被玩家击杀 → {@link #hurt} 已拦下，本方法不会执行（已臣服）。
      * 结局 B：范围内没有玩家 → 没人受伤。
      * 结局 C：范围内玩家吃处决。
      *
-     * <p>蓄力结束后不再自毁：附近有玩家就当场力竭臣服、变成随从；
-     * 附近没人（例如玩家跑远了）才走原来的献祭死亡。</p>
+     * <p>蓄力放完就献祭死亡并掉落暮色；只有被玩家直接打死的才臣服。</p>
      */
     public void resolveFinalCharge() {
         if (this.level().isClientSide() || this.isTame()) {
@@ -516,14 +513,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         }
         playSound(SoundEvents.WITHER_DEATH, 1.5F, 0.5F);
         this.finalChargeDone = true;
-
-        Player surrenderTo = this.level().getNearestPlayer(this, SURRENDER_RANGE);
-        if (surrenderTo != null && !surrenderTo.isSpectator()) {
-            this.subdueTo(surrenderTo);
-            TerminalBlade.LOGGER.info("[流明·星] 力竭臣服");
-            return;
-        }
-        // 附近没人：尊重特殊免疫与锁血标签，走正常 hurt 献祭。
+        // 没被玩家打断：献祭死亡，走正常 hurt 以尊重特殊免疫与锁血标签。
         this.hurt(MistletoeDamage.source(this, MistletoeDamage.SACRIFICE),
                 getHealth() + getMaxHealth());
         TerminalBlade.LOGGER.info("[流明·星] 终局释放");
@@ -756,11 +746,19 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         this.bossEvent.setName(getDisplayName());
     }
 
+    /**
+     * 手里那把刀的阶段。随从形态固定持「暮色」，但招式仍按初雪结算，
+     * 所以刀的外观与招式是分开的。
+     */
+    private LumenPhase bladePhase() {
+        return this.isTame() ? LumenPhase.MISTLETOE : getPhase();
+    }
+
     private void refreshBlade(LumenPhase phase) {
         if (this.level().isClientSide()) {
             return;
         }
-        this.setItemSlot(EquipmentSlot.MAINHAND, bladeFor(phase));
+        this.setItemSlot(EquipmentSlot.MAINHAND, bladeFor(bladePhase()));
     }
 
     private ItemStack bladeFor(LumenPhase phase) {
