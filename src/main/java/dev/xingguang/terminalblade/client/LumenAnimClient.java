@@ -81,21 +81,16 @@ public final class LumenAnimClient {
         applyPart(stack, "rightLeg", model.rightLeg, partialTick);
     }
 
+    /**
+     * 只套旋转。
+     *
+     * <p>VMD 的「位移」分量是 MMD 骨骼空间里的偏移，而 MC 的 {@code HumanoidModel} 里四肢与身体是
+     * 兄弟节点（MMD 里手臂挂在「上半身」下），直接套 position 会把肢体推离身体、看起来断开。
+     * 先只取旋转，位移/缩放都不动。</p>
+     */
     private static void applyPart(AnimationStack stack, String bone, ModelPart part, float partialTick) {
         Vec3f rotation = stack.get3DTransform(bone, TransformType.ROTATION, partialTick,
                 new Vec3f(part.xRot, part.yRot, part.zRot));
         part.setRotation((Float) rotation.getX(), (Float) rotation.getY(), (Float) rotation.getZ());
-
-        Vec3f position = stack.get3DTransform(bone, TransformType.POSITION, partialTick,
-                new Vec3f(part.x, part.y, part.z));
-        part.x = (Float) position.getX();
-        part.y = (Float) position.getY();
-        part.z = (Float) position.getZ();
-
-        Vec3f scale = stack.get3DTransform(bone, TransformType.SCALE, partialTick,
-                new Vec3f(part.xScale, part.yScale, part.zScale));
-        part.xScale = (Float) scale.getX();
-        part.yScale = (Float) scale.getY();
-        part.zScale = (Float) scale.getZ();
     }
 }
