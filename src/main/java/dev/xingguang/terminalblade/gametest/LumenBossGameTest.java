@@ -154,4 +154,22 @@ public final class LumenBossGameTest {
             helper.succeed();
         });
     }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void finalChargeGrantsNinetyPercentReduction(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        boss.setPhase(LumenPhase.MISTLETOE);
+        boss.setHealth(36.0F);
+        // 等换阶段的无敌窗口过去，此时仍在蓄力中。
+        helper.runAfterDelay(25, () -> {
+            helper.assertTrue(boss.isFinalCharging(), "第 25 tick 已经不在蓄力");
+            float before = boss.getHealth();
+            boss.hurt(boss.damageSources().magic(), 10.0F);
+            float taken = before - boss.getHealth();
+            helper.assertTrue(Math.abs(taken - 1.0F) < 0.01F,
+                    "蓄力期间减伤不是 90%，实际承受 " + taken);
+            helper.succeed();
+        });
+    }
 }

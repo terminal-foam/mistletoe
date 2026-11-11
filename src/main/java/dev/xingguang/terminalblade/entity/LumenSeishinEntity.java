@@ -80,6 +80,8 @@ public class LumenSeishinEntity extends Monster {
     private static final int FINAL_WARN_2 = 40;
     /** 处决伤害：没有 bypasses_invulnerability，特殊免疫/锁血仍能拦下。 */
     private static final float FINAL_EXECUTE_DAMAGE = 9999.0F;
+    /** 终局蓄力期间的减伤：只承受 10% 伤害，但仍可被打死（结局 A）。 */
+    private static final float FINAL_CHARGE_DAMAGE_MULTIPLIER = 0.10F;
 
     private static final EntityDataAccessor<Integer> DATA_PHASE =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
@@ -253,6 +255,11 @@ public class LumenSeishinEntity extends Monster {
     /** 阶段锁血：只允许把生命削到下一阶段阈值，不允许一刀跳过阶段。 */
     public void clampPhaseDamage(LivingIncomingDamageEvent event) {
         if (this.level().isClientSide() || isPhaseLocked()) {
+            return;
+        }
+        // 终局蓄力：90% 减伤。蓄力不是无敌，玩家仍可在 6 秒内把它打死（结局 A）。
+        if (isFinalCharging()) {
+            event.setAmount(event.getAmount() * FINAL_CHARGE_DAMAGE_MULTIPLIER);
             return;
         }
         float threshold = getPhase().nextThreshold();
