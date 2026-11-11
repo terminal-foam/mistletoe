@@ -112,6 +112,10 @@ public class LumenSeishinEntity extends Monster {
     private long healCooldownUntil;
     private float healedTotal;
     private int finalChargeLeft;
+    private double chargeAnchorX;
+    private double chargeAnchorY;
+    private double chargeAnchorZ;
+    private float chargeYaw;
     private boolean finalChargeDone;
 
     public LumenSeishinEntity(EntityType<? extends Monster> type, Level level) {
@@ -350,6 +354,10 @@ public class LumenSeishinEntity extends Monster {
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
         this.meleeHitsLeft = 0;
+        this.chargeAnchorX = getX();
+        this.chargeAnchorY = getY();
+        this.chargeAnchorZ = getZ();
+        this.chargeYaw = getYRot();
         playAction(LumenAction.CHARGE);
         getNavigation().stop();
         setTarget(null);
@@ -363,6 +371,13 @@ public class LumenSeishinEntity extends Monster {
     }
 
     private void tickFinalCharge() {
+        // 原地站桩：每 tick 清位移并钉回蓄力起点，防止被 AI/物理/击退带走。
+        this.setDeltaMovement(0.0D, 0.0D, 0.0D);
+        this.setPos(this.chargeAnchorX, this.chargeAnchorY, this.chargeAnchorZ);
+        this.setYRot(this.chargeYaw);
+        this.setYHeadRot(this.chargeYaw);
+        this.getNavigation().stop();
+        this.setSprinting(false);
         this.finalChargeLeft--;
         if (this.finalChargeLeft % 4 == 0) {
             spawnChargeRing();
