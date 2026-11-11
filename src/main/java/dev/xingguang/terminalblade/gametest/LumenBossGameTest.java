@@ -6,7 +6,9 @@ import dev.xingguang.terminalblade.entity.LumenSeishinEntity;
 import dev.xingguang.terminalblade.registry.ModEntities;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Pig;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -49,5 +51,63 @@ public final class LumenBossGameTest {
         boss.hurt(boss.damageSources().magic(), 300.0F);
         helper.assertTrue(boss.getHealth() >= 240.0F, "伤害没有被阶段锁血截断：" + boss.getHealth());
         helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossMeleeDamageScalesWithPhase(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+
+        boss.doHurtTarget(target);
+        helper.assertTrue(Math.abs(target.getHealth() - 995.0F) < 0.01F, "朝露普攻不是 5：" + target.getHealth());
+
+        boss.setPhase(LumenPhase.FIRST_SNOW);
+        target.setHealth(1000.0F);
+        boss.doHurtTarget(target);
+        helper.assertTrue(Math.abs(target.getHealth() - 994.0F) < 0.01F, "初雪普攻不是 6：" + target.getHealth());
+
+        boss.setPhase(LumenPhase.MISTLETOE);
+        target.setHealth(1000.0F);
+        boss.doHurtTarget(target);
+        helper.assertTrue(Math.abs(target.getHealth() - 900.0F) < 0.01F,
+                "暮色普攻不是玩家最大生命的 10%：" + target.getHealth());
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossFrostBladeIsSevenHitsOfTwo(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 3);
+        setMaxHealth(target, 1000.0D);
+        boss.setPhase(LumenPhase.FIRST_SNOW);
+
+        for (int i = 0; i < 7; i++) {
+            boss.frostStrike();
+        }
+        helper.assertTrue(Math.abs(target.getHealth() - 986.0F) < 0.01F,
+                "霜刃不是 7 刀 × 2：" + target.getHealth());
+        helper.succeed();
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossSlashArtDealsQuarterMaxHealth(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        boss.setPhase(LumenPhase.MISTLETOE);
+
+        boss.slashStrike(target);
+        helper.assertTrue(Math.abs(target.getHealth() - 750.0F) < 0.01F,
+                "斩星不是最大生命的 25%：" + target.getHealth());
+        helper.succeed();
+    }
+
+    private static void setMaxHealth(LivingEntity entity, double health) {
+        entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+        entity.setHealth((float) health);
     }
 }

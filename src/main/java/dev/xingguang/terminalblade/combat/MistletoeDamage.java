@@ -39,6 +39,10 @@ public final class MistletoeDamage {
     /** 霜刃：只绕受击冷却，不绕护甲/抗性/无敌/阶段锁。 */
     public static final ResourceKey<DamageType> FROST_BLADE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_frost_blade"));
     public static final ResourceKey<DamageType> SACRIFICE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_sacrifice"));
+    /** 流明·星的普通斩击：绕受击冷却，仍吃护甲。 */
+    public static final ResourceKey<DamageType> LUMEN_BLADE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_lumen_blade"));
+    /** 流明·星的百分比真伤：绕护甲 / 抗性 / 保护附魔 / 受击冷却。 */
+    public static final ResourceKey<DamageType> LUMEN_TRUE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_lumen_true"));
     public static final ResourceKey<DamageType> GODSLAYER = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer"));
     public static final ResourceKey<DamageType> GODSLAYER_ABSOLUTE = ResourceKey.create(Registries.DAMAGE_TYPE, TerminalBlade.id("mistletoe_godslayer_absolute"));
 
