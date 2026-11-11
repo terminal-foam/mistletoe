@@ -83,6 +83,12 @@ public class LumenSeishinEntity extends Monster {
 
     private static final EntityDataAccessor<Integer> DATA_PHASE =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
+    /** 当前招式动画，客户端据此压入对应 VMD 帧段。 */
+    private static final EntityDataAccessor<Byte> DATA_ACTION =
+            SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.BYTE);
+    /** 每次换招式自增，客户端据此重启动画。 */
+    private static final EntityDataAccessor<Integer> DATA_ANIM_SEQ =
+            SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
             Component.translatable("entity.mistletoe.lumen_seishin"),
@@ -126,6 +132,25 @@ public class LumenSeishinEntity extends Monster {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_PHASE, LumenPhase.DAWN.ordinal());
+        builder.define(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
+        builder.define(DATA_ANIM_SEQ, 0);
+    }
+
+    public LumenAction getAction() {
+        return LumenAction.byOrdinal(this.entityData.get(DATA_ACTION));
+    }
+
+    public int getAnimSeq() {
+        return this.entityData.get(DATA_ANIM_SEQ);
+    }
+
+    /** 服务端：切换招式动画，序号自增让客户端重放。 */
+    private void playAction(LumenAction action) {
+        if (this.level().isClientSide() || action == null) {
+            return;
+        }
+        this.entityData.set(DATA_ACTION, (byte) action.ordinal());
+        this.entityData.set(DATA_ANIM_SEQ, this.entityData.get(DATA_ANIM_SEQ) + 1);
     }
 
     @Override
@@ -179,6 +204,7 @@ public class LumenSeishinEntity extends Monster {
         if (this.level().isClientSide()) {
             return;
         }
+        playAction(LumenAction.PHASE);
         spawnCosmeticSlash(-45.0F, 3.0F, phaseColor(phase));
         spawnCosmeticSlash(45.0F, 3.0F, phaseColor(phase));
         playSound(SoundEvents.BEACON_ACTIVATE, 1.6F, 0.7F);
@@ -280,6 +306,7 @@ public class LumenSeishinEntity extends Monster {
         this.finalChargeLeft = FINAL_CHARGE_TICKS;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
+        playAction(LumenAction.CHARGE);
         getNavigation().stop();
         setTarget(null);
         setDeltaMovement(0.0D, getDeltaMovement().y, 0.0D);
@@ -385,6 +412,7 @@ public class LumenSeishinEntity extends Monster {
             this.frostHitsLeft = FROST_HITS;
             this.frostHitIndex = 0;
             this.nextFrostTick = now;
+            playAction(LumenAction.FROST);
             this.frostCooldownUntil = now + FROST_COOLDOWN;
             playSound(SoundEvents.PLAYER_ATTACK_NODAMAGE, 1.0F, 1.6F);
             return;
@@ -408,6 +436,7 @@ public class LumenSeishinEntity extends Monster {
             return false;
         }
         float amount = meleeDamage(living);
+        playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, phaseColor(getPhase()));
         boolean hurt = living.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
         if (hurt) {
@@ -438,6 +467,7 @@ public class LumenSeishinEntity extends Monster {
     }
 
     public void slashStrike(LivingEntity target) {
+        playAction(LumenAction.SLASH_ART);
         spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
         float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
         target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);

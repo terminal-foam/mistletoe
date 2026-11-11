@@ -17,8 +17,8 @@ public class LumenSeishinRenderer extends HumanoidMobRenderer<LumenSeishinEntity
             TerminalBlade.id("textures/entity/lumen_seishin.png");
 
     public LumenSeishinRenderer(EntityRendererProvider.Context context) {
-        // 皮肤是 Alex 瘦手臂（3px），所以用 slim 模型。
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true), 0.5F);
+        // 皮肤是 Alex 瘦手臂（3px），所以用 slim 模型；模型换成能在 setupAnim 里套 VMD 的子类。
+        super(context, new LumenPlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true), 0.5F);
     }
 
     @Override
