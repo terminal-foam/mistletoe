@@ -47,6 +47,10 @@ if ($Clean -and (Test-Path $build)) { Remove-Item $build -Recurse -Force }
 New-Item -ItemType Directory -Force $classes, $outDir | Out-Null
 
 $libJars = @(Get-ChildItem $libsBase -Filter '*.jar' -File) + @(Get-Item -LiteralPath $slashBladeJar)
+# ModInfo#getVersion() 返回 org.apache.maven.artifact.versioning.ArtifactVersion；
+# 运行期由 FML 的 maven-artifact 提供，但离线编译基座里没有它，这里从 PCL 的 libraries 补一个（找不到就跳过）。
+$mavenArtifact = Get-ChildItem 'D:\PCL 正式版 2.10.6\.minecraft\libraries\org\apache\maven\maven-artifact' -Recurse -Filter '*.jar' -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($mavenArtifact) { $libJars += $mavenArtifact }
 $cp = ($libJars | ForEach-Object FullName) -join ';'
 Write-Host "[build] classpath jars = $($libJars.Count)" -ForegroundColor Cyan
 

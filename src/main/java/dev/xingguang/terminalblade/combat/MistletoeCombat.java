@@ -27,7 +27,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
+@EventBusSubscriber(modid = TerminalBlade.MOD_ID)
 public final class MistletoeCombat {
     /**
      * ComboState 时间轴用的是进入状态后的游戏 tick，不是 VMD 帧。
@@ -55,10 +61,31 @@ public final class MistletoeCombat {
     private static final String SUPER_ARMED = "mistletoe:super_armed";
     private static final String SUPER_COMBO = "mistletoe:super_combo";
     private static final String FROST_TOKEN = "mistletoe:frost_token";
-    private static final String FROST_ARMED = "mistletoe:frost_armed";
-    private static final String FROST_COMBO = "mistletoe:frost_combo";
-    private static final String FROST_ACTIVE = "mistletoe:frost_active";
-    private static final String FROST_DAMAGE = "mistletoe:frost_damage";
+    // Transient server state: casts must not survive unload/restart or a weapon swap.
+    private static final Map<LivingEntity, FrostCast> FROST_CASTS = new WeakHashMap<>();
+
+    private record FrostCast(ItemStack weapon, int slot, long actionTime, String combo,
+                             float damage, FrostCastWindow window) {
+        boolean matches(LivingEntity user) {
+            return user.isAlive() && !user.isRemoved()
+                    && user.getMainHandItem() == weapon
+                    && (!(user instanceof Player player) || player.getInventory().selected == slot)
+                    && MistletoeBlade.isFirstSnow(user)
+                    && !MistletoeBlade.isBrokenOrSealed(weapon)
+                    && MistletoeBlade.state(weapon).getLastActionTime() == actionTime
+                    && combo.equals(comboId(user));
+        }
+    }
+
+    @SubscribeEvent
+    public static void validateFrostCast(EntityTickEvent.Pre event) {
+        if (event.getEntity() instanceof LivingEntity user && !user.level().isClientSide()) {
+            FrostCast cast = FROST_CASTS.get(user);
+            if (cast != null && (!cast.matches(user) || cast.window().expired(user.level().getGameTime()))) {
+                abortFrostBlade(user);
+            }
+        }
+    }
 
     private MistletoeCombat() {
     }
@@ -171,14 +198,23 @@ public final class MistletoeCombat {
             abortFrostBlade(user);
             return;
         }
-        if (!arm(user, FROST_TOKEN, FROST_ARMED, FROST_CAST_COOLDOWN_TICKS)) {
+        abortFrostBlade(user);
+        long now = user.level().getGameTime();
+        CompoundTag tag = user.getPersistentData();
+        if (MistletoeCastGate.isCoolingDown(tag.contains(FROST_TOKEN), tag.getLong(FROST_TOKEN),
+                now, FROST_CAST_COOLDOWN_TICKS)) {
             return;
         }
-        CompoundTag tag = user.getPersistentData();
-        tag.putString(FROST_COMBO, comboId(user));
-        tag.putBoolean(FROST_ACTIVE, false);
-        // 七刀共用起手时的攻击力快照，避免中途属性变化导致七段不同伤。
-        tag.putFloat(FROST_DAMAGE, (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE));
+        if (!ModComboStates.FROST_BLADE.getId().toString().equals(comboId(user))) {
+            return;
+        }
+        tag.putLong(FROST_TOKEN, now);
+        ItemStack weapon = user.getMainHandItem();
+        FROST_CASTS.put(user, new FrostCast(weapon,
+                user instanceof Player player ? player.getInventory().selected : -1,
+                MistletoeBlade.state(weapon).getLastActionTime(), comboId(user),
+                Math.max(1.0F, (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE)),
+                new FrostCastWindow(now, FROST_FIRST_TICK, FROST_INTERVAL, FROST_HITS)));
         if (user.level() instanceof ServerLevel level) {
             MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
         }
@@ -186,7 +222,7 @@ public final class MistletoeCombat {
     }
 
     /**
-     * 霜刃的单段斩击。第 0 段负责认领本次施法，之后每 2 tick 追加一段；
+     * 霜刃的单段斩击。第 2 tick 起每 tick 一段，按本次施法窗口顺序认领；
      * 伤害走起手快照的普通攻击属性，不套暮色的生命差/真伤公式。
      */
     public static void frostBladeHit(LivingEntity user, int index) {
@@ -196,23 +232,16 @@ public final class MistletoeCombat {
             abortFrostBlade(user);
             return;
         }
-        CompoundTag tag = user.getPersistentData();
-        if (index == 0) {
-            if (!claim(user, FROST_ARMED)) {
-                return;
-            }
-            // 不覆盖起手时保存的连段 ID；换刀/切连段后旧回调必须失效。
-            tag.putBoolean(FROST_ACTIVE, true);
-        } else if (!tag.getBoolean(FROST_ACTIVE)) {
+        FrostCast cast = FROST_CASTS.get(user);
+        if (cast == null) {
             return;
         }
-        String expected = tag.getString(FROST_COMBO);
-        if (expected.isEmpty() || !expected.equals(comboId(user))) {
+        long now = user.level().getGameTime();
+        if (!cast.matches(user) || cast.window().expired(now)) {
             abortFrostBlade(user);
             return;
         }
-        if (!tag.contains(FROST_DAMAGE)) {
-            abortFrostBlade(user);
+        if (!cast.window().claim(now, index)) {
             return;
         }
 
@@ -223,7 +252,7 @@ public final class MistletoeCombat {
         List<LivingEntity> targets = MistletoeTargets.selectFrostBladeTargets(
                 user, FROST_RANGE, FROST_CONE_DEGREES);
         if (!targets.isEmpty()) {
-            float damage = Math.max(1.0F, tag.getFloat(FROST_DAMAGE));
+            float damage = cast.damage();
             DamageSource source = MistletoeDamage.source(user, MistletoeDamage.FROST_BLADE);
             for (LivingEntity target : targets) {
                 // 不重置 invulnerableTime；霜刃伤害类型只带 bypasses_cooldown，
@@ -241,15 +270,14 @@ public final class MistletoeCombat {
     }
 
     private static void abortFrostBlade(LivingEntity user) {
-        CompoundTag tag = user.getPersistentData();
-        tag.putBoolean(FROST_ACTIVE, false);
-        tag.remove(FROST_COMBO);
-        tag.remove(FROST_DAMAGE);
-        disarm(user, FROST_ARMED);
+        if (!user.level().isClientSide()) {
+            FROST_CASTS.remove(user);
+        }
     }
 
     public static void beginSuper(LivingEntity user) {
-        if (user.level().isClientSide() || !user.isAlive() || !canFight(user)) {
+        if (user.level().isClientSide() || !user.isAlive() || !canFight(user)
+                || MistletoeBlade.isDawn(user)) {
             disarm(user, SUPER_ARMED);
             return;
         }
@@ -269,7 +297,8 @@ public final class MistletoeCombat {
         }
         String expected = user.getPersistentData().getString(SUPER_COMBO);
         log(user, "hit", "super", false);
-        if (!user.isAlive() || !canFight(user) || !expected.equals(comboId(user))) {
+        if (!user.isAlive() || !canFight(user) || MistletoeBlade.isDawn(user)
+                || !expected.equals(comboId(user))) {
             log(user, "abort", "super", false);
             return;
         }
@@ -366,7 +395,7 @@ public final class MistletoeCombat {
         }
         // 朝露没有 Super；它的强度只来自熹微的固定伤害与恢复。
         if (MistletoeBlade.isDawn(stack)) {
-            return false;
+            return true;
         }
         if (!canFight(player)) {
             return true;
@@ -446,6 +475,12 @@ public final class MistletoeCombat {
     }
 
     private static void spawnSlash(LivingEntity user, float roll, boolean critical, int color) {
+        // SlashBlade 的 EntitySlashEffect 结算时会无条件读攻击者的 sweeping_damage_ratio，
+        // 非玩家攻击者没有该属性会直接崩服（SlashBlade 侧未做保护）。
+        // 非玩家施法跳过刀光实体，伤害仍由调用方直接结算。
+        if (!(user instanceof Player)) {
+            return;
+        }
         var slash = AttackManager.doSlash(user, roll, true, critical, 0.0D);
         if (slash != null) {
             slash.setColor(color);

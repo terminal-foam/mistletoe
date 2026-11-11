@@ -348,14 +348,11 @@ public class MistletoeCombatGameTest {
         caster.setXRot(0.0F);
         giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
 
-        MistletoeCombat.beginFrostBlade(caster);
-        for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
-            MistletoeCombat.frostBladeHit(caster, i);
-        }
-
-        helper.assertTrue(left.getHealth() < 300.0F, "霜刃没有命中左侧扇形目标");
-        helper.assertTrue(right.getHealth() < 300.0F, "霜刃没有命中右侧扇形目标");
-        helper.succeed();
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertTrue(left.getHealth() < 300.0F, "霜刃没有命中左侧扇形目标");
+            helper.assertTrue(right.getHealth() < 300.0F, "霜刃没有命中右侧扇形目标");
+            helper.succeed();
+        });
     }
 
     /**
@@ -375,13 +372,10 @@ public class MistletoeCombatGameTest {
         caster.setXRot(70.0F);
         giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
 
-        MistletoeCombat.beginFrostBlade(caster);
-        for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
-            MistletoeCombat.frostBladeHit(caster, i);
-        }
-
-        helper.assertTrue(target.getHealth() < 300.0F, "贴脸低头时霜刃没有命中正前方目标");
-        helper.succeed();
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertTrue(target.getHealth() < 300.0F, "贴脸低头时霜刃没有命中正前方目标");
+            helper.succeed();
+        });
     }
 
     @PrefixGameTestTemplate(false)
@@ -392,7 +386,7 @@ public class MistletoeCombatGameTest {
         setMaxHealth(target, 100.0D);
         target.setHealth(100.0F);
         giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
-        MistletoeCombat.beginFrostBlade(caster);
+        enter(caster, ModComboStates.FROST_BLADE.getId());
 
         caster.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         MistletoeCombat.frostBladeHit(caster, 0);
@@ -414,12 +408,10 @@ public class MistletoeCombatGameTest {
         caster.setYBodyRot(0.0F);
         caster.setYHeadRot(0.0F);
         giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
-        MistletoeCombat.beginFrostBlade(caster);
-
-        MistletoeCombat.frostBladeHit(caster, 0);
-
-        helper.assertTrue(pet.getHealth() >= 100.0F, "主人不在世界中的宠物被霜刃误伤");
-        helper.succeed();
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertTrue(pet.getHealth() >= 100.0F, "主人不在世界中的宠物被霜刃误伤");
+            helper.succeed();
+        });
     }
 
     @PrefixGameTestTemplate(false)
@@ -557,6 +549,113 @@ public class MistletoeCombatGameTest {
                 "强化 SA 的 20% 最大生命真伤段必须绕过保护附魔");
         helper.assertTrue(lookup.getOrThrow(MistletoeDamage.SACRIFICE).is(DamageTypeTags.BYPASSES_ARMOR),
                 "自身献祭应绕过护甲");
+        helper.succeed();
+    }
+
+    /** Advance the actual ComboState timeline in server ticks, without spoofing its start time. */
+    private static void runFrostTimeline(GameTestHelper helper, LivingEntity caster, Runnable assertions) {
+        enter(caster, ModComboStates.FROST_BLADE.getId());
+        for (int tick = 1; tick <= MistletoeCombat.FROST_FIRST_TICK
+                + (MistletoeCombat.FROST_HITS - 1) * MistletoeCombat.FROST_INTERVAL; tick++) {
+            helper.runAfterDelay(tick, () -> ModComboStates.FROST_BLADE.get().tickAction(caster));
+        }
+        helper.runAfterDelay(10, assertions);
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostTimelineUsesSnapshotAndRejectsDuplicateHits(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        prepare(caster, target);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        float damage = Math.max(1.0F, (float) caster.getAttributeValue(Attributes.ATTACK_DAMAGE));
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertTrue(Math.abs(target.getHealth() - (1000.0F - damage * 7)) < 0.01F,
+                    "霜刃没有使用起手快照恰好命中七次：" + target.getHealth());
+            helper.succeed();
+        });
+        caster.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(100.0D);
+        helper.runAfterDelay(1, () -> helper.assertValueEqual(1000.0F, target.getHealth(), "首段提前命中"));
+        for (int i = 0; i < 7; i++) {
+            final int hit = i;
+            helper.runAfterDelay(2 + i, () -> {
+                ModComboStates.FROST_BLADE.get().tickAction(caster);
+                float before = target.getHealth();
+                MistletoeCombat.frostBladeHit(caster, hit);
+                helper.assertValueEqual(before, target.getHealth(), "重复回调再次造成伤害");
+            });
+        }
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostDoesNotResumeAfterObservedWeaponSwap(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        prepare(caster, target);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        ItemStack original = caster.getMainHandItem();
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertValueEqual(1000.0F, target.getHealth(), "换刀切回后旧施法继续命中");
+            helper.succeed();
+        });
+        caster.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        helper.runAfterDelay(3, () -> caster.setItemSlot(EquipmentSlot.MAINHAND, original));
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostStopsWhenBrokenEvenAfterRepair(GameTestHelper helper) {
+        assertFrostInterrupted(helper,
+                user -> MistletoeBlade.state(user.getMainHandItem()).setBroken(true),
+                user -> MistletoeBlade.state(user.getMainHandItem()).setBroken(false));
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostStopsWhenSealedEvenAfterUnsealing(GameTestHelper helper) {
+        assertFrostInterrupted(helper,
+                user -> MistletoeBlade.state(user.getMainHandItem()).setSealed(true),
+                user -> MistletoeBlade.state(user.getMainHandItem()).setSealed(false));
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void frostRejectsSameComboWithDifferentStartTime(GameTestHelper helper) {
+        assertFrostInterrupted(helper,
+                user -> MistletoeBlade.state(user.getMainHandItem()).setLastActionTime(user.level().getGameTime() - 1),
+                user -> {});
+    }
+
+    private static void assertFrostInterrupted(GameTestHelper helper,
+                                              java.util.function.Consumer<LivingEntity> interrupt,
+                                              java.util.function.Consumer<LivingEntity> restore) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        prepare(caster, target);
+        giveBlade(helper, caster, MistletoeBlade.FIRST_SNOW_NAME);
+        runFrostTimeline(helper, caster, () -> {
+            helper.assertValueEqual(1000.0F, target.getHealth(), "中断后旧施法仍然造成伤害");
+            helper.succeed();
+        });
+        interrupt.accept(caster);
+        helper.runAfterDelay(3, () -> restore.accept(caster));
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void dawnCannotEnterSuperOrPaySacrifice(GameTestHelper helper) {
+        Zombie caster = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, 2, 1, 2);
+        giveBlade(helper, caster, MistletoeBlade.DAWN_NAME);
+        float health = caster.getHealth();
+        helper.assertTrue(MistletoeCombat.releaseSuperFromInput(caster), "朝露输入放行了本体 Super");
+        enter(caster, ModComboStates.SUPER.getId());
+        fireHit(caster, ModComboStates.SUPER.getId());
+        helper.assertValueEqual(health, caster.getHealth(), "朝露仍发生 Super 献祭");
         helper.succeed();
     }
 
