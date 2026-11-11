@@ -31,5 +31,6 @@
   "commands.mistletoe.give": "已将槲寄生交给 %s",
   "commands.mistletoe.give.dawn": "已将槲寄生「朝露」交给 %s",
   "commands.mistletoe.give.first_snow": "已将槲寄生「初雪」交给 %s",
-  "commands.mistletoe.audit": "普攻 %s；强化 SA %s；献祭 %s；SA 伤害 %s；Super 献祭 %s；Super 致死 %s；半径 %s"
+  "commands.mistletoe.audit": "普攻 %s；强化 SA %s；献祭 %s；SA 伤害 %s；Super 献祭 %s；Super 致死 %s；半径 %s",
+  "entity.mistletoe.lumen_seishin.respawned": "流明·星已在你的重生点复活"
 }

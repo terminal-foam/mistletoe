@@ -719,7 +719,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     public void die(DamageSource source) {
         // 掉落物：槲寄生「暮色」。named blade 的物品栈没法用纯数据战利品表表达，
         // 这里在死亡时直接生成并丢出。
-        if (!this.level().isClientSide()) {
+        if (!this.level().isClientSide() && !this.isTame()) {
             ItemStack blade = bladeFor(LumenPhase.MISTLETOE);
             if (!blade.isEmpty()) {
                 this.spawnAtLocation(blade);
