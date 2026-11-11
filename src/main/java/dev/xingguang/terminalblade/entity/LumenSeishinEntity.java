@@ -234,6 +234,8 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
                 getNavigation().stop();
             }
         });
+        // 坐下指令：优先级高于近战，坐下时不再移动
+        this.goalSelector.addGoal(1, new net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
@@ -800,6 +802,67 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             meleeHit();
         }
     }
+    // ── 骑乘 / 坐下 ─────────────────────────────────────────────────────
+
+    /** 右键骑乘；潜行 + 右键切换坐下。只有主人能操作。 */
+    @Override
+    public net.minecraft.world.InteractionResult mobInteract(Player player,
+            net.minecraft.world.InteractionHand hand) {
+        if (!this.isTame() || !this.isOwnedBy(player)) {
+            return super.mobInteract(player, hand);
+        }
+        if (player.isShiftKeyDown()) {
+            if (this.isOrderedToSit()) {
+                this.setOrderedToSit(false);
+                this.setInSittingPose(false);
+            } else if (!this.isVehicle()) {
+                this.setOrderedToSit(true);
+                this.setInSittingPose(true);
+                this.getNavigation().stop();
+            }
+            return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
+        }
+        if (this.isOrderedToSit()) {
+            return net.minecraft.world.InteractionResult.PASS;
+        }
+        if (!this.level().isClientSide()) {
+            player.startRiding(this);
+        }
+        return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
+    }
+
+    @Override
+    public LivingEntity getControllingPassenger() {
+        return this.getFirstPassenger() instanceof Player player && this.isOwnedBy(player) ? player : null;
+    }
+
+    /** 骑手坐的高度（模型 1.8 格，坐在肩背上）。 */
+    @Override
+    public Vec3 getPassengerRidingPosition(Entity passenger) {
+        return new Vec3(this.getX(), this.getY() + 1.25D, this.getZ());
+    }
+
+    /** 有玩家骑乘时按玩家输入驱动，做法参照原版猪。 */
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (this.isAlive() && this.getControllingPassenger() instanceof Player player) {
+            this.setYRot(player.getYRot());
+            this.yRotO = this.getYRot();
+            this.setXRot(player.getXRot() * 0.5F);
+            this.setRot(this.getYRot(), this.getXRot());
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.yBodyRot;
+            float strafe = player.xxa * 0.5F;
+            float forward = player.zza;
+            if (forward <= 0.0F) {
+                forward *= 0.25F;
+            }
+            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            super.travel(new Vec3(strafe, 0.0D, forward));
+            return;
+        }
+        super.travel(travelVector);
+    }
     // ── 臣服 / 友方 ─────────────────────────────────────────────────────
 
     /** 被玩家打出致死一击时不死，而是当场臣服，成为该玩家的随从。 */
@@ -910,6 +973,10 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     private String desiredAnimation() {
+        // 坐下优先：坐姿不参与移动与招式
+        if (this.isInSittingPose()) {
+            return "sit";
+        }
         LumenAction action = getAction();
         if (action != LumenAction.NONE) {
             return this.actionAnimation(action);
