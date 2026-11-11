@@ -11,7 +11,10 @@ import software.bernie.geckolib.model.GeoModel;
 public class LumenGeoModel extends GeoModel<LumenSeishinEntity> {
     private static final ResourceLocation MODEL = TerminalBlade.id("geo/lumen_seishin.geo.json");
     private static final ResourceLocation TEXTURE = TerminalBlade.id("textures/entity/lumen_seishin_ysm.png");
+    /** 招式动作（slashblade:*）。 */
     private static final ResourceLocation ANIMATION = TerminalBlade.id("animations/lumen_seishin.animation.json");
+    /** 基础移动动作（idle / walk / run），已剥离 GeckoLib 不支持的 Molang。 */
+    private static final ResourceLocation MOTION = TerminalBlade.id("animations/lumen_seishin_motion.animation.json");
 
     @Override
     public ResourceLocation getModelResource(LumenSeishinEntity animatable) {
@@ -26,5 +29,10 @@ public class LumenGeoModel extends GeoModel<LumenSeishinEntity> {
     @Override
     public ResourceLocation getAnimationResource(LumenSeishinEntity animatable) {
         return ANIMATION;
+    }
+
+    @Override
+    public ResourceLocation[] getAnimationResourceFallbacks(LumenSeishinEntity animatable) {
+        return new ResourceLocation[]{MOTION};
     }
 }

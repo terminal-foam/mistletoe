@@ -108,6 +108,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
     private int lastAnimSeq = -1;
+    /** 客户端记录上次播放的片段名。 */
+    private String lastAnimName = "";
 
     private int frostHitsLeft;
     private int frostHitIndex;
@@ -733,18 +735,41 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         controllers.add(new AnimationController<>(this, "main", 3, this::mainAnim));
     }
 
-    /** 只有动画序号变化时才重设，避免每帧重启动作。 */
+    /**
+     * 每 tick 重新挑选动画片段：招式优先，否则按实际位移在 idle / walk / run 之间切换。
+     * 只有片段真正变化时才 setAnimation，避免每帧重启。
+     */
     private PlayState mainAnim(AnimationState<LumenSeishinEntity> state) {
-        if (this.getAnimSeq() != this.lastAnimSeq) {
+        String desired = this.desiredAnimation();
+        if (!desired.equals(this.lastAnimName)) {
+            this.lastAnimName = desired;
             this.lastAnimSeq = this.getAnimSeq();
-            state.getController().setAnimation(RawAnimation.begin().thenPlay(this.animName()));
+            state.getController().setAnimation(RawAnimation.begin().thenPlay(desired));
         }
         return PlayState.CONTINUE;
     }
 
+    private String desiredAnimation() {
+        LumenAction action = getAction();
+        if (action != LumenAction.NONE) {
+            return this.actionAnimation(action);
+        }
+        // 用实际位置增量判断移动速度：0.005 ≈ 0.07 格/tick，0.15 ≈ 0.39 格/tick
+        double dx = this.getX() - this.xo;
+        double dz = this.getZ() - this.zo;
+        double speedSq = dx * dx + dz * dz;
+        if (speedSq > 0.15D) {
+            return "run";
+        }
+        if (speedSq > 0.005D) {
+            return "walk";
+        }
+        return "idle";
+    }
+
     /** 招式 → YSM 动画名（资源里是 Bedrock 的 slashblade:* 动作）。 */
-    private String animName() {
-        return switch (getAction()) {
+    private String actionAnimation(LumenAction action) {
+        return switch (action) {
             case MELEE -> switch (Math.min(this.meleeHitIndex, 4)) {
                 case 1 -> "slashblade:combo_a1";
                 case 2 -> "slashblade:combo_a2";
@@ -754,8 +779,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             case FROST -> "slashblade:combo_a5ex";
             case SLASH_ART -> "slashblade:combo_c";
             case PHASE -> "slashblade:combo_a1";
-            case CHARGE -> "slashblade:idle";
-            case NONE -> "slashblade:idle";
+            case CHARGE, NONE -> "idle";
         };
     }
 }
