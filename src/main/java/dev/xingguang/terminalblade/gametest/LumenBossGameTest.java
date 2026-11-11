@@ -136,4 +136,22 @@ public final class LumenBossGameTest {
             helper.succeed();
         });
     }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossCannotAttackWhileCharging(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 4);
+        setMaxHealth(target, 1000.0D);
+        boss.setPhase(LumenPhase.MISTLETOE);
+        boss.setHealth(36.0F);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(boss.isFinalCharging(), "36 HP 没有进入蓄力");
+            boolean hit = boss.doHurtTarget(target);
+            helper.assertTrue(!hit, "蓄力期间 Boss 仍然能普攻");
+            helper.assertTrue(Math.abs(target.getHealth() - 1000.0F) < 0.01F,
+                    "蓄力期间目标被打了：" + target.getHealth());
+            helper.succeed();
+        });
+    }
 }

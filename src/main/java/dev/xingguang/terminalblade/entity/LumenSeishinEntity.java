@@ -281,6 +281,8 @@ public class LumenSeishinEntity extends Monster {
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
         getNavigation().stop();
+        setTarget(null);
+        setDeltaMovement(0.0D, getDeltaMovement().y, 0.0D);
         this.bossEvent.setColor(BossEvent.BossBarColor.RED);
         this.bossEvent.setName(Component.translatable("entity.mistletoe.lumen_seishin.charging"));
         // 类似凋灵：蓄力期间把天空压暗，给玩家一个“现在必须跑”的强提示。
@@ -400,7 +402,9 @@ public class LumenSeishinEntity extends Monster {
 
     @Override
     public boolean doHurtTarget(Entity target) {
-        if (this.level().isClientSide() || !(target instanceof LivingEntity living) || !living.isAlive()) {
+        // 蓄力期间禁止任何普攻：Goal 优先级可能仍有窗口，这里直接兜底。
+        if (this.level().isClientSide() || isFinalCharging()
+                || !(target instanceof LivingEntity living) || !living.isAlive()) {
             return false;
         }
         float amount = meleeDamage(living);
