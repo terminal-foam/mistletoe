@@ -66,6 +66,8 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     public static final float TAME_MAX_HEALTH = 20.0F;
     public static final float TAME_MELEE_DAMAGE = 12.0F;
     private static final int TAME_REGEN_INTERVAL = 40;
+    /** 蓄力结束后多少格内有玩家就臣服。 */
+    private static final double SURRENDER_RANGE = 24.0D;
 
     private static final float MELEE_DAWN = 5.0F;
     /** 初雪普通四连：每刀 6。 */
@@ -490,8 +492,11 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
 
     /**
      * 结局 A：蓄力期间被击杀 → 本方法不会执行（实体已死亡）。
-     * 结局 B：范围内没有玩家 → 没人受伤，Boss 仍死亡。
+     * 结局 B：范围内没有玩家 → 没人受伤。
      * 结局 C：范围内玩家吃处决。
+     *
+     * <p>蓄力结束后不再自毁：附近有玩家就当场力竭臣服、变成随从；
+     * 附近没人（例如玩家跑远了）才走原来的献祭死亡。</p>
      */
     public void resolveFinalCharge() {
         if (this.level().isClientSide()) {
@@ -509,7 +514,15 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             }
         }
         playSound(SoundEvents.WITHER_DEATH, 1.5F, 0.5F);
-        // 无论是否命中都献祭死亡；走正常 hurt，尊重特殊免疫与锁血标签。
+        this.finalChargeDone = true;
+
+        Player surrenderTo = this.level().getNearestPlayer(this, SURRENDER_RANGE);
+        if (surrenderTo != null && !surrenderTo.isSpectator() && !surrenderTo.isCreative()) {
+            this.subdueTo(surrenderTo);
+            TerminalBlade.LOGGER.info("[流明·星] 力竭臣服");
+            return;
+        }
+        // 附近没人：尊重特殊免疫与锁血标签，走正常 hurt 献祭。
         this.hurt(MistletoeDamage.source(this, MistletoeDamage.SACRIFICE),
                 getHealth() + getMaxHealth());
         TerminalBlade.LOGGER.info("[流明·星] 终局释放");
