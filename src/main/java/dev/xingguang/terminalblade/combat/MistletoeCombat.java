@@ -475,6 +475,12 @@ public final class MistletoeCombat {
     }
 
     private static void spawnSlash(LivingEntity user, float roll, boolean critical, int color) {
+        // SlashBlade 的 EntitySlashEffect 结算时会无条件读攻击者的 sweeping_damage_ratio，
+        // 非玩家攻击者没有该属性会直接崩服（SlashBlade 侧未做保护）。
+        // 非玩家施法跳过刀光实体，伤害仍由调用方直接结算。
+        if (!(user instanceof Player)) {
+            return;
+        }
         var slash = AttackManager.doSlash(user, roll, true, critical, 0.0D);
         if (slash != null) {
             slash.setColor(color);
