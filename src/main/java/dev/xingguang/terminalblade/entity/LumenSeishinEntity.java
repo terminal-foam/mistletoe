@@ -379,7 +379,8 @@ public class LumenSeishinEntity extends Monster {
         this.getNavigation().stop();
         this.setSprinting(false);
         this.finalChargeLeft--;
-        if (this.finalChargeLeft % 4 == 0) {
+        // 常规每 4 tick 画一圈；最后 2 秒加密到每 tick，强化“马上要炸”的压迫感。
+        if (this.finalChargeLeft % 4 == 0 || this.finalChargeLeft <= FINAL_WARN_2) {
             spawnChargeRing();
         }
         if (this.finalChargeLeft == FINAL_WARN_1 || this.finalChargeLeft == FINAL_WARN_2) {
@@ -390,21 +391,29 @@ public class LumenSeishinEntity extends Monster {
         }
     }
 
-    /** 在 12 格半径上画一圈粒子，作为可读的危险区边界。 */
+    /**
+     * 12 格危险区边界。之前只有 36 个 SOUL_FIRE_FLAME 点（间隔 2.1 格），太稀太暗看不出是圈，
+     * 现在改成 72 点 END_ROD（亮白、无重力）+ 地面一圈魂火 + 内部薄雾，边界一眼可读。
+     */
     private void spawnChargeRing() {
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel level)) {
             return;
         }
-        int points = 36;
+        int points = 72;
         for (int i = 0; i < points; i++) {
             double angle = Math.PI * 2.0D * i / points;
             double x = getX() + Math.cos(angle) * FINAL_CHARGE_RADIUS;
             double z = getZ() + Math.sin(angle) * FINAL_CHARGE_RADIUS;
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    x, getY() + 0.15D, z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME,
-                    x, getY() + 0.4D, z, 1, 0.0D, 0.25D, 0.0D, 0.0D);
+                    x, getY() + 0.05D, z, 1, 0.0D, 0.02D, 0.0D, 0.0D);
         }
+        // 内部薄雾：提示“整个区域都危险”，而不是只有一圈线
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME,
+                getX(), getY() + 0.25D, getZ(), 40, 3.0D, 0.05D, 3.0D, 0.0D);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
-                getX(), getY() + 1.0D, getZ(), 6, 0.4D, 1.0D, 0.4D, 0.02D);
+                getX(), getY() + 1.0D, getZ(), 10, 0.4D, 1.2D, 0.4D, 0.02D);
     }
 
     /**
