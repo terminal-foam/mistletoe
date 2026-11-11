@@ -64,7 +64,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     /** 朝露普通三连：每刀 5。 */
     /** 随从形态：最大生命 20，普攻与玩家初雪一致。 */
     public static final float TAME_MAX_HEALTH = 20.0F;
-    public static final float TAME_MELEE_DAMAGE = 12.0F;
     private static final int TAME_REGEN_INTERVAL = 40;
 
     private static final float MELEE_DAWN = 5.0F;
@@ -256,9 +255,9 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     // ── 阶段 ────────────────────────────────────────────────────────────
 
     public LumenPhase getPhase() {
-        // 臣服后固定用初雪一套
+        // 臣服后固定用暮色一套（招式、伤害、刀外观）
         if (this.isTame()) {
-            return LumenPhase.FIRST_SNOW;
+            return LumenPhase.MISTLETOE;
         }
         return LumenPhase.byOrdinal(this.entityData.get(DATA_PHASE));
     }
@@ -628,10 +627,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     private float meleeDamage(LivingEntity target) {
-        // 臣服后按玩家初雪的攻击力结算
-        if (this.isTame()) {
-            return TAME_MELEE_DAMAGE;
-        }
+
         return switch (getPhase()) {
             case DAWN -> MELEE_DAWN;
             case FIRST_SNOW -> MELEE_FIRST_SNOW;
@@ -821,7 +817,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             maxHealth.setBaseValue(TAME_MAX_HEALTH);
         }
         this.setHealth(TAME_MAX_HEALTH);
-        this.setPhase(LumenPhase.FIRST_SNOW);
+        this.setPhase(LumenPhase.MISTLETOE);
         this.meleeHitsLeft = 0;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
