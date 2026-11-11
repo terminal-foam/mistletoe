@@ -33,6 +33,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
@@ -44,7 +52,7 @@ import java.util.List;
  *
  * <p>当前实现：M1 实体 + 三阶段，M2 招式（普攻、霜刃 7×2、暮色斩星 25%、朝露回血）。</p>
  */
-public class LumenSeishinEntity extends Monster {
+public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public static final float MAX_HEALTH = 360.0F;
     private static final int PHASE_LOCK_TICKS = 20;
 
@@ -97,6 +105,9 @@ public class LumenSeishinEntity extends Monster {
             BossEvent.BossBarColor.BLUE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int lockTicks;
+    private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
+    /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
+    private int lastAnimSeq = -1;
 
     private int frostHitsLeft;
     private int frostHitIndex;
@@ -703,5 +714,48 @@ public class LumenSeishinEntity extends Monster {
     @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_seishin");
+    }
+
+    // ── GeckoLib 动画 ───────────────────────────────────────────────────
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.animatableCache;
+    }
+
+    @Override
+    public double getTick(Object animatable) {
+        return this.tickCount;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "main", 3, this::mainAnim));
+    }
+
+    /** 只有动画序号变化时才重设，避免每帧重启动作。 */
+    private PlayState mainAnim(AnimationState<LumenSeishinEntity> state) {
+        if (this.getAnimSeq() != this.lastAnimSeq) {
+            this.lastAnimSeq = this.getAnimSeq();
+            state.getController().setAnimation(RawAnimation.begin().thenPlay(this.animName()));
+        }
+        return PlayState.CONTINUE;
+    }
+
+    /** 招式 → YSM 动画名（资源里是 Bedrock 的 slashblade:* 动作）。 */
+    private String animName() {
+        return switch (getAction()) {
+            case MELEE -> switch (Math.min(this.meleeHitIndex, 4)) {
+                case 1 -> "slashblade:combo_a1";
+                case 2 -> "slashblade:combo_a2";
+                case 3 -> "slashblade:combo_a3";
+                default -> "slashblade:combo_a4";
+            };
+            case FROST -> "slashblade:combo_a5ex";
+            case SLASH_ART -> "slashblade:combo_c";
+            case PHASE -> "slashblade:combo_a1";
+            case CHARGE -> "slashblade:idle";
+            case NONE -> "slashblade:idle";
+        };
     }
 }
