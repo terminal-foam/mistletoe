@@ -30,6 +30,18 @@ public final class ModSlashArts {
                 return art;
             });
 
+    /**
+     * 初雪的「霜刃」：7 段高速斩击，走普通攻击伤害，不套暮色的生命差公式。
+     */
+    public static final RegistryObject<SlashArts> FROST_BLADE = SLASH_ARTS.register("frost_blade",
+            () -> {
+                SlashArts art = new SlashArts(user -> ModComboStates.FROST_BLADE.getId())
+                        .setComboStateJust(user -> ModComboStates.FROST_BLADE.getId())
+                        .setComboStateSuper(user -> mods.flammpfeil.slashblade.registry.ComboStateRegistry.NONE.getId());
+                art.setProudSoulCost(0);
+                return art;
+            });
+
     private ModSlashArts() {
     }
 }

@@ -14,8 +14,10 @@ import java.util.Set;
 public final class MistletoeBlade {
     public static final ResourceLocation NAME = TerminalBlade.id("mistletoe");
     public static final ResourceLocation DAWN_NAME = TerminalBlade.id("dawn");
+    public static final ResourceLocation FIRST_SNOW_NAME = TerminalBlade.id("first_snow");
     public static final String TRANSLATION_KEY = "item.mistletoe.mistletoe";
     public static final String DAWN_TRANSLATION_KEY = "item.mistletoe.dawn";
+    public static final String FIRST_SNOW_TRANSLATION_KEY = "item.mistletoe.first_snow";
     private static final Set<String> BLADE_KEYS = Set.of(TRANSLATION_KEY, DAWN_TRANSLATION_KEY);
 
     private MistletoeBlade() {
@@ -51,6 +53,16 @@ public final class MistletoeBlade {
 
     public static boolean isDawn(LivingEntity user) {
         return user != null && isDawn(user.getMainHandItem());
+    }
+
+    public static boolean isFirstSnow(ItemStack stack) {
+        return stateOptional(stack)
+                .map(state -> FIRST_SNOW_TRANSLATION_KEY.equals(state.getTranslationKey()))
+                .orElse(false);
+    }
+
+    public static boolean isFirstSnow(LivingEntity user) {
+        return user != null && isFirstSnow(user.getMainHandItem());
     }
 
     public static boolean isBrokenOrSealed(ItemStack stack) {

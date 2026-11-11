@@ -1,0 +1,36 @@
+{
+  "type": "slashblade:shaped_blade",
+  "blade": "mistletoe:first_snow",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "minecraft:blue_ice"
+    },
+    "C": {
+      "item": "minecraft:nether_star"
+    },
+    "Q": {
+      "item": "minecraft:snowball"
+    },
+    "D": {
+      "type": "slashblade:blade",
+      "item": "slashblade:slashblade",
+      "request": {
+        "name": "mistletoe:dawn",
+        "sword_type": [
+          "bewitched"
+        ]
+      }
+    }
+  },
+  "pattern": [
+    "ACA",
+    "QDQ",
+    "ACA"
+  ],
+  "result": {
+    "item": "slashblade:slashblade",
+    "count": 1
+  },
+  "show_notification": true
+}

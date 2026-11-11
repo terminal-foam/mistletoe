@@ -5,8 +5,12 @@
   "item.mistletoe.dawn": "槲寄生「朝露」",
   "item.mistletoe.dawn.desc": "沾着晨露的枝条。它不追求斩杀，只让握刀的人多撑一会儿。",
   "item.mistletoe.dawn.hint": "右键蓄力释放熹微。命中后获得短暂的生命恢复 I。",
+  "item.mistletoe.first_snow": "槲寄生「初雪」",
+  "item.mistletoe.first_snow.desc": "薄霜覆刃。没有花哨的规则，只有更快、更密的斩击。",
+  "item.mistletoe.first_snow.hint": "右键蓄力释放霜刃：高速斩出七刀。",
   "slash_art.mistletoe.godslayer": "斩星",
   "slash_art.mistletoe.xiwei": "熹微",
+  "slash_art.mistletoe.frost_blade": "霜刃",
   "subtitles.mistletoe.draw": "槲寄生出鞘",
   "subtitles.mistletoe.swing": "槲寄生挥击",
   "subtitles.mistletoe.hit": "槲寄生命中",
@@ -18,7 +22,10 @@
   "death.attack.mistletoe_sacrifice": "%1$s把生命交给了槲寄生",
   "death.attack.mistletoe_godslayer": "%1$s被槲寄生的例外贯穿",
   "death.attack.mistletoe_godslayer.player": "%1$s被%2$s以槲寄生贯穿",
+  "death.attack.mistletoe_frost_blade": "%1$s被霜刃切开了",
+  "death.attack.mistletoe_frost_blade.player": "%1$s被%2$s的霜刃切开了",
   "commands.mistletoe.give": "已将槲寄生交给 %s",
   "commands.mistletoe.give.dawn": "已将槲寄生「朝露」交给 %s",
+  "commands.mistletoe.give.first_snow": "已将槲寄生「初雪」交给 %s",
   "commands.mistletoe.audit": "普攻 %s；强化 SA %s；献祭 %s；SA 伤害 %s；Super 献祭 %s；Super 致死 %s；半径 %s"
 }

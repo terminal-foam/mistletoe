@@ -13,11 +13,14 @@ import mods.flammpfeil.slashblade.util.AttackManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -34,6 +37,14 @@ public final class MistletoeCombat {
     /** 熹微：固定伤害、固定恢复时长，不参与暮色的生命差/最大生命公式。 */
     public static final float XIWEI_DAMAGE = 12.0F;
     public static final int XIWEI_REGEN_TICKS = 100;
+    /** 霜刃单独使用更短的施法冷却，不影响暮色/朝露/Super。 */
+    public static final long FROST_CAST_COOLDOWN_TICKS = 2L;
+    /** 霜刃：7 段高速斩击，第 2 tick 起每 tick 一刀。 */
+    public static final int FROST_HITS = 7;
+    public static final int FROST_FIRST_TICK = 2;
+    public static final int FROST_INTERVAL = 1;
+    public static final double FROST_RANGE = 6.0D;
+    public static final double FROST_CONE_DEGREES = 100.0D;
 
     private static final String SA_TOKEN = "mistletoe:sa_token";
     private static final String SA_ARMED = "mistletoe:sa_armed";
@@ -42,6 +53,11 @@ public final class MistletoeCombat {
     public static final String SUPER_TOKEN = "mistletoe:super_token";
     private static final String SUPER_ARMED = "mistletoe:super_armed";
     private static final String SUPER_COMBO = "mistletoe:super_combo";
+    private static final String FROST_TOKEN = "mistletoe:frost_token";
+    private static final String FROST_ARMED = "mistletoe:frost_armed";
+    private static final String FROST_COMBO = "mistletoe:frost_combo";
+    private static final String FROST_ACTIVE = "mistletoe:frost_active";
+    private static final String FROST_DAMAGE = "mistletoe:frost_damage";
 
     private MistletoeCombat() {
     }
@@ -146,6 +162,87 @@ public final class MistletoeCombat {
                     just, enhanced, targetMax, enhanced && (connected || TerminalBladeConfig.slashArtPayOnWhiff()) ? cost : 0.0F,
                     connected, split.normal(), split.trueDamage(), trueConnected, split.total());
         }
+    }
+
+    public static void beginFrostBlade(LivingEntity user) {
+        if (user.level().isClientSide() || !user.isAlive() || !MistletoeBlade.isFirstSnow(user)
+                || MistletoeBlade.isBrokenOrSealed(user.getMainHandItem())) {
+            abortFrostBlade(user);
+            return;
+        }
+        if (!arm(user, FROST_TOKEN, FROST_ARMED, FROST_CAST_COOLDOWN_TICKS)) {
+            return;
+        }
+        CompoundTag tag = user.getPersistentData();
+        tag.putString(FROST_COMBO, comboId(user));
+        tag.putBoolean(FROST_ACTIVE, false);
+        // 七刀共用起手时的攻击力快照，避免中途属性变化导致七段不同伤。
+        tag.putFloat(FROST_DAMAGE, (float) user.getAttributeValue(Attributes.ATTACK_DAMAGE));
+        if (user.level() instanceof ServerLevel level) {
+            MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 8, 0.2D);
+        }
+        log(user, "enter", "frost_blade", false);
+    }
+
+    /**
+     * 霜刃的单段斩击。第 0 段负责认领本次施法，之后每 tick 追加一段；
+     * 伤害走起手快照的普通攻击属性，不套暮色的生命差/真伤公式。
+     */
+    public static void frostBladeHit(LivingEntity user, int index) {
+        if (user.level().isClientSide() || index < 0 || index >= FROST_HITS
+                || !user.isAlive() || !MistletoeBlade.isFirstSnow(user)
+                || MistletoeBlade.isBrokenOrSealed(user.getMainHandItem())) {
+            abortFrostBlade(user);
+            return;
+        }
+        CompoundTag tag = user.getPersistentData();
+        if (index == 0) {
+            if (!claim(user, FROST_ARMED)) {
+                return;
+            }
+            tag.putBoolean(FROST_ACTIVE, true);
+        } else if (!tag.getBoolean(FROST_ACTIVE)) {
+            return;
+        }
+        String expected = tag.getString(FROST_COMBO);
+        if (expected.isEmpty() || !expected.equals(comboId(user))) {
+            abortFrostBlade(user);
+            return;
+        }
+        if (!tag.contains(FROST_DAMAGE)) {
+            abortFrostBlade(user);
+            return;
+        }
+
+        ServerLevel level = (ServerLevel) user.level();
+        spawnSlash(user, -35.0F + index * 12.0F, true, 0xA9D8FF);
+        MistletoeDamage.burst(level, user.getX(), user.getY(0.8D), user.getZ(), 5, 0.2D);
+
+        List<LivingEntity> targets = MistletoeTargets.selectFrostBladeTargets(
+                user, FROST_RANGE, FROST_CONE_DEGREES);
+        if (!targets.isEmpty()) {
+            float damage = Math.max(1.0F, tag.getFloat(FROST_DAMAGE));
+            DamageSource source = MistletoeDamage.source(user, MistletoeDamage.FROST_BLADE);
+            for (LivingEntity target : targets) {
+                // 不重置 invulnerableTime；霜刃伤害类型只带 bypasses_cooldown。
+                target.hurt(source, damage);
+            }
+        }
+        level.playSound(null, user.getX(), user.getY(), user.getZ(),
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.55F, 1.35F + index * 0.03F);
+
+        if (index == FROST_HITS - 1) {
+            abortFrostBlade(user);
+        }
+        log(user, "hit", "frost_blade", false);
+    }
+
+    private static void abortFrostBlade(LivingEntity user) {
+        CompoundTag tag = user.getPersistentData();
+        tag.putBoolean(FROST_ACTIVE, false);
+        tag.remove(FROST_COMBO);
+        tag.remove(FROST_DAMAGE);
+        disarm(user, FROST_ARMED);
     }
 
     public static void beginSuper(LivingEntity user) {
@@ -335,9 +432,13 @@ public final class MistletoeCombat {
     }
 
     private static void spawnSlash(LivingEntity user, float roll, boolean critical) {
+        spawnSlash(user, roll, critical, 0xF4FFF6);
+    }
+
+    private static void spawnSlash(LivingEntity user, float roll, boolean critical, int color) {
         var slash = AttackManager.doSlash(user, roll, true, critical, 0.0D);
         if (slash != null) {
-            slash.setColor(0xF4FFF6);
+            slash.setColor(color);
             slash.setBaseSize(critical ? 2.4F : 1.8F);
             slash.setLifetime(8);
         }
@@ -356,9 +457,13 @@ public final class MistletoeCombat {
     }
 
     private static boolean arm(LivingEntity user, String tokenKey, String armedKey) {
+        return arm(user, tokenKey, armedKey, CAST_COOLDOWN_TICKS);
+    }
+
+    private static boolean arm(LivingEntity user, String tokenKey, String armedKey, long cooldownTicks) {
         CompoundTag tag = user.getPersistentData();
         long now = user.level().getGameTime();
-        if (MistletoeCastGate.isCoolingDown(tag.contains(tokenKey), tag.getLong(tokenKey), now, CAST_COOLDOWN_TICKS)) {
+        if (MistletoeCastGate.isCoolingDown(tag.contains(tokenKey), tag.getLong(tokenKey), now, cooldownTicks)) {
             tag.putBoolean(armedKey, false);
             return false;
         }
@@ -382,7 +487,7 @@ public final class MistletoeCombat {
 
     private static String comboId(LivingEntity user) {
         ItemStack stack = user.getMainHandItem();
-        if (!MistletoeBlade.isMistletoe(stack)) {
+        if (!MistletoeBlade.isMistletoe(stack) && !MistletoeBlade.isFirstSnow(stack)) {
             return "";
         }
         return MistletoeBlade.state(stack).getComboSeq().toString();

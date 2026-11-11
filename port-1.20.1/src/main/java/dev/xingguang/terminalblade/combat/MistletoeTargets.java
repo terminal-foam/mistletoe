@@ -41,6 +41,51 @@ public final class MistletoeTargets {
                 .orElse(null);
     }
 
+    /**
+     * 霜刃的扇形目标：每一刀命中锥形范围内的全部可打击目标。
+     * 「前方 100° 扇形」按水平朝向判定，不受抬头/低头影响；贴脸时不会因眼睛高度差被推出锥角。
+     */
+    public static List<LivingEntity> selectFrostBladeTargets(LivingEntity user, double range, double coneDegrees) {
+        Vec3 horizontal = horizontalLook(user);
+        double cosHalf = Math.cos(Math.toRadians(Math.max(1.0D, coneDegrees) * 0.5D));
+        AABB box = user.getBoundingBox().inflate(range);
+        return user.level().getEntitiesOfClass(LivingEntity.class, box,
+                entity -> acceptsFrostBlade(user, entity, range, horizontal, cosHalf));
+    }
+
+    private static Vec3 horizontalLook(LivingEntity user) {
+        Vec3 look = user.getLookAngle();
+        double length = Math.hypot(look.x, look.z);
+        if (length >= 1.0E-4D) {
+            return new Vec3(look.x / length, 0.0D, look.z / length);
+        }
+        double yaw = Math.toRadians(user.getYRot());
+        return new Vec3(-Math.sin(yaw), 0.0D, Math.cos(yaw));
+    }
+
+    private static boolean acceptsFrostBlade(LivingEntity user, LivingEntity target, double range,
+                                             Vec3 look, double cosHalf) {
+        if (!isStrikeable(user, target) || user.distanceTo(target) > range) {
+            return false;
+        }
+        // 默认不打玩家、同队目标和有主宠物；不做墙体遮挡判定（允许穿墙）。
+        if (target instanceof Player) {
+            return false;
+        }
+        if (user.getTeam() != null && user.getTeam() == target.getTeam()) {
+            return false;
+        }
+        if (target instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
+            return false;
+        }
+        Vec3 to = new Vec3(target.getX() - user.getX(), 0.0D, target.getZ() - user.getZ());
+        double length = to.length();
+        if (length < 1.0E-4D) {
+            return true;
+        }
+        return look.dot(to.scale(1.0D / length)) >= cosHalf;
+    }
+
     public static List<LivingEntity> selectSuperTargets(LivingEntity user, double radius) {
         Vec3 center = center(user);
         AABB box = new AABB(center, center).inflate(radius);
@@ -105,6 +150,6 @@ public final class MistletoeTargets {
                 && !target.isSpectator()
                 && !(target instanceof ArmorStand)
                 && !target.isPassengerOfSameVehicle(user)
-                && MistletoeBlade.isMistletoe(user);
+                && (MistletoeBlade.isMistletoe(user) || MistletoeBlade.isFirstSnow(user));
     }
 }

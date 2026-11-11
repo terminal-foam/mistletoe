@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import static dev.xingguang.terminalblade.blade.MistletoeBlade.DAWN_NAME;
+import static dev.xingguang.terminalblade.blade.MistletoeBlade.FIRST_SNOW_NAME;
 import static dev.xingguang.terminalblade.blade.MistletoeBlade.NAME;
 
 @EventBusSubscriber(modid = dev.xingguang.terminalblade.TerminalBlade.MOD_ID)
@@ -33,6 +34,10 @@ public final class MistletoeCommands {
                 .executes(ctx -> give(ctx.getSource().getPlayerOrException(), DAWN_NAME, "commands.mistletoe.give.dawn"))
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"), DAWN_NAME, "commands.mistletoe.give.dawn")));
+        var giveFirstSnow = Commands.literal("first_snow")
+                .executes(ctx -> give(ctx.getSource().getPlayerOrException(), FIRST_SNOW_NAME, "commands.mistletoe.give.first_snow"))
+                .then(Commands.argument("player", EntityArgument.player())
+                        .executes(ctx -> give(EntityArgument.getPlayer(ctx, "player"), FIRST_SNOW_NAME, "commands.mistletoe.give.first_snow")));
         var audit = Commands.literal("audit")
                 .then(Commands.argument("target_max", FloatArgumentType.floatArg(0.0F))
                         .then(Commands.argument("player_current", FloatArgumentType.floatArg(0.0F))
@@ -46,6 +51,7 @@ public final class MistletoeCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(give)
                 .then(giveDawn)
+                .then(giveFirstSnow)
                 .then(audit));
     }
 

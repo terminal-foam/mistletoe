@@ -24,6 +24,31 @@ public final class ModComboStates {
     public static final RegistryObject<ComboState> SUPER = COMBO_STATES.register("godslayer_bloom",
             () -> art(1900, 1960, 20, MistletoeCombat::beginSuper, MistletoeCombat::resolveSuper));
 
+    /**
+     * 初雪「霜刃」：7 段高速斩击，第 2 tick 起每 tick 一刀；伤害走普通攻击属性，不套暮色公式。
+     */
+    public static final RegistryObject<ComboState> FROST_BLADE = COMBO_STATES.register("frost_blade",
+            () -> {
+                var timeline = ComboState.TimeLineTickAction.getBuilder();
+                for (int i = 0; i < MistletoeCombat.FROST_HITS; i++) {
+                    int hit = i;
+                    timeline.put(
+                            MistletoeCombat.FROST_FIRST_TICK + i * MistletoeCombat.FROST_INTERVAL,
+                            user -> MistletoeCombat.frostBladeHit(user, hit));
+                }
+                return ComboState.Builder.newInstance()
+                        .startAndEnd(400, 449)
+                        .speed(3.0F)
+                        .priority(40)
+                        .motionLoc(DefaultResources.ExMotionLocation)
+                        .next(entity -> ComboStateRegistry.NONE.getId())
+                        .nextOfTimeout(entity -> ComboStateRegistry.NONE.getId())
+                        .clickAction(MistletoeCombat::beginFrostBlade)
+                        .addTickAction(timeline.build())
+                        .timeout(200)
+                        .build();
+            });
+
     private ModComboStates() {
     }
 

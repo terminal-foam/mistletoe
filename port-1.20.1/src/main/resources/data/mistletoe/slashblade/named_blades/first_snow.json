@@ -1,0 +1,23 @@
+{
+  "name": "mistletoe:first_snow",
+  "properties": {
+    "attack_base": 12.0,
+    "max_damage": 100,
+    "slash_art": "mistletoe:frost_blade",
+    "sword_type": [
+      "bewitched"
+    ]
+  },
+  "render": {
+    "carry_type": "katana",
+    "model": "mistletoe:model/named/first_snow.obj",
+    "texture": "mistletoe:model/named/first_snow.png",
+    "summon_sword_color": 11131135
+  },
+  "enchantments": [
+    {
+      "id": "minecraft:unbreaking",
+      "lvl": 3
+    }
+  ]
+}
