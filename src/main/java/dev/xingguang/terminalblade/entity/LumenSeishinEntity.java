@@ -808,7 +808,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             case FROST -> "slashblade:combo_a5ex";
             case SLASH_ART -> "slashblade:combo_c";
             case PHASE -> "slashblade:combo_a1";
-            case CHARGE, NONE -> "idle";
+            // 终局蓄力原地站桩 6 秒，必须用循环片段，否则会停在最后一帧。
+            case CHARGE -> "slashblade:idle";
+            case NONE -> "idle";
         };
     }
 }
