@@ -108,6 +108,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
     private int lastAnimSeq = -1;
+    /** 招式动画剩余 tick，到点自动复位成 NONE。 */
+    private int actionTicksLeft;
     /** 客户端记录上次播放的片段名。 */
     private String lastAnimName = "";
 
@@ -175,6 +177,32 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         }
         this.entityData.set(DATA_ACTION, (byte) action.ordinal());
         this.entityData.set(DATA_ANIM_SEQ, this.entityData.get(DATA_ANIM_SEQ) + 1);
+        this.actionTicksLeft = actionTicks(action);
+    }
+
+    /**
+     * 招式动画的生命周期（tick）。播完必须把 DATA_ACTION 归零，
+     * 否则客户端会一直挑中一次性片段，播完停在最后一帧，腿不再动 → 看起来就是平移。
+     */
+    private static int actionTicks(LumenAction action) {
+        return switch (action) {
+            case MELEE -> 14;
+            case FROST -> 24;
+            case SLASH_ART -> 30;
+            case PHASE -> 22;
+            case CHARGE -> 130;
+            case NONE -> 0;
+        };
+    }
+
+    /** 招式计时到点后复位成 NONE，交还给 idle / walk / run。 */
+    private void tickActionLifetime() {
+        if (this.actionTicksLeft <= 0) {
+            return;
+        }
+        if (--this.actionTicksLeft <= 0) {
+            this.entityData.set(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
+        }
     }
 
     @Override
@@ -699,6 +727,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             if (this.tickCount == 1) {
                 refreshBlade(getPhase());
             }
+            tickActionLifetime();
             tickMeleeChain();
         }
     }
