@@ -61,18 +61,18 @@ public final class LumenBossGameTest {
         setMaxHealth(target, 1000.0D);
 
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 985.0F) < 0.01F, "朝露三连不是 3×5：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 995.0F) < 0.01F, "朝露首刀不是 5：" + target.getHealth());
 
         boss.setPhase(LumenPhase.FIRST_SNOW);
         target.setHealth(1000.0F);
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 976.0F) < 0.01F, "初雪四连不是 4×6：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 994.0F) < 0.01F, "初雪首刀不是 6：" + target.getHealth());
 
         boss.setPhase(LumenPhase.MISTLETOE);
         target.setHealth(1000.0F);
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 800.0F) < 0.01F,
-                "暮色普攻不是玩家最大生命的 10%：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 900.0F) < 0.01F,
+                "暮色首刀不是玩家最大生命的 10%：" + target.getHealth());
         helper.succeed();
     }
 
@@ -196,7 +196,8 @@ public final class LumenBossGameTest {
         setMaxHealth(target, 1000.0D);
         boss.setNoAi(true);
         boss.doHurtTarget(target);
-        helper.runAfterDelay(2, () -> {
+        // 朝露三连：首刀立刻，后两刀分别在第 9 / 18 tick，共 3×5 = 15。
+        helper.runAfterDelay(20, () -> {
             helper.assertTrue(Math.abs(target.getHealth() - 985.0F) < 0.01F,
                     "朝露三连没有打出 3×5：" + target.getHealth());
             helper.succeed();

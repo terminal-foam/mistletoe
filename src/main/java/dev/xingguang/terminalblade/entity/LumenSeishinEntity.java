@@ -494,13 +494,12 @@ public class LumenSeishinEntity extends Monster {
                 || !(target instanceof LivingEntity living) || !living.isAlive()) {
             return false;
         }
-        // A 连段：整套在本次攻击里打完，保证一定出全。
+        // A 连段：启动连段，第一刀立刻出；后续由 tickMeleeChain 按 meleeInterval() 推进。
         this.meleeTarget = living;
         this.meleeHitIndex = 0;
         this.meleeHitsLeft = meleeChainLength();
-        while (this.meleeHitsLeft > 0) {
-            meleeHit();
-        }
+        this.meleeCooldownTicks = 0;
+        meleeHit();
         return true;
     }
 
@@ -522,9 +521,13 @@ public class LumenSeishinEntity extends Monster {
     }
 
     /** 连段的单刀：目标丢失、超出 3 格或死亡就中断，不积压。 */
+    /**
+     * 连段的单刀。目标是发起时的锁定目标：只要还活着就继续打，
+     * 不再用距离判断中断——Boss 在几 tick 里会自然位移，3 格阈值会把连段误杀。
+     */
     private void meleeHit() {
         LivingEntity target = this.meleeTarget;
-        if (target == null || !target.isAlive() || distanceToSqr(target) > 9.0D) {
+        if (target == null || !target.isAlive()) {
             this.meleeHitsLeft = 0;
             return;
         }
@@ -611,6 +614,19 @@ public class LumenSeishinEntity extends Monster {
     }
 
     @Override
+    public void die(DamageSource source) {
+        // 掉落物：槲寄生「暮色」。named blade 的物品栈没法用纯数据战利品表表达，
+        // 这里在死亡时直接生成并丢出。
+        if (!this.level().isClientSide()) {
+            ItemStack blade = bladeFor(LumenPhase.MISTLETOE);
+            if (!blade.isEmpty()) {
+                this.spawnAtLocation(blade);
+            }
+        }
+        super.die(source);
+    }
+
+    @Override
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("LumenPhase", getPhase().ordinal());
@@ -670,7 +686,8 @@ public class LumenSeishinEntity extends Monster {
         if (this.meleeHitsLeft <= 0) {
             return;
         }
-        if (--this.meleeCooldownTicks <= 0) {
+        this.meleeCooldownTicks--;
+        if (this.meleeCooldownTicks <= 0) {
             meleeHit();
         }
     }
