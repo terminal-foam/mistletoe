@@ -808,8 +808,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             case FROST -> "slashblade:combo_a5ex";
             case SLASH_ART -> "slashblade:combo_c";
             case PHASE -> "slashblade:combo_a1";
-            // 终局蓄力原地站桩 6 秒，必须用循环片段，否则会停在最后一帧。
-            case CHARGE -> "slashblade:sneak";
+            // 终局蓄力原地站桩 6 秒：用从 sneak 冻结出来的静态蹲姿。
+            // 直接播 slashblade:sneak 会变成「蹲着原地踏步」，因为那是潜行移动循环。
+            case CHARGE -> "charge";
             case NONE -> "idle";
         };
     }
