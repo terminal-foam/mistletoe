@@ -91,6 +91,7 @@ public class LumenSeishinEntity extends Monster {
     private int lockTicks;
 
     private int frostHitsLeft;
+    private int frostHitIndex;
     private long nextFrostTick;
     private long frostCooldownUntil;
     private long slashWindupUntil;
@@ -170,6 +171,48 @@ public class LumenSeishinEntity extends Monster {
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
         refreshBlade(phase);
+        playPhaseChangeEffect(phase);
+    }
+
+    /** 阶段切换特效：换刀刀光 + 粒子爆发 + 音效。 */
+    private void playPhaseChangeEffect(LumenPhase phase) {
+        if (this.level().isClientSide()) {
+            return;
+        }
+        spawnCosmeticSlash(-45.0F, 3.0F, phaseColor(phase));
+        spawnCosmeticSlash(45.0F, 3.0F, phaseColor(phase));
+        playSound(SoundEvents.BEACON_ACTIVATE, 1.6F, 0.7F);
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            MistletoeDamage.burst(level, getX(), getY(0.8D), getZ(), 60, 0.8D);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    getX(), getY(1.0D), getZ(), 30, 0.6D, 1.2D, 0.6D, 0.05D);
+        }
+        TerminalBlade.LOGGER.info("[流明·星] 换阶段 -> {}", phase);
+    }
+
+    private static int phaseColor(LumenPhase phase) {
+        return switch (phase) {
+            case DAWN -> 0x9FD8FF;
+            case FIRST_SNOW -> 0xEAF6FF;
+            case MISTLETOE -> 0xC9A0FF;
+        };
+    }
+
+    /**
+     * 纯视觉刀光：{@code comboRatio = 0} 让 {@code EntitySlashEffect} 不结算伤害，
+     * 真正伤害仍由本实体的 {@code doHurtTarget} / 技能直接结算。
+     */
+    private void spawnCosmeticSlash(float roll, float size, int color) {
+        if (this.level().isClientSide()) {
+            return;
+        }
+        var slash = mods.flammpfeil.slashblade.util.AttackManager.doSlash(this, roll, true, false, 0.0D);
+        if (slash != null) {
+            slash.setColor(color);
+            slash.setBaseSize(size);
+            slash.setLifetime(8);
+            slash.setDamage(0.0D);
+        }
     }
 
     public boolean isPhaseLocked() {
@@ -338,6 +381,7 @@ public class LumenSeishinEntity extends Monster {
                 && now >= this.frostCooldownUntil
                 && distanceToSqr(target) <= FROST_RANGE * FROST_RANGE) {
             this.frostHitsLeft = FROST_HITS;
+            this.frostHitIndex = 0;
             this.nextFrostTick = now;
             this.frostCooldownUntil = now + FROST_COOLDOWN;
             playSound(SoundEvents.PLAYER_ATTACK_NODAMAGE, 1.0F, 1.6F);
@@ -360,6 +404,7 @@ public class LumenSeishinEntity extends Monster {
             return false;
         }
         float amount = meleeDamage(living);
+        spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, phaseColor(getPhase()));
         boolean hurt = living.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
         if (hurt) {
             playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.0F);
@@ -380,6 +425,8 @@ public class LumenSeishinEntity extends Monster {
     }
 
     public void frostStrike() {
+        spawnCosmeticSlash(-35.0F + this.frostHitIndex * 12.0F, 2.0F, 0xA9D8FF);
+        this.frostHitIndex++;
         for (LivingEntity victim : fanTargets(FROST_RANGE, FROST_CONE_DEGREES)) {
             victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE), FROST_DAMAGE);
         }
@@ -387,6 +434,7 @@ public class LumenSeishinEntity extends Monster {
     }
 
     public void slashStrike(LivingEntity target) {
+        spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
         float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
         target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);
