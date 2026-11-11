@@ -72,6 +72,15 @@ public class LumenSeishinEntity extends Monster {
     private static final float HEAL_CAP = 30.0F;
     private static final long HEAL_COOLDOWN = 200L;
 
+    /** 终局蓄力：P3 首次掉到 36 HP 触发，蓄力 6 秒、球形半径 12 格，只执行一次。 */
+    private static final float FINAL_CHARGE_THRESHOLD = 36.0F;
+    private static final int FINAL_CHARGE_TICKS = 120;
+    private static final double FINAL_CHARGE_RADIUS = 12.0D;
+    private static final int FINAL_WARN_1 = 80;
+    private static final int FINAL_WARN_2 = 40;
+    /** 处决伤害：没有 bypasses_invulnerability，特殊免疫/锁血仍能拦下。 */
+    private static final float FINAL_EXECUTE_DAMAGE = 9999.0F;
+
     private static final EntityDataAccessor<Integer> DATA_PHASE =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
 
@@ -88,6 +97,8 @@ public class LumenSeishinEntity extends Monster {
     private long slashCooldownUntil;
     private long healCooldownUntil;
     private float healedTotal;
+    private int finalChargeLeft;
+    private boolean finalChargeDone;
 
     public LumenSeishinEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -119,6 +130,23 @@ public class LumenSeishinEntity extends Monster {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
+        // 终局蓄力时用最高优先级占位，压住移动与普攻。
+        this.goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.Goal() {
+            @Override
+            public boolean canUse() {
+                return isFinalCharging();
+            }
+
+            @Override
+            public boolean canContinueToUse() {
+                return isFinalCharging();
+            }
+
+            @Override
+            public void start() {
+                getNavigation().stop();
+            }
+        });
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
@@ -187,7 +215,69 @@ public class LumenSeishinEntity extends Monster {
         if (expected.ordinal() > getPhase().ordinal()) {
             setPhase(expected);
         }
+        if (isFinalCharging()) {
+            tickFinalCharge();
+            return;
+        }
+        if (getPhase() == LumenPhase.MISTLETOE && !this.finalChargeDone && getHealth() <= FINAL_CHARGE_THRESHOLD) {
+            startFinalCharge();
+            return;
+        }
         tickSkills();
+    }
+
+    // ── 终局蓄力 ────────────────────────────────────────────────────────
+
+    public boolean isFinalCharging() {
+        return this.finalChargeLeft > 0;
+    }
+
+    private void startFinalCharge() {
+        this.finalChargeDone = true;
+        this.finalChargeLeft = FINAL_CHARGE_TICKS;
+        this.frostHitsLeft = 0;
+        this.slashWindupUntil = 0L;
+        getNavigation().stop();
+        this.bossEvent.setColor(BossEvent.BossBarColor.RED);
+        playSound(SoundEvents.WITHER_SPAWN, 1.0F, 0.6F);
+        TerminalBlade.LOGGER.info("[流明·星] 终局蓄力开始");
+    }
+
+    private void tickFinalCharge() {
+        this.finalChargeLeft--;
+        if (this.finalChargeLeft == FINAL_WARN_1 || this.finalChargeLeft == FINAL_WARN_2) {
+            playSound(SoundEvents.BEACON_ACTIVATE, 1.2F, 0.5F);
+        }
+        if (this.finalChargeLeft <= 0) {
+            resolveFinalCharge();
+        }
+    }
+
+    /**
+     * 结局 A：蓄力期间被击杀 → 本方法不会执行（实体已死亡）。
+     * 结局 B：范围内没有玩家 → 没人受伤，Boss 仍死亡。
+     * 结局 C：范围内玩家吃处决。
+     */
+    public void resolveFinalCharge() {
+        if (this.level().isClientSide()) {
+            return;
+        }
+        this.finalChargeLeft = 0;
+        Vec3 center = position().add(0.0D, getBbHeight() * 0.5D, 0.0D);
+        double radiusSq = FINAL_CHARGE_RADIUS * FINAL_CHARGE_RADIUS;
+        var box = new net.minecraft.world.phys.AABB(center, center).inflate(FINAL_CHARGE_RADIUS);
+        for (Player player : this.level().getEntitiesOfClass(Player.class, box,
+                p -> p.isAlive() && !p.isSpectator() && !p.isCreative())) {
+            if (center.distanceToSqr(player.position()) <= radiusSq) {
+                player.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE),
+                        Math.max(FINAL_EXECUTE_DAMAGE, player.getMaxHealth() * 20.0F));
+            }
+        }
+        playSound(SoundEvents.WITHER_DEATH, 1.5F, 0.5F);
+        // 无论是否命中都献祭死亡；走正常 hurt，尊重特殊免疫与锁血标签。
+        this.hurt(MistletoeDamage.source(this, MistletoeDamage.SACRIFICE),
+                getHealth() + getMaxHealth());
+        TerminalBlade.LOGGER.info("[流明·星] 终局释放");
     }
 
     private void tickSkills() {
@@ -330,6 +420,8 @@ public class LumenSeishinEntity extends Monster {
         tag.putLong("LumenFrostCooldown", this.frostCooldownUntil);
         tag.putLong("LumenSlashCooldown", this.slashCooldownUntil);
         tag.putLong("LumenHealCooldown", this.healCooldownUntil);
+        tag.putInt("LumenFinalCharge", this.finalChargeLeft);
+        tag.putBoolean("LumenFinalChargeDone", this.finalChargeDone);
     }
 
     @Override
@@ -341,6 +433,8 @@ public class LumenSeishinEntity extends Monster {
         this.frostCooldownUntil = tag.getLong("LumenFrostCooldown");
         this.slashCooldownUntil = tag.getLong("LumenSlashCooldown");
         this.healCooldownUntil = tag.getLong("LumenHealCooldown");
+        this.finalChargeLeft = tag.getInt("LumenFinalCharge");
+        this.finalChargeDone = tag.getBoolean("LumenFinalChargeDone");
         this.bossEvent.setColor(getPhase().barColor());
         this.bossEvent.setName(getDisplayName());
     }

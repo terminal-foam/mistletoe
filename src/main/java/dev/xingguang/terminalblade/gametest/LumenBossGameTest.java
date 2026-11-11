@@ -110,4 +110,30 @@ public final class LumenBossGameTest {
         entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         entity.setHealth((float) health);
     }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossEntersFinalChargeAtThirtySix(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        boss.setPhase(LumenPhase.MISTLETOE);
+        boss.setHealth(36.0F);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(boss.isFinalCharging(), "36 HP 没有进入终局蓄力");
+            helper.succeed();
+        });
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void finalChargeKillsBossEvenWithoutHits(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        boss.setPhase(LumenPhase.MISTLETOE);
+        boss.setHealth(36.0F);
+        // 等换阶段的无敌窗口过去，再手动结算终局。
+        helper.runAfterDelay(25, () -> {
+            boss.resolveFinalCharge();
+            helper.assertTrue(!boss.isAlive(), "终局释放后 Boss 没有死亡");
+            helper.succeed();
+        });
+    }
 }
