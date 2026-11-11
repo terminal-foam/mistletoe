@@ -189,16 +189,46 @@ public class LumenSeishinEntity extends Monster {
         return LumenPhase.byOrdinal(this.entityData.get(DATA_PHASE));
     }
 
+    /** 纯数据切换：只改阶段、血条与刀，不播特效也不放 SA（测试与初始化用）。 */
     public void setPhase(LumenPhase phase) {
         this.entityData.set(DATA_PHASE, phase.ordinal());
         this.bossEvent.setColor(phase.barColor());
         this.bossEvent.setName(getDisplayName());
-        this.lockTicks = PHASE_LOCK_TICKS;
-        // 跨阶段时取消进行中的技能，避免换刀后还在用旧阶段的刀光/计时。
+        // 不再用无敌等待换刀：阶段锁血（伤害截断）已经保证不会跳阶段。
+        this.lockTicks = 0;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
         refreshBlade(phase);
+    }
+
+    /** 正式转阶段：切数据 + 特效 + 立刻用新刀放一次该阶段的 SA。 */
+    private void enterPhase(LumenPhase phase) {
+        setPhase(phase);
         playPhaseChangeEffect(phase);
+        releaseTransitionSa(phase);
+    }
+
+    /**
+     * 转阶段即出招：初雪换刀后立刻甩一次霜刃，暮色换刀后立刻放一次斩星。
+     * 朝露是初始阶段，没有转阶段。
+     */
+    private void releaseTransitionSa(LumenPhase phase) {
+        if (this.level().isClientSide() || phase == LumenPhase.DAWN) {
+            return;
+        }
+        LivingEntity target = getTarget();
+        if (target == null || !target.isAlive()) {
+            target = this.level().getNearestPlayer(this, 24.0D);
+        }
+        if (phase == LumenPhase.FIRST_SNOW) {
+            playAction(LumenAction.FROST);
+            frostStrike();
+            return;
+        }
+        if (target != null && target.isAlive() && distanceToSqr(target) <= 16.0D * 16.0D) {
+            playAction(LumenAction.SLASH_ART);
+            slashStrike(target);
+        }
     }
 
     /** 阶段切换特效：换刀刀光 + 粒子爆发 + 音效。 */
@@ -289,7 +319,7 @@ public class LumenSeishinEntity extends Monster {
         }
         LumenPhase expected = LumenPhase.forHealth(getHealth());
         if (expected.ordinal() > getPhase().ordinal()) {
-            setPhase(expected);
+            enterPhase(expected);
         }
         if (isFinalCharging()) {
             tickFinalCharge();

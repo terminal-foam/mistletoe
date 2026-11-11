@@ -161,7 +161,6 @@ public final class LumenBossGameTest {
         LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
         boss.setPhase(LumenPhase.MISTLETOE);
         boss.setHealth(36.0F);
-        // 等换阶段的无敌窗口过去，此时仍在蓄力中。
         helper.runAfterDelay(25, () -> {
             helper.assertTrue(boss.isFinalCharging(), "第 25 tick 已经不在蓄力");
             float before = boss.getHealth();
@@ -169,6 +168,22 @@ public final class LumenBossGameTest {
             float taken = before - boss.getHealth();
             helper.assertTrue(Math.abs(taken - 1.0F) < 0.01F,
                     "蓄力期间减伤不是 90%，实际承受 " + taken);
+            helper.succeed();
+        });
+    }
+
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void phaseChangeReleasesSaWithNewBlade(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 3);
+        setMaxHealth(target, 1000.0D);
+        // 跌破 240 后应立刻进入初雪并用新刀甩一次霜刃，没有无敌等待。
+        boss.setHealth(239.0F);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(boss.getPhase() == LumenPhase.FIRST_SNOW, "没有进入初雪：" + boss.getPhase());
+            helper.assertTrue(target.getHealth() < 1000.0F,
+                    "转阶段没有立刻放霜刃，目标生命：" + target.getHealth());
             helper.succeed();
         });
     }
