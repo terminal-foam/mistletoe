@@ -62,6 +62,11 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     private static final int PHASE_LOCK_TICKS = 20;
 
     /** 朝露普通三连：每刀 5。 */
+    /** 随从形态：最大生命 20，普攻与玩家初雪一致。 */
+    public static final float TAME_MAX_HEALTH = 20.0F;
+    public static final float TAME_MELEE_DAMAGE = 12.0F;
+    private static final int TAME_REGEN_INTERVAL = 40;
+
     private static final float MELEE_DAWN = 5.0F;
     /** 初雪普通四连：每刀 6。 */
     private static final float MELEE_FIRST_SNOW = 6.0F;
@@ -251,6 +256,10 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     // ── 阶段 ────────────────────────────────────────────────────────────
 
     public LumenPhase getPhase() {
+        // 臣服后固定用初雪一套
+        if (this.isTame()) {
+            return LumenPhase.FIRST_SNOW;
+        }
         return LumenPhase.byOrdinal(this.entityData.get(DATA_PHASE));
     }
 
@@ -383,9 +392,15 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         if (!isAlive()) {
             return;
         }
-        LumenPhase expected = LumenPhase.forHealth(getHealth());
-        if (expected.ordinal() > getPhase().ordinal()) {
-            enterPhase(expected);
+        // 随从形态缓慢回血
+        if (this.isTame() && getHealth() < getMaxHealth() && this.tickCount % TAME_REGEN_INTERVAL == 0) {
+            this.heal(1.0F);
+        }
+        if (!this.isTame()) {
+            LumenPhase expected = LumenPhase.forHealth(getHealth());
+            if (expected.ordinal() > getPhase().ordinal()) {
+                enterPhase(expected);
+            }
         }
         if (isFinalCharging()) {
             tickFinalCharge();
@@ -609,6 +624,10 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     private float meleeDamage(LivingEntity target) {
+        // 臣服后按玩家初雪的攻击力结算
+        if (this.isTame()) {
+            return TAME_MELEE_DAMAGE;
+        }
         return switch (getPhase()) {
             case DAWN -> MELEE_DAWN;
             case FIRST_SNOW -> MELEE_FIRST_SNOW;
@@ -779,8 +798,12 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     private void subdueTo(Player player) {
         this.setTame(true, true);
         this.setOwnerUUID(player.getUUID());
-        this.setHealth(this.getMaxHealth() * 0.5F);
-        this.setPhase(LumenPhase.DAWN);
+        var maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth != null) {
+            maxHealth.setBaseValue(TAME_MAX_HEALTH);
+        }
+        this.setHealth(TAME_MAX_HEALTH);
+        this.setPhase(LumenPhase.FIRST_SNOW);
         this.meleeHitsLeft = 0;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
