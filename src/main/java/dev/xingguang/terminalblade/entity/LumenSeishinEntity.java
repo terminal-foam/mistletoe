@@ -250,6 +250,18 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
                 return !isTame() && super.canUse();
             }
         });
+        // 驯服后：主动搜寻并攻击敌对生物（Enemy），但不碰主人与同主人的同伴。
+        // Enemy 是敌对生物的标记接口（僵尸/骷髅/苦力怕等都实现它），
+        // 因此不会误打牛、羊这类被动生物。
+        this.targetSelector.addGoal(5, new NearestAttackableTargetGoal<net.minecraft.world.entity.Mob>(
+                this, net.minecraft.world.entity.Mob.class, 10, true, false,
+                target -> target instanceof net.minecraft.world.entity.monster.Enemy
+                        && !this.isAlliedTo(target)) {
+            @Override
+            public boolean canUse() {
+                return isTame() && super.canUse();
+            }
+        });
     }
 
     // ── 阶段 ────────────────────────────────────────────────────────────

@@ -203,4 +203,31 @@ public final class LumenBossGameTest {
             helper.succeed();
         });
     }
+
+    /** 臣服后必须主动把敌对生物设为目标，且不能误打被动生物。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void tamedFollowerSeeksHostileMobs(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        net.minecraft.world.entity.monster.Zombie foe =
+                helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.ZOMBIE, 3, 1, 6);
+        net.minecraft.world.entity.animal.Cow cow =
+                helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.COW, 6, 1, 2);
+        // 不需要真实玩家：主人 UUID 只用于归属判定，避免 mock 玩家登录把测试卡住
+        boss.setTame(true, true);
+        boss.setOwnerUUID(java.util.UUID.randomUUID());
+
+        helper.runAfterDelay(60, () -> {
+            LivingEntity target = boss.getTarget();
+            String diag = " target=" + target
+                    + " tame=" + boss.isTame()
+                    + " owner=" + boss.getOwnerUUID()
+                    + " canAttack=" + boss.canAttack(foe)
+                    + " distSq=" + String.format("%.2f", boss.distanceToSqr(foe))
+                    + " follow=" + boss.getAttributeValue(Attributes.FOLLOW_RANGE);
+            helper.assertTrue(target == foe, "臣服后没有主动攻击敌对生物：" + diag);
+            helper.assertTrue(boss.getTarget() != cow, "臣服后误把被动生物设为目标");
+            helper.succeed();
+        });
+    }
 }
