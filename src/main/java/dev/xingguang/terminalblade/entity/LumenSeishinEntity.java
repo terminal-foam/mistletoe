@@ -239,18 +239,41 @@ public class LumenSeishinEntity extends Monster {
         this.slashWindupUntil = 0L;
         getNavigation().stop();
         this.bossEvent.setColor(BossEvent.BossBarColor.RED);
+        this.bossEvent.setName(Component.translatable("entity.mistletoe.lumen_seishin.charging"));
+        // 类似凋灵：蓄力期间把天空压暗，给玩家一个“现在必须跑”的强提示。
+        this.bossEvent.setDarkenScreen(true);
         playSound(SoundEvents.WITHER_SPAWN, 1.0F, 0.6F);
         TerminalBlade.LOGGER.info("[流明·星] 终局蓄力开始");
     }
 
     private void tickFinalCharge() {
         this.finalChargeLeft--;
+        if (this.finalChargeLeft % 4 == 0) {
+            spawnChargeRing();
+        }
         if (this.finalChargeLeft == FINAL_WARN_1 || this.finalChargeLeft == FINAL_WARN_2) {
             playSound(SoundEvents.BEACON_ACTIVATE, 1.2F, 0.5F);
         }
         if (this.finalChargeLeft <= 0) {
             resolveFinalCharge();
         }
+    }
+
+    /** 在 12 格半径上画一圈粒子，作为可读的危险区边界。 */
+    private void spawnChargeRing() {
+        if (!(this.level() instanceof net.minecraft.server.level.ServerLevel level)) {
+            return;
+        }
+        int points = 36;
+        for (int i = 0; i < points; i++) {
+            double angle = Math.PI * 2.0D * i / points;
+            double x = getX() + Math.cos(angle) * FINAL_CHARGE_RADIUS;
+            double z = getZ() + Math.sin(angle) * FINAL_CHARGE_RADIUS;
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME,
+                    x, getY() + 0.4D, z, 1, 0.0D, 0.25D, 0.0D, 0.0D);
+        }
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                getX(), getY() + 1.0D, getZ(), 6, 0.4D, 1.0D, 0.4D, 0.02D);
     }
 
     /**
