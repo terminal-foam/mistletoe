@@ -499,7 +499,8 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
      * 附近没人（例如玩家跑远了）才走原来的献祭死亡。</p>
      */
     public void resolveFinalCharge() {
-        if (this.level().isClientSide()) {
+        if (this.level().isClientSide() || this.isTame()) {
+            this.finalChargeLeft = 0;
             return;
         }
         this.finalChargeLeft = 0;
@@ -517,7 +518,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         this.finalChargeDone = true;
 
         Player surrenderTo = this.level().getNearestPlayer(this, SURRENDER_RANGE);
-        if (surrenderTo != null && !surrenderTo.isSpectator() && !surrenderTo.isCreative()) {
+        if (surrenderTo != null && !surrenderTo.isSpectator()) {
             this.subdueTo(surrenderTo);
             TerminalBlade.LOGGER.info("[流明·星] 力竭臣服");
             return;
@@ -809,6 +810,12 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
 
     /** 臣服：满血的一半、回到朝露、收起 Boss 血条、清空所有招式状态。 */
     private void subdueTo(Player player) {
+        // 必须先掐掉进行中的终局蓄力，否则归队后 finalChargeLeft 还在倒数，
+        // resolveFinalCharge 会把主人和自己一起结算掉。
+        this.finalChargeLeft = 0;
+        this.finalChargeDone = true;
+        this.bossEvent.setDarkenScreen(false);
+        this.bossEvent.setVisible(false);
         this.setTame(true, true);
         this.setOwnerUUID(player.getUUID());
         var maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
