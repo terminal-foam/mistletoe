@@ -71,8 +71,8 @@ public final class LumenBossGameTest {
         boss.setPhase(LumenPhase.MISTLETOE);
         target.setHealth(1000.0F);
         boss.doHurtTarget(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 900.0F) < 0.01F,
-                "暮色首刀不是玩家最大生命的 10%：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 800.0F) < 0.01F,
+                "暮色首刀不是目标最大生命的 20%：" + target.getHealth());
         helper.succeed();
     }
 

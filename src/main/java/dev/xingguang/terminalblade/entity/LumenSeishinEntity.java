@@ -60,7 +60,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 初雪普通四连：每刀 6。 */
     private static final float MELEE_FIRST_SNOW = 6.0F;
     /** 暮色普通攻击：玩家最大生命值 × 10%。 */
-    private static final float MELEE_MISTLETOE_RATIO = 0.10F;
+    private static final float MELEE_MISTLETOE_RATIO = 0.20F;
 
     /** 霜刃：7 刀，每刀固定 2；前方 100°、6 格。 */
     private static final int FROST_HITS = 7;
@@ -97,8 +97,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final double MELEE_HIT_RANGE = 4.25D;
 
     /** 朝露回血：每次 10，整场最多 30，冷却 10 秒。 */
-    private static final float HEAL_AMOUNT = 10.0F;
-    private static final float HEAL_CAP = 30.0F;
+    private static final float HEAL_AMOUNT = 20.0F;
+    private static final float HEAL_CAP = 60.0F;
     private static final long HEAL_COOLDOWN = 200L;
 
     /** 终局蓄力：P3 首次掉到 36 HP 触发，蓄力 6 秒、球形半径 12 格，只执行一次。 */
@@ -120,6 +120,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 每次换招式自增，客户端据此重启动画。 */
     private static final EntityDataAccessor<Integer> DATA_ANIM_SEQ =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
+    /** 连段变体：0 = A 套（combo_a*），1 = B 套（combo_b*）。 */
+    private static final EntityDataAccessor<Byte> DATA_COMBO_VARIANT =
+            SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> DATA_COMBO_INDEX =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
 
@@ -196,6 +199,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         builder.define(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
         builder.define(DATA_ANIM_SEQ, 0);
         builder.define(DATA_COMBO_INDEX, 0);
+        builder.define(DATA_COMBO_VARIANT, (byte) 0);
     }
 
     public LumenAction getAction() {
@@ -754,9 +758,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             startFrostCombo();
             return;
         }
-        if (getPhase() == LumenPhase.MISTLETOE
-                && now >= this.slashCooldownUntil
-                && distanceToSqr(target) <= 16.0D * 16.0D) {
+        // 初雪：SA 冷却一好就放，不要求距离；暮色：仍要求 16 格内
+        boolean saReady = now >= this.slashCooldownUntil
+                && (getPhase() == LumenPhase.FIRST_SNOW
+                        || (getPhase() == LumenPhase.MISTLETOE && distanceToSqr(target) <= 256.0D));
+        if (saReady && (getPhase() == LumenPhase.FIRST_SNOW || getPhase() == LumenPhase.MISTLETOE)) {
             this.meleeHitsLeft = 0;
             faceTarget(target);
             this.slashLockedYaw = getYRot();
@@ -781,6 +787,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         // A 连段：启动连段，第一刀立刻出；后续由 tickMeleeChain 按 meleeInterval() 推进。
         this.meleeTarget = living;
         this.meleeHitIndex = 0;
+        // 初雪段每套连段随机 A/B，其它阶段固定 A
+        this.entityData.set(DATA_COMBO_VARIANT, (byte) (
+                getPhase() == LumenPhase.FIRST_SNOW && getRandom().nextBoolean() ? 1 : 0));
         this.meleeHitsLeft = meleeChainLength();
         this.meleeCooldownTicks = 0;
         meleeHit();
@@ -799,7 +808,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private long meleeInterval() {
         return switch (getPhase()) {
             case DAWN -> 9L;
-            case FIRST_SNOW -> 5L;
+            case FIRST_SNOW -> 3L;   // 初雪段节奏更快
             case MISTLETOE -> 10L;
         };
     }
@@ -1187,12 +1196,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 招式 → YSM 动画名（资源里是 Bedrock 的 slashblade:* 动作）。 */
     private String actionAnimation(LumenAction action) {
         return switch (action) {
-            case MELEE -> switch (Math.min(this.entityData.get(DATA_COMBO_INDEX), 4)) {
-                case 1 -> "slashblade:combo_a1";
-                case 2 -> "slashblade:combo_a2";
-                case 3 -> "slashblade:combo_a3";
-                default -> "slashblade:combo_a4";
-            };
+            case MELEE -> {
+                int idx = Math.max(1, Math.min(this.entityData.get(DATA_COMBO_INDEX), 4));
+                boolean variantB = this.entityData.get(DATA_COMBO_VARIANT) == 1;
+                yield "slashblade:" + (variantB ? "combo_b" : "combo_a") + idx;
+            }
             case FROST -> "slashblade:combo_a5ex";
             case SLASH_ART -> "slashblade:combo_c";
             case PHASE -> "slashblade:combo_a1";
