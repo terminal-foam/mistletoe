@@ -69,12 +69,14 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 目标超过这个距离就考虑迅冲斩。 */
     private static final double RUSH_MIN_DISTANCE = 6.0D;
     /** 太远就不追了，免得瞬移半个地图。 */
-    private static final double RUSH_MAX_DISTANCE = 14.0D;
+    private static final double RUSH_MAX_DISTANCE = 64.0D;   // 追击模式：只要够远就一直冲
     /** 每 tick 位移量。 */
     private static final double RUSH_STEP = 1.05D;
     /** 突进持续时间上限（tick）。 */
     private static final int RUSH_TICKS = 10;
     private static final long RUSH_COOLDOWN = 120L;
+    /** 没够到目标时的快速重试间隔：贴回去之前会连续释放。 */
+    private static final long RUSH_RETRY = 5L;
     /** 突进到这么近就收刀。 */
     private static final double RUSH_HIT_DISTANCE = 3.2D;
 
@@ -83,6 +85,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final double PLUNGE_FALL_SPEED = -1.2D;
     private static final double PLUNGE_RADIUS = 4.0D;
     private static final long PLUNGE_COOLDOWN = 160L;
+    /** 落地后目标仍不在范围内：立刻再来一次空坠。 */
+    private static final long PLUNGE_RETRY = 5L;
 
     private static final double FROST_RANGE = 6.0D;
     private static final double FROST_CONE_DEGREES = 100.0D;
@@ -433,6 +437,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         LivingEntity target = this.rushTarget;
         this.rushTicksLeft = 0;
         this.rushTarget = null;
+        // 够到目标才吃完整冷却；没够到就短重试，实现「不断释放直到贴回攻击范围」
+        this.rushCooldownUntil = this.level().getGameTime() + (hit ? RUSH_COOLDOWN : RUSH_RETRY);
         if (hit && target != null && target.isAlive()) {
             slashStrike(target);
             target.knockback(0.6D, this.getX() - target.getX(), this.getZ() - target.getZ());
@@ -467,6 +473,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
 
     private void plungeImpact() {
         this.plunging = false;
+        LivingEntity t = getTarget();
+        boolean inRange = t != null && distanceToSqr(t) <= 4.0D * 4.0D;
+        this.plungeCooldownUntil = this.level().getGameTime() + (inRange ? PLUNGE_COOLDOWN : PLUNGE_RETRY);
         playAction(LumenAction.PLUNGE_IMPACT);
         playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.4F);
         for (LivingEntity victim : fanTargets(PLUNGE_RADIUS, 360.0D)) {
