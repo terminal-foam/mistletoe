@@ -204,6 +204,23 @@ public final class LumenBossGameTest {
         });
     }
 
+    /** 随从应该接受任意食物收服，但不接受非食物。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void companionAcceptsAnyFoodToTame(GameTestHelper helper) {
+        dev.xingguang.terminalblade.entity.LumenCompanionEntity pet =
+                helper.spawn(ModEntities.LUMEN_COMPANION.get(), 2, 1, 2);
+        helper.assertTrue(pet.isFood(new net.minecraft.world.item.ItemStack(
+                net.minecraft.world.item.Items.APPLE)), "苹果应该能用来收服");
+        helper.assertTrue(pet.isFood(new net.minecraft.world.item.ItemStack(
+                net.minecraft.world.item.Items.BREAD)), "面包应该能用来收服");
+        helper.assertTrue(!pet.isFood(new net.minecraft.world.item.ItemStack(
+                net.minecraft.world.item.Items.STONE)), "石头不该能用来收服");
+        helper.assertTrue(!pet.isFood(new net.minecraft.world.item.ItemStack(
+                net.minecraft.world.item.Items.IRON_INGOT)), "铁锭不该能用来收服");
+        helper.succeed();
+    }
+
     /** 臣服后必须主动把敌对生物设为目标，且不能误打被动生物。 */
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")

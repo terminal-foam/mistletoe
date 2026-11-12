@@ -299,7 +299,27 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (!this.isTame() || !this.isOwnedBy(player)) {
+        // 未驯服：喂「任意食物」收服，每次 1/3 概率（参考原版狼喂骨头）
+        if (!this.isTame()) {
+            ItemStack held = player.getItemInHand(hand);
+            if (this.isFood(held)) {
+                if (!this.level().isClientSide()) {
+                    this.usePlayerItem(player, hand, held);
+                    if (this.getRandom().nextInt(3) == 0) {
+                        this.tame(player);
+                        this.setOrderedToSit(true);
+                        this.setInSittingPose(true);
+                        this.getNavigation().stop();
+                        this.level().broadcastEntityEvent(this, (byte) 7);
+                    } else {
+                        this.level().broadcastEntityEvent(this, (byte) 6);
+                    }
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide());
+            }
+            return super.mobInteract(player, hand);
+        }
+        if (!this.isOwnedBy(player)) {
             return super.mobInteract(player, hand);
         }
         if (player.isShiftKeyDown()) {
@@ -390,7 +410,8 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return false;
+        // 任意食物都能用来收服
+        return stack.has(net.minecraft.core.component.DataComponents.FOOD);
     }
 
     @Override
