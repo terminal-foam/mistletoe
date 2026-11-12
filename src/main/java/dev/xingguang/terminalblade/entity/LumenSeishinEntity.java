@@ -90,6 +90,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
 
     /** 暮色斩星：一次 25% 最大生命值，前摇 1.2 秒，冷却 15 秒。 */
     private static final float SLASH_RATIO = 0.25F;
+    /** 暮色的斩星翻倍到 50% 目标最大生命。 */
+    private static final float SLASH_RATIO_MISTLETOE = 0.50F;
     private static final long SLASH_WINDUP = 24L;
     private static final long SLASH_COOLDOWN = 300L;
     private static final double SLASH_HIT_RANGE = 8.0D;
@@ -876,7 +878,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
         if (target != null && target.isAlive()) {
-            float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
+            float ratio = getPhase() == LumenPhase.MISTLETOE ? SLASH_RATIO_MISTLETOE : SLASH_RATIO;
+            float amount = Math.max(1.0F, target.getMaxHealth() * ratio);
             target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
         }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);

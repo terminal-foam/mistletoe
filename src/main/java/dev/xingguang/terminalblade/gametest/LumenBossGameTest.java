@@ -101,8 +101,8 @@ public final class LumenBossGameTest {
         boss.setPhase(LumenPhase.MISTLETOE);
 
         boss.slashStrike(target);
-        helper.assertTrue(Math.abs(target.getHealth() - 750.0F) < 0.01F,
-                "斩星不是最大生命的 25%：" + target.getHealth());
+        helper.assertTrue(Math.abs(target.getHealth() - 500.0F) < 0.01F,
+                "暮色斩星不是最大生命的 50%：" + target.getHealth());
         helper.succeed();
     }
 
