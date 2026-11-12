@@ -737,6 +737,35 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         super.die(source);
     }
 
+    // ── 防御性状态：不被推动 / 不消失 ────────────────────────────────────
+
+    /** 蓄力时不能被实体挤开（否则会把蓄力锚点推歪）。 */
+    @Override
+    public boolean isPushable() {
+        return !this.isFinalCharging() && super.isPushable();
+    }
+
+    /** 蓄力时免疫击退，避免被玩家的刀推离蓄力原点。 */
+    @Override
+    public void knockback(double strength, double x, double z) {
+        if (this.isFinalCharging()) {
+            return;
+        }
+        super.knockback(strength, x, z);
+    }
+
+    /** 和平模式不消失（Boss 不该因为切换难度就凭空不见）。 */
+    @Override
+    protected boolean shouldDespawnInPeaceful() {
+        return false;
+    }
+
+    /** 玩家走远时不卸载。 */
+    @Override
+    public boolean removeWhenFarAway(double distance) {
+        return false;
+    }
+
     @Override
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);

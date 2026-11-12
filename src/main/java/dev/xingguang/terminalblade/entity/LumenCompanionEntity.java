@@ -555,6 +555,16 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     }
 
     @Override
+    protected boolean shouldDespawnInPeaceful() {
+        return false;
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distance) {
+        return false;
+    }
+
+    @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_companion");
     }
