@@ -655,10 +655,6 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     public boolean shouldShowName() {
         return false;
     }
-    @Override
-    public Component getName() {
-        return Component.translatable("entity.mistletoe.lumen_companion");
-    }
 
     /** 供死亡复活逻辑取物品栏引用。 */
     public net.minecraft.world.SimpleContainer getInventory() {
