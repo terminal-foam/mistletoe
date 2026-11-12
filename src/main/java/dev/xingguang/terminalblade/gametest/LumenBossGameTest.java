@@ -145,6 +145,22 @@ public final class LumenBossGameTest {
         helper.assertTrue(left < 20.0F, "20 点伤害完全没生效，剩余：" + left);
         helper.succeed();
     }
+    /** 随从普攻用玩家公式：D = base + k × (目标最大生命 − 自己当前生命)。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void companionMeleeUsesPlayerFormula(GameTestHelper helper) {
+        dev.xingguang.terminalblade.entity.LumenCompanionEntity pet =
+                helper.spawn(ModEntities.LUMEN_COMPANION.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 3);
+        setMaxHealth(target, 1000.0D);
+
+        pet.doHurtTarget(target);
+        float dealt = 1000.0F - target.getHealth();
+        // base 5 + 0.2 × (1000 − 20) = 201；旧的 10% 公式只会打 100
+        helper.assertTrue(dealt > 150.0F,
+                "随从普攻没有使用玩家公式（生命差额），实际只打了：" + dealt);
+        helper.succeed();
+    }
     private static void setMaxHealth(LivingEntity entity, double health) {
         entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         entity.setHealth((float) health);

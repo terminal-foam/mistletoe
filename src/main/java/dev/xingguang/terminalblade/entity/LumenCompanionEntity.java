@@ -65,14 +65,8 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     private static final double MOVEMENT_SPEED = 0.30D;
     private static final double KNOCKBACK_RESISTANCE = 0.50D;
     private static final double FOLLOW_RANGE = 24.0D;
-
-    /** 暮色普攻：目标最大生命 10%。 */
-    private static final float MELEE_RATIO = 0.10F;
     private static final int MELEE_CHAIN = 2;
     private static final int MELEE_INTERVAL = 10;
-
-    /** 暮色斩星：25%，前摇 24 tick，冷却 300 tick。 */
-    private static final float SLASH_RATIO = 0.25F;
     private static final long SLASH_WINDUP = 24L;
     private static final long SLASH_COOLDOWN = 300L;
     private static final double SLASH_RANGE = 8.0D;
@@ -276,6 +270,40 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         }
     }
 
+    /**
+     * 普攻伤害：完全沿用玩家那把刀的公式。
+     * D = base_damage + k × (目标最大生命 − 自己当前生命)。
+     * 自己掉血越多打得越疼，和玩家持刀时一致。
+     */
+    private float meleeAmount(LivingEntity target) {
+        return Math.max(0.0F, dev.xingguang.terminalblade.combat.MistletoeFormulas.normalDamage(
+                dev.xingguang.terminalblade.TerminalBladeConfig.baseDamage(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.gapCoefficient(),
+                target.getMaxHealth(),
+                this.getHealth(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.clampNegativeGap()));
+    }
+
+    /**
+     * 斩星伤害：沿用玩家 SA 的两段结算。
+     * 普通段吃护甲，最大生命加成段作为真伤单独结算（只对高血量目标生效）。
+     */
+    private void castSlashArtOn(LivingEntity target) {
+        var split = dev.xingguang.terminalblade.combat.MistletoeFormulas.slashArtDamageSplit(
+                dev.xingguang.terminalblade.TerminalBladeConfig.baseDamage(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.gapCoefficient(),
+                target.getMaxHealth(),
+                this.getHealth(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.clampNegativeGap(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.slashArtThreshold(),
+                dev.xingguang.terminalblade.TerminalBladeConfig.slashArtMaxHealthBonus(),
+                1.0F);
+        boolean connected = MistletoeDamage.hurt(this, target, MistletoeDamage.SLASH, split.normal());
+        if (connected && split.trueDamage() > 0.0F && target.isAlive()) {
+            MistletoeDamage.hurt(this, target, MistletoeDamage.SLASH_TRUE, split.trueDamage());
+        }
+    }
+
     private void meleeHit() {
         LivingEntity target = this.meleeTarget;
         if (!shouldGuardTarget(target)) {
@@ -283,11 +311,11 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
             this.meleeTarget = null;
             return;
         }
-        float amount = Math.max(1.0F, target.getMaxHealth() * MELEE_RATIO);
+        float amount = meleeAmount(target);
         this.entityData.set(DATA_COMBO_INDEX, this.meleeHitIndex + 1);
         playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, SLASH_COLOR);
-        target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+        MistletoeDamage.hurt(this, target, MistletoeDamage.SLASH, amount);
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.0F);
         this.meleeHitIndex++;
         this.meleeHitsLeft--;
@@ -305,8 +333,7 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, SLASH_COLOR);
         if (shouldGuardTarget(target)) {
-            float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
-            target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+            castSlashArtOn(target);
         }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);
     }
