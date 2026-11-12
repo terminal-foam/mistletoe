@@ -934,7 +934,6 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         companion.moveTo(x, y, z, owner.getYRot(), 0.0F);
         companion.setTame(true, true);
         companion.setOwnerUUID(owner.getUUID());
-        companion.setCustomName(this.getCustomName());
         // 默认坐下：生成在出生点等主人回来，不会自己乱跑
         companion.setOrderedToSit(true);
         companion.setInSittingPose(true);
