@@ -27,11 +27,6 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -57,15 +52,11 @@ import java.util.List;
  *
  * <p>当前实现：M1 实体 + 三阶段，M2 招式（普攻、霜刃 7×2、暮色斩星 25%、朝露回血）。</p>
  */
-public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
+public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public static final float MAX_HEALTH = 360.0F;
     private static final int PHASE_LOCK_TICKS = 20;
 
     /** 朝露普通三连：每刀 5。 */
-    /** 随从形态：最大生命 20，普攻与玩家初雪一致。 */
-    public static final float TAME_MAX_HEALTH = 100.0F;
-    private static final int TAME_REGEN_INTERVAL = 40;
-
     private static final float MELEE_DAWN = 5.0F;
     /** 初雪普通四连：每刀 6。 */
     private static final float MELEE_FIRST_SNOW = 6.0F;
@@ -114,8 +105,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
             BossEvent.BossBarColor.BLUE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int lockTicks;
-    /** 随从的物品栏：36 格（9×4），用原版箱子界面打开。 */
-    private final net.minecraft.world.SimpleContainer inventory = new net.minecraft.world.SimpleContainer(36);
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
     /** 击败它的玩家（用于死亡时生成随从）。 */
@@ -146,7 +135,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     private float chargeYaw;
     private boolean finalChargeDone;
 
-    public LumenSeishinEntity(EntityType<? extends TamableAnimal> type, Level level) {
+    public LumenSeishinEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
         this.xpReward = 500;
         this.setPersistenceRequired();
@@ -238,45 +227,17 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
                 getNavigation().stop();
             }
         });
-        // 坐下指令：优先级高于近战，坐下时不再移动
-        this.goalSelector.addGoal(1, new net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
-        // 驯服后：跟随主人、替主人作战
-        this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.0D, 10.0F, 3.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this));
-        this.targetSelector.addGoal(3, new OwnerHurtTargetGoal(this));
-        // 野生时主动攻击玩家；臣服后不再攻击玩家
-        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<Player>(this, Player.class, true) {
-            @Override
-            public boolean canUse() {
-                return !isTame() && super.canUse();
-            }
-        });
-        // 驯服后：主动搜寻并攻击敌对生物（Enemy），但不碰主人与同主人的同伴。
-        // Enemy 是敌对生物的标记接口（僵尸/骷髅/苦力怕等都实现它），
-        // 因此不会误打牛、羊这类被动生物。
-        this.targetSelector.addGoal(5, new NearestAttackableTargetGoal<net.minecraft.world.entity.Mob>(
-                this, net.minecraft.world.entity.Mob.class, 10, true, false,
-                target -> target instanceof net.minecraft.world.entity.monster.Enemy
-                        && !this.isAlliedTo(target)) {
-            @Override
-            public boolean canUse() {
-                return isTame() && super.canUse();
-            }
-        });
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     // ── 阶段 ────────────────────────────────────────────────────────────
 
     public LumenPhase getPhase() {
-        // 臣服后固定用暮色一套（招式、伤害、刀外观）
-        if (this.isTame()) {
-            return LumenPhase.MISTLETOE;
-        }
         return LumenPhase.byOrdinal(this.entityData.get(DATA_PHASE));
     }
 
@@ -409,21 +370,15 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         if (!isAlive()) {
             return;
         }
-        // 随从形态缓慢回血
-        if (this.isTame() && getHealth() < getMaxHealth() && this.tickCount % TAME_REGEN_INTERVAL == 0) {
-            this.heal(1.0F);
-        }
-        if (!this.isTame()) {
-            LumenPhase expected = LumenPhase.forHealth(getHealth());
-            if (expected.ordinal() > getPhase().ordinal()) {
-                enterPhase(expected);
-            }
+        LumenPhase expected = LumenPhase.forHealth(getHealth());
+        if (expected.ordinal() > getPhase().ordinal()) {
+            enterPhase(expected);
         }
         if (isFinalCharging()) {
             tickFinalCharge();
             return;
         }
-        if (!this.isTame() && getPhase() == LumenPhase.MISTLETOE && !this.finalChargeDone
+        if (getPhase() == LumenPhase.MISTLETOE && !this.finalChargeDone
                 && getHealth() <= FINAL_CHARGE_THRESHOLD) {
             startFinalCharge();
             return;
@@ -513,7 +468,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
      * <p>蓄力放完就献祭死亡并掉落暮色；只有被玩家直接打死的才臣服。</p>
      */
     public void resolveFinalCharge() {
-        if (this.level().isClientSide() || this.isTame()) {
+        if (this.level().isClientSide()) {
             this.finalChargeLeft = 0;
             return;
         }
@@ -707,10 +662,7 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        // 已臣服的随从不再显示 Boss 血条
-        if (!this.isTame()) {
-            this.bossEvent.addPlayer(player);
-        }
+        this.bossEvent.addPlayer(player);
     }
 
     @Override
@@ -740,7 +692,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.put("LumenInventory", this.inventory.createTag(this.registryAccess()));
         tag.putInt("LumenPhase", getPhase().ordinal());
         tag.putInt("LumenLock", this.lockTicks);
         tag.putFloat("LumenHealed", this.healedTotal);
@@ -754,9 +705,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("LumenInventory")) {
-            this.inventory.fromTag(tag.getList("LumenInventory", 10), this.registryAccess());
-        }
         this.entityData.set(DATA_PHASE, LumenPhase.byOrdinal(tag.getInt("LumenPhase")).ordinal());
         this.lockTicks = tag.getInt("LumenLock");
         this.healedTotal = tag.getFloat("LumenHealed");
@@ -769,19 +717,11 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         this.bossEvent.setName(getDisplayName());
     }
 
-    /**
-     * 手里那把刀的阶段。随从形态固定持「暮色」，但招式仍按初雪结算，
-     * 所以刀的外观与招式是分开的。
-     */
-    private LumenPhase bladePhase() {
-        return this.isTame() ? LumenPhase.MISTLETOE : getPhase();
-    }
-
     private void refreshBlade(LumenPhase phase) {
         if (this.level().isClientSide()) {
             return;
         }
-        this.setItemSlot(EquipmentSlot.MAINHAND, bladeFor(bladePhase()));
+        this.setItemSlot(EquipmentSlot.MAINHAND, bladeFor(getPhase()));
     }
 
     private ItemStack bladeFor(LumenPhase phase) {
@@ -817,80 +757,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
     // ── 骑乘 / 坐下 ─────────────────────────────────────────────────────
 
-    /** 右键骑乘；潜行 + 右键切换坐下。只有主人能操作。 */
-    @Override
-    public net.minecraft.world.InteractionResult mobInteract(Player player,
-            net.minecraft.world.InteractionHand hand) {
-        if (!this.isTame() || !this.isOwnedBy(player)) {
-            return super.mobInteract(player, hand);
-        }
-        if (player.isShiftKeyDown()) {
-            if (this.isOrderedToSit()) {
-                this.setOrderedToSit(false);
-                this.setInSittingPose(false);
-            } else if (!this.isVehicle()) {
-                this.setOrderedToSit(true);
-                this.setInSittingPose(true);
-                this.getNavigation().stop();
-            }
-            return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
-        }
-        // 手上有东西：打开物品栏（可以直接往里放东西）
-        if (!player.getItemInHand(hand).isEmpty()) {
-            if (!this.level().isClientSide()) {
-                this.openInventory(player);
-            }
-            return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
-        }
-        if (this.isOrderedToSit()) {
-            return net.minecraft.world.InteractionResult.PASS;
-        }
-        if (!this.level().isClientSide()) {
-            player.startRiding(this);
-        }
-        return net.minecraft.world.InteractionResult.sidedSuccess(this.level().isClientSide());
-    }
-
-    /** 用原版 9×4 箱子界面打开随从的物品栏。 */
-    private void openInventory(Player player) {
-        player.openMenu(new net.minecraft.world.SimpleMenuProvider(
-                (id, playerInv, p) -> new net.minecraft.world.inventory.ChestMenu(
-                        net.minecraft.world.inventory.MenuType.GENERIC_9x4, id, playerInv, this.inventory, 4),
-                this.getDisplayName()));
-    }
-
-    @Override
-    public LivingEntity getControllingPassenger() {
-        return this.getFirstPassenger() instanceof Player player && this.isOwnedBy(player) ? player : null;
-    }
-
-    /** 骑手坐的高度（模型 1.8 格，坐在肩背上）。 */
-    @Override
-    public Vec3 getPassengerRidingPosition(Entity passenger) {
-        return new Vec3(this.getX(), this.getY() + 1.25D, this.getZ());
-    }
-
-    /** 有玩家骑乘时按玩家输入驱动，做法参照原版猪。 */
-    @Override
-    public void travel(Vec3 travelVector) {
-        if (this.isAlive() && this.getControllingPassenger() instanceof Player player) {
-            this.setYRot(player.getYRot());
-            this.yRotO = this.getYRot();
-            this.setXRot(player.getXRot() * 0.5F);
-            this.setRot(this.getYRot(), this.getXRot());
-            this.yBodyRot = this.getYRot();
-            this.yHeadRot = this.yBodyRot;
-            float strafe = player.xxa * 0.5F;
-            float forward = player.zza;
-            if (forward <= 0.0F) {
-                forward *= 0.25F;
-            }
-            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            super.travel(new Vec3(strafe, 0.0D, forward));
-            return;
-        }
-        super.travel(travelVector);
-    }
     // ── 臣服 / 友方 ─────────────────────────────────────────────────────
 
     /** 被玩家打出致死一击时不死，而是当场臣服，成为该玩家的随从。 */
@@ -922,36 +788,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
         companion.setCustomName(this.getCustomName());
         server.addFreshEntity(companion);
         TerminalBlade.LOGGER.info("[流明·星] 被 {} 击败，生成随从", owner.getName().getString());
-    }
-
-    @Override
-    public boolean isAlliedTo(Entity entity) {
-        if (super.isAlliedTo(entity)) {
-            return true;
-        }
-        if (this.isTame() && entity instanceof LumenSeishinEntity other) {
-            return java.util.Objects.equals(this.getOwnerUUID(), other.getOwnerUUID());
-        }
-        return false;
-    }
-
-    @Override
-    public boolean canAttack(LivingEntity target) {
-        if (this.isTame() && target instanceof Player player
-                && player.getUUID().equals(this.getOwnerUUID())) {
-            return false;
-        }
-        return super.canAttack(target);
-    }
-
-    @Override
-    public boolean isFood(ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public AgeableMob getBreedOffspring(net.minecraft.server.level.ServerLevel level, AgeableMob other) {
-        return null;
     }
 
     @Override
@@ -991,10 +827,6 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     private String desiredAnimation() {
-        // 坐下优先：坐姿不参与移动与招式
-        if (this.isInSittingPose()) {
-            return "sit";
-        }
         LumenAction action = getAction();
         if (action != LumenAction.NONE) {
             return this.actionAnimation(action);
