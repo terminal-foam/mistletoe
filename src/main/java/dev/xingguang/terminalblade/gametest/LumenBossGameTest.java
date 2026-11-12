@@ -121,7 +121,7 @@ public final class LumenBossGameTest {
             helper.assertTrue(target.getHealth() < 1000.0F, "转阶段没有立即发动第一刀霜刃");
             helper.runAfterDelay(45, () -> {
                 helper.assertTrue(Math.abs(target.getHealth() - 986.0F) < 0.01F,
-                        "霜刃转阶段未完成七次判定：" + target.getHealth());
+                        "霜刃转阶段未完成七次判定：" + target.getHealth() + " phase=" + boss.getPhase() + " left=" + boss.debugFrostHitsLeft() + " targets=" + boss.debugFrostTargets());
                 helper.succeed();
             });
         });

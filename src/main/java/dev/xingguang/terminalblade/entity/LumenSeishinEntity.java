@@ -319,6 +319,16 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         tickFrostCombo(this.level().getGameTime()); // first slash immediately
     }
 
+    /**
+     * 霜刃推进放在 tick() 里：aiStep 在某些状态下不会每 tick 都跑到 tickSkills，
+     * 而霜刃是硬计时，必须每 tick 推进。
+     */
+    private void tickFrostTimer() {
+        if (this.frostHitsLeft > 0 && !isFinalCharging()) {
+            tickFrostCombo(this.level().getGameTime());
+        }
+    }
+
     private void tickFrostCombo(long now) {
         if (this.frostHitsLeft <= 0 || now < this.nextFrostTick) {
             return;
@@ -435,6 +445,16 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     }
 
     // ── 终局蓄力 ────────────────────────────────────────────────────────
+
+    /** 仅供 GameTest 诊断：剩余霜刃刀数。 */
+    public int debugFrostHitsLeft() {
+        return this.frostHitsLeft;
+    }
+
+    /** 仅供 GameTest 诊断：快照目标数。 */
+    public int debugFrostTargets() {
+        return this.frostTargets.size();
+    }
 
     public boolean isFinalCharging() {
         return this.finalChargeLeft > 0;
@@ -842,8 +862,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             if (this.tickCount == 1) {
                 refreshBlade(getPhase());
             }
+            // 阶段推进与霜刃计时都放 tick：aiStep 不保证每 tick 都跑到
+            onDamageResolved();
             tickActionLifetime();
             tickMeleeChain();
+            tickFrostTimer();
         }
     }
 
