@@ -60,7 +60,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 初雪普通四连：每刀 6。 */
     private static final float MELEE_FIRST_SNOW = 6.0F;
     /** 暮色普通攻击：玩家最大生命值 × 10%。 */
-    private static final float MELEE_MISTLETOE_RATIO = 0.20F;
+    private static final float MELEE_MISTLETOE_RATIO = 0.25F;
 
     /** 霜刃：7 刀，每刀固定 2；前方 100°、6 格。 */
     private static final int FROST_HITS = 7;
@@ -107,7 +107,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 暮色斩星：一次 25% 最大生命值，前摇 1.2 秒，冷却 15 秒。 */
     private static final float SLASH_RATIO = 0.25F;
     /** 暮色的斩星翻倍到 50% 目标最大生命。 */
-    private static final float SLASH_RATIO_MISTLETOE = 0.50F;
+    private static final float SLASH_RATIO_MISTLETOE = 0.60F;
     /** 朝露 / 初雪的斩星是固定值（与这两段的固定普攻保持一致）。 */
     private static final float SLASH_FLAT_DAWN = 20.0F;
     private static final float SLASH_FLAT_FIRST_SNOW = 30.0F;
@@ -482,11 +482,14 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         playAction(LumenAction.STARFALL);
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 0.6F);
         playSound(SoundEvents.BEACON_POWER_SELECT, 1.2F, 1.4F);
+        boolean hitAny = false;
         for (LivingEntity victim : fanTargets(STARFALL_RADIUS, 360.0D)) {
             if (victim != null && victim.isAlive()) {
-                MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE, STARFALL_FLAT);
-                dawnLifesteal();
+                hitAny |= MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE, STARFALL_FLAT);
             }
+        }
+        if (hitAny) {
+            dawnLifesteal();   // 每招最多回一次，避免 AoE 按目标数刷血
         }
         if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
             server.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
@@ -525,12 +528,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.plungeCooldownUntil = this.level().getGameTime() + (inRange ? PLUNGE_COOLDOWN : PLUNGE_RETRY);
         playAction(LumenAction.PLUNGE_IMPACT);
         playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.4F);
+        boolean hitAny = false;
         for (LivingEntity victim : fanTargets(PLUNGE_RADIUS, 360.0D)) {
             if (victim != null && victim.isAlive()) {
-                MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE,
+                hitAny |= MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE,
                         Math.max(2.0F, victim.getMaxHealth() * 0.10F));
-                dawnLifesteal();
             }
+        }
+        if (hitAny) {
+            dawnLifesteal();
         }
         if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
             server.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION,
@@ -895,6 +901,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             this.meleeHitsLeft = 0;
             return;
         }
+        // 追击刀有宽松上限：被强力击退出 6 格就中断连段（交给迅冲斩追）
+        if (distanceToSqr(target) > 10.0D * 10.0D) {
+            this.meleeHitsLeft = 0;
+            return;
+        }
         float amount = meleeDamage(target);
         this.entityData.set(DATA_COMBO_INDEX, this.meleeHitIndex + 1);
         playAction(LumenAction.MELEE);
@@ -971,7 +982,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
 
     private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
-        if (target != null && target.isAlive()) {
+        // 宽松距离：起手时锁定朝向，但目标逃出 16 格就不再结算（避免隔空扣血）
+        if (target != null && target.isAlive() && distanceToSqr(target) <= 16.0D * 16.0D) {
             if (MistletoeDamage.hurt(this, target, MistletoeDamage.LUMEN_TRUE, slashAmount(target))) {
                 dawnLifesteal();
             }
@@ -999,6 +1011,10 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
                 return false;
             }
             if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) {
+                return false;
+            }
+            // 只打真正能攻击的对象：不误伤牛羊/村民/友方，也不打自己的随从
+            if (entity instanceof LumenCompanionEntity || !canAttack(entity) || isAlliedTo(entity)) {
                 return false;
             }
             Vec3 to = new Vec3(entity.getX() - getX(), 0.0D, entity.getZ() - getZ());
