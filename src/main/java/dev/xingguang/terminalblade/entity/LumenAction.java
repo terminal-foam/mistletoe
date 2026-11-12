@@ -11,7 +11,13 @@ public enum LumenAction {
     FROST(400.0D, 449.0D),
     SLASH_ART(400.0D, 488.0D),
     PHASE(400.0D, 488.0D),
-    CHARGE(459.0D, 488.0D);
+    CHARGE(459.0D, 488.0D),
+    /** 迅冲斩：目标过远时的突进斩。 */
+    RUSH(400.0D, 430.0D),
+    /** 空坠斩：自身在目标上空时的下坠。 */
+    PLUNGE(400.0D, 430.0D),
+    /** 空坠斩落地收招。 */
+    PLUNGE_IMPACT(400.0D, 430.0D);
 
     private final double start;
     private final double end;

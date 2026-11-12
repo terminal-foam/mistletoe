@@ -65,6 +65,25 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 霜刃：7 刀，每刀固定 2；前方 100°、6 格。 */
     private static final int FROST_HITS = 7;
     private static final float FROST_DAMAGE = 2.0F;
+    // ── 迅冲斩 / 空坠斩 ─────────────────────────────────────────────────
+    /** 目标超过这个距离就考虑迅冲斩。 */
+    private static final double RUSH_MIN_DISTANCE = 12.0D;
+    /** 太远就不追了，免得瞬移半个地图。 */
+    private static final double RUSH_MAX_DISTANCE = 40.0D;
+    /** 每 tick 位移量。 */
+    private static final double RUSH_STEP = 1.05D;
+    /** 突进持续时间上限（tick）。 */
+    private static final int RUSH_TICKS = 10;
+    private static final long RUSH_COOLDOWN = 120L;
+    /** 突进到这么近就收刀。 */
+    private static final double RUSH_HIT_DISTANCE = 3.2D;
+
+    /** 自身比目标高出这么多时就空坠斩。 */
+    private static final double PLUNGE_MIN_HEIGHT = 3.0D;
+    private static final double PLUNGE_FALL_SPEED = -1.2D;
+    private static final double PLUNGE_RADIUS = 4.0D;
+    private static final long PLUNGE_COOLDOWN = 160L;
+
     private static final double FROST_RANGE = 6.0D;
     private static final double FROST_CONE_DEGREES = 100.0D;
     private static final long FROST_COOLDOWN = 240L;
@@ -126,6 +145,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private LivingEntity meleeTarget;
     /** 霜刃起手时锁定的目标列表：目标被击退也不会丢刀。 */
     private java.util.List<LivingEntity> frostTargets = java.util.List.of();
+    /** 迅冲斩剩余 tick / 锁定目标 / 冷却。 */
+    private int rushTicksLeft;
+    private LivingEntity rushTarget;
+    private long rushCooldownUntil;
+    private int rushUses;
+    /** 空坠斩：是否正在下坠 / 冷却。 */
+    private boolean plunging;
+    private long plungeCooldownUntil;
+    private int plungeUses;
     private long frostCooldownUntil;
     private long slashWindupUntil;
     /** Direction chosen on entering slash windup: dodging sideways should work. */
@@ -199,6 +227,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             case SLASH_ART -> 30;
             case PHASE -> 22;
             case CHARGE -> 130;
+            case RUSH -> 14;
+            case PLUNGE -> 30;
+            case PLUNGE_IMPACT -> 12;
             case NONE -> 0;
         };
     }
@@ -234,7 +265,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             }
         });
         this.goalSelector.addGoal(1, new LumenFootworkGoal(this, () -> isFinalCharging()
-                || meleeHitsLeft > 0 || frostHitsLeft > 0 || slashWindupUntil > 0L));
+                || rushing() || plunging || meleeHitsLeft > 0 || frostHitsLeft > 0 || slashWindupUntil > 0L));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
@@ -348,6 +379,102 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         }
     }
 
+    // ── 迅冲斩 ──────────────────────────────────────────────────────────
+
+    private void startRush(LivingEntity target) {
+        this.rushTarget = target;
+        this.rushUses++;
+        this.rushTicksLeft = RUSH_TICKS;
+        this.rushCooldownUntil = this.level().getGameTime() + RUSH_COOLDOWN;
+        this.meleeHitsLeft = 0;
+        this.frostHitsLeft = 0;
+        faceTarget(target);
+        playAction(LumenAction.RUSH);
+        playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 1.5F);
+    }
+
+    /** 高速位移用 move() 走碰撞，避免穿墙。 */
+    private void tickRush() {
+        if (this.rushTicksLeft <= 0) {
+            return;
+        }
+        LivingEntity target = this.rushTarget;
+        if (target == null || !target.isAlive()) {
+            endRush(false);
+            return;
+        }
+        if (--this.rushTicksLeft <= 0 || distanceToSqr(target) <= RUSH_HIT_DISTANCE * RUSH_HIT_DISTANCE) {
+            endRush(true);
+            return;
+        }
+        net.minecraft.world.phys.Vec3 dir = target.position().subtract(this.position());
+        net.minecraft.world.phys.Vec3 flat = new net.minecraft.world.phys.Vec3(dir.x, 0.0D, dir.z);
+        if (flat.lengthSqr() < 1.0E-4D) {
+            endRush(true);
+            return;
+        }
+        flat = flat.normalize().scale(RUSH_STEP);
+        this.getNavigation().stop();
+        this.move(net.minecraft.world.entity.MoverType.SELF, flat);
+        this.getLookControl().setLookAt(target, 180.0F, 180.0F);
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
+            server.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
+                    this.getX(), this.getY(1.0D), this.getZ(), 2, 0.25D, 0.25D, 0.25D, 0.0D);
+        }
+    }
+
+    private void endRush(boolean hit) {
+        LivingEntity target = this.rushTarget;
+        this.rushTicksLeft = 0;
+        this.rushTarget = null;
+        if (hit && target != null && target.isAlive()) {
+            slashStrike(target);
+            target.knockback(0.6D, this.getX() - target.getX(), this.getZ() - target.getZ());
+        }
+    }
+
+    // ── 空坠斩 ──────────────────────────────────────────────────────────
+
+    private void startPlunge() {
+        this.plungeUses++;
+        this.plunging = true;
+        this.plungeCooldownUntil = this.level().getGameTime() + PLUNGE_COOLDOWN;
+        this.meleeHitsLeft = 0;
+        this.frostHitsLeft = 0;
+        playAction(LumenAction.PLUNGE);
+        playSound(SoundEvents.PLAYER_ATTACK_CRIT, 1.0F, 0.8F);
+    }
+
+    private void tickPlunge() {
+        if (!this.plunging) {
+            return;
+        }
+        this.setDeltaMovement(0.0D, PLUNGE_FALL_SPEED, 0.0D);
+        this.getNavigation().stop();
+        LivingEntity target = getTarget();
+        boolean landed = this.onGround()
+                || (target != null && this.getY() <= target.getY() + 0.8D);
+        if (landed) {
+            plungeImpact();
+        }
+    }
+
+    private void plungeImpact() {
+        this.plunging = false;
+        playAction(LumenAction.PLUNGE_IMPACT);
+        playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.4F);
+        for (LivingEntity victim : fanTargets(PLUNGE_RADIUS, 360.0D)) {
+            if (victim != null && victim.isAlive()) {
+                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE),
+                        Math.max(2.0F, victim.getMaxHealth() * 0.10F));
+            }
+        }
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
+            server.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION,
+                    this.getX(), this.getY(0.2D), this.getZ(), 8, 1.2D, 0.2D, 1.2D, 0.0D);
+        }
+    }
+
     private void faceTarget(LivingEntity target) {
         double dx = target.getX() - getX();
         double dz = target.getZ() - getZ();
@@ -452,6 +579,18 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     }
 
     // ── 终局蓄力 ────────────────────────────────────────────────────────
+
+    public boolean rushing() {
+        return this.rushTicksLeft > 0;
+    }
+
+    public int debugRushUses() {
+        return this.rushUses;
+    }
+
+    public int debugPlungeUses() {
+        return this.plungeUses;
+    }
 
     /** 仅供 GameTest 诊断：剩余霜刃刀数。 */
     public int debugFrostHitsLeft() {
@@ -587,6 +726,21 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (target == null || !target.isAlive()) {
             return;
         }
+        // 空坠斩：自己在目标头顶 ≥3 格
+        if (!this.plunging && now >= this.plungeCooldownUntil
+                && this.getY() - target.getY() >= PLUNGE_MIN_HEIGHT) {
+            startPlunge();
+            return;
+        }
+        // 迅冲斩：目标跑太远
+        if (this.rushTicksLeft <= 0 && now >= this.rushCooldownUntil) {
+            double distSq = distanceToSqr(target);
+            if (distSq > RUSH_MIN_DISTANCE * RUSH_MIN_DISTANCE
+                    && distSq <= RUSH_MAX_DISTANCE * RUSH_MAX_DISTANCE) {
+                startRush(target);
+                return;
+            }
+        }
         if (getPhase() == LumenPhase.DAWN
                 && now >= this.healCooldownUntil
                 && this.healedTotal < HEAL_CAP
@@ -618,7 +772,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     @Override
     public boolean doHurtTarget(Entity target) {
         // 蓄力期间禁止任何普攻：Goal 优先级可能仍有窗口，这里直接兜底。
-        if (this.level().isClientSide() || isFinalCharging() || this.meleeHitsLeft > 0
+        if (this.level().isClientSide() || isFinalCharging() || this.rushTicksLeft > 0 || this.plunging
+                || this.meleeHitsLeft > 0
                 || this.frostHitsLeft > 0 || this.slashWindupUntil > 0L
                 || !(target instanceof LivingEntity living) || !living.isAlive()) {
             return false;
@@ -878,12 +1033,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             tickActionLifetime();
             tickMeleeChain();
             tickFrostTimer();
+            tickRush();
+            tickPlunge();
         }
     }
 
     /** A 连段推进：放在 tick 里用简单计数器，不依赖目标/技能状态。 */
     private void tickMeleeChain() {
-        if (this.meleeHitsLeft <= 0 || isFinalCharging() || this.frostHitsLeft > 0
+        if (this.meleeHitsLeft <= 0 || isFinalCharging() || this.plunging || this.rushTicksLeft > 0
+                || this.frostHitsLeft > 0
                 || this.slashWindupUntil > 0L) {
             return;
         }
@@ -1041,6 +1199,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             // 终局蓄力原地站桩 6 秒：用从 sneak 冻结出来的静态蹲姿。
             // 直接播 slashblade:sneak 会变成「蹲着原地踏步」，因为那是潜行移动循环。
             case CHARGE -> "charge";
+            // 迅冲斩：SlashBlade 的 drive_horizontal
+            case RUSH -> "slashblade:drive_horizontal";
+            // 空坠斩：下坠用 aerial_cleave_loop，落地用 aerial_cleave_landing
+            case PLUNGE -> "slashblade:aerial_cleave_loop";
+            case PLUNGE_IMPACT -> "slashblade:aerial_cleave_landing";
             case NONE -> "idle";
         };
     }
