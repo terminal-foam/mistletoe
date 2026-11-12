@@ -67,9 +67,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final float FROST_DAMAGE = 2.0F;
     // ── 迅冲斩 / 空坠斩 ─────────────────────────────────────────────────
     /** 目标超过这个距离就考虑迅冲斩。 */
-    private static final double RUSH_MIN_DISTANCE = 12.0D;
+    private static final double RUSH_MIN_DISTANCE = 6.0D;
     /** 太远就不追了，免得瞬移半个地图。 */
-    private static final double RUSH_MAX_DISTANCE = 40.0D;
+    private static final double RUSH_MAX_DISTANCE = 14.0D;
     /** 每 tick 位移量。 */
     private static final double RUSH_STEP = 1.05D;
     /** 突进持续时间上限（tick）。 */
