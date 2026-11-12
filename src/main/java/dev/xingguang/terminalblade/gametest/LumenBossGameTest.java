@@ -126,6 +126,25 @@ public final class LumenBossGameTest {
             });
         });
     }
+    /** 随从 20 血 + 下界合金全甲 + 保护 IV：一次 20 点伤害不该秒杀。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void companionTakesHeavilyReducedDamage(GameTestHelper helper) {
+        dev.xingguang.terminalblade.entity.LumenCompanionEntity pet =
+                helper.spawn(ModEntities.LUMEN_COMPANION.get(), 2, 1, 2);
+        helper.assertTrue(pet.getMaxHealth() == 20.0F, "随从最大生命不是 20：" + pet.getMaxHealth());
+        helper.assertTrue(Math.abs(pet.getAttributeValue(Attributes.ARMOR) - 20.0D) < 0.01D,
+                "护甲不是 20：" + pet.getAttributeValue(Attributes.ARMOR));
+        helper.assertTrue(Math.abs(pet.getAttributeValue(Attributes.ARMOR_TOUGHNESS) - 12.0D) < 0.01D,
+                "韧性不是 12：" + pet.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+
+        pet.hurt(pet.damageSources().generic(), 20.0F);
+        float left = pet.getHealth();
+        helper.assertTrue(left > 10.0F,
+                "20 点伤害打得太多（减伤没生效？）剩余：" + left);
+        helper.assertTrue(left < 20.0F, "20 点伤害完全没生效，剩余：" + left);
+        helper.succeed();
+    }
     private static void setMaxHealth(LivingEntity entity, double health) {
         entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         entity.setHealth((float) health);

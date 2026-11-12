@@ -57,9 +57,11 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * 它固定使用暮色一套（刀、招式、伤害），没有终局蓄力，也不会自爆。</p>
  */
 public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable {
-    public static final float MAX_HEALTH = 100.0F;
-    private static final double ARMOR = 12.0D;
-    private static final double ARMOR_TOUGHNESS = 4.0D;
+    public static final float MAX_HEALTH = 20.0F;
+    /** 下界合金全套：护甲 20。 */
+    private static final double ARMOR = 20.0D;
+    /** 下界合金全套：盔甲韧性 12。 */
+    private static final double ARMOR_TOUGHNESS = 12.0D;
     private static final double MOVEMENT_SPEED = 0.30D;
     private static final double KNOCKBACK_RESISTANCE = 0.50D;
     private static final double FOLLOW_RANGE = 24.0D;
@@ -81,6 +83,12 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     private static final int REGEN_INTERVAL = 40;
     private static final int INVENTORY_SIZE = 36;
+
+    /**
+     * 全套保护 IV 的减伤系数。
+     * 保护 IV 每件 4 EPF，四件 16 EPF → 减伤 16/25 = 64% → 只受 36% 伤害。
+     */
+    private static final float PROTECTION_FACTOR = 0.36F;
 
     private static final EntityDataAccessor<Byte> DATA_ACTION =
             SynchedEntityData.defineId(LumenCompanionEntity.class, EntityDataSerializers.BYTE);
@@ -458,6 +466,19 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
             return false;
         }
         return super.canAttack(target);
+    }
+
+    /**
+     * 模拟全套保护 IV 的减伤，在护甲减免之后调用（由 LumenDamageHandler 的 LivingDamageEvent.Pre 触发）。
+     *
+     * <p>注意：不能覆写 {@code getDamageAfterMagicAbsorb} —— NeoForge 1.21.1 的
+     * {@code actuallyHurt} 会丢弃它的返回值，覆写等于无效。</p>
+     */
+    public float adjustFinalDamage(net.minecraft.world.damagesource.DamageSource source, float damage) {
+        if (damage <= 0.0F || source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
+            return damage;
+        }
+        return damage * PROTECTION_FACTOR;
     }
 
     @Override

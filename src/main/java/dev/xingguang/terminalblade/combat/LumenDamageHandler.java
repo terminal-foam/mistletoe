@@ -19,6 +19,8 @@ public final class LumenDamageHandler {
     public static void onFinalDamage(LivingDamageEvent.Pre event) {
         if (event.getEntity() instanceof LumenSeishinEntity boss) {
             event.setNewDamage(boss.adjustFinalDamage(event.getNewDamage()));
+        } else if (event.getEntity() instanceof dev.xingguang.terminalblade.entity.LumenCompanionEntity pet) {
+            event.setNewDamage(pet.adjustFinalDamage(event.getSource(), event.getNewDamage()));
         }
     }
 
