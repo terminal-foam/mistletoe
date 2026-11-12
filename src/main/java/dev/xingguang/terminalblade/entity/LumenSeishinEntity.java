@@ -886,21 +886,64 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     // ── 臣服 / 友方 ─────────────────────────────────────────────────────
 
     /** 玩家击败时，在死亡位置生成一只属于该玩家的随从。 */
+    /**
+     * 被玩家击败后生成随从，**落在该玩家的出生点**（有重生点就用重生点，没有就落在玩家脚下），
+     * 并默认处于坐下的状态等主人。
+     */
     private void spawnCompanion(Player owner) {
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel server)) {
             return;
         }
+        // ── 1) 解析出生点：玩家的重生点优先，跨维度也支持 ──────────────────
+        net.minecraft.server.level.ServerLevel targetLevel = server;
+        net.minecraft.core.BlockPos anchor = this.blockPosition();
+        if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+            anchor = sp.blockPosition();
+            net.minecraft.core.BlockPos respawn = sp.getRespawnPosition();
+            net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dim = sp.getRespawnDimension();
+            if (respawn != null && dim != null) {
+                net.minecraft.server.level.ServerLevel dimLevel = server.getServer().getLevel(dim);
+                if (dimLevel != null) {
+                    targetLevel = dimLevel;
+                    anchor = respawn;
+                }
+            }
+        }
+
         LumenCompanionEntity companion = dev.xingguang.terminalblade.registry.ModEntities.LUMEN_COMPANION
-                .get().create(server);
+                .get().create(targetLevel);
         if (companion == null) {
             return;
         }
-        companion.moveTo(getX(), getY(), getZ(), getYRot(), 0.0F);
+
+        // ── 2) 找一个能站的位置：出生点可能正好在床上或被方块占据 ─────────
+        double x = anchor.getX() + 0.5D;
+        double y = anchor.getY();
+        double z = anchor.getZ() + 0.5D;
+        for (int i = 0; i < 5; i++) {
+            net.minecraft.core.BlockPos feet = net.minecraft.core.BlockPos.containing(x, y, z);
+            boolean clear = targetLevel.isEmptyBlock(feet)
+                    && targetLevel.isEmptyBlock(feet.above())
+                    && !targetLevel.isEmptyBlock(feet.below());
+            if (clear) {
+                break;
+            }
+            y += 1.0D;
+        }
+
+        companion.moveTo(x, y, z, owner.getYRot(), 0.0F);
         companion.setTame(true, true);
         companion.setOwnerUUID(owner.getUUID());
         companion.setCustomName(this.getCustomName());
-        server.addFreshEntity(companion);
-        TerminalBlade.LOGGER.info("[流明·星] 被 {} 击败，生成随从", owner.getName().getString());
+        // 默认坐下：生成在出生点等主人回来，不会自己乱跑
+        companion.setOrderedToSit(true);
+        companion.setInSittingPose(true);
+        companion.getNavigation().stop();
+
+        targetLevel.addFreshEntity(companion);
+        TerminalBlade.LOGGER.info("[流明·星] 被 {} 击败，随从生成于 {} ({}, {}, {})",
+                owner.getName().getString(), targetLevel.dimension().location(),
+                (int) x, (int) y, (int) z);
     }
 
     @Override
