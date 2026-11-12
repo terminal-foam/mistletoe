@@ -17,7 +17,9 @@ public enum LumenAction {
     /** 空坠斩：自身在目标上空时的下坠。 */
     PLUNGE(400.0D, 430.0D),
     /** 空坠斩落地收招。 */
-    PLUNGE_IMPACT(400.0D, 430.0D);
+    PLUNGE_IMPACT(400.0D, 430.0D),
+    /** 星罗天翔：八连迅冲的收招。 */
+    STARFALL(400.0D, 488.0D);
 
     private final double start;
     private final double end;

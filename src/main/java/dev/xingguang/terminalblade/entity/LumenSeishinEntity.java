@@ -84,6 +84,18 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final double PLUNGE_MIN_HEIGHT = 3.0D;
     private static final double PLUNGE_FALL_SPEED = -1.2D;
     private static final double PLUNGE_RADIUS = 4.0D;
+
+    // ── 星罗连斩（初雪专属）：八连迅冲 + 星罗天翔 ────────────────────────
+    /** 连冲次数。 */
+    private static final int RUSH_STORM_COUNT = 8;
+    /** 每两次迅冲之间的间隔。 */
+    private static final long RUSH_STORM_GAP = 3L;
+    /** 整套连斩的冷却。 */
+    private static final long RUSH_STORM_COOLDOWN = 500L;
+    /** 星罗天翔的作用半径。 */
+    private static final double STARFALL_RADIUS = 6.0D;
+    /** 星罗天翔的伤害比例（目标最大生命）。 */
+    private static final float STARFALL_RATIO = 0.30F;
     private static final long PLUNGE_COOLDOWN = 160L;
     /** 落地后目标仍不在范围内：立刻再来一次空坠。 */
     private static final long PLUNGE_RETRY = 5L;
@@ -159,6 +171,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private LivingEntity rushTarget;
     private long rushCooldownUntil;
     private int rushUses;
+    /** 星罗连斩剩余次数 / 整套冷却。 */
+    private int rushStormLeft;
+    private long rushStormCooldownUntil;
     /** 空坠斩：是否正在下坠 / 冷却。 */
     private boolean plunging;
     private long plungeCooldownUntil;
@@ -240,6 +255,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             case RUSH -> 14;
             case PLUNGE -> 30;
             case PLUNGE_IMPACT -> 12;
+            case STARFALL -> 30;
             case NONE -> 0;
         };
     }
@@ -437,15 +453,41 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         LivingEntity target = this.rushTarget;
         this.rushTicksLeft = 0;
         this.rushTarget = null;
-        // 够到目标才吃完整冷却；没够到就短重试，实现「不断释放直到贴回攻击范围」
-        this.rushCooldownUntil = this.level().getGameTime() + (hit ? RUSH_COOLDOWN : RUSH_RETRY);
         if (hit && target != null && target.isAlive()) {
             slashStrike(target);
             target.knockback(0.6D, this.getX() - target.getX(), this.getZ() - target.getZ());
         }
+        // 星罗连斩：每一冲之间几乎不留空档，冲满八次立刻放星罗天翔
+        if (this.rushStormLeft > 0) {
+            this.rushStormLeft--;
+            this.rushCooldownUntil = this.level().getGameTime() + RUSH_STORM_GAP;
+            if (this.rushStormLeft <= 0) {
+                startStarfall();
+            }
+            return;
+        }
+        // 够到目标才吃完整冷却；没够到就短重试，实现「不断释放直到贴回攻击范围」
+        this.rushCooldownUntil = this.level().getGameTime() + (hit ? RUSH_COOLDOWN : RUSH_RETRY);
     }
 
     // ── 空坠斩 ──────────────────────────────────────────────────────────
+
+    /** 星罗天翔：八连迅冲的收招，6 格内全体重击。 */
+    private void startStarfall() {
+        playAction(LumenAction.STARFALL);
+        playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 0.6F);
+        playSound(SoundEvents.BEACON_POWER_SELECT, 1.2F, 1.4F);
+        for (LivingEntity victim : fanTargets(STARFALL_RADIUS, 360.0D)) {
+            if (victim != null && victim.isAlive()) {
+                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE),
+                        Math.max(2.0F, victim.getMaxHealth() * STARFALL_RATIO));
+            }
+        }
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
+            server.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    this.getX(), this.getY(1.2D), this.getZ(), 40, 2.0D, 1.2D, 2.0D, 0.15D);
+        }
+    }
 
     private void startPlunge() {
         this.plungeUses++;
@@ -745,6 +787,22 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (!this.plunging && now >= this.plungeCooldownUntil
                 && this.getY() - target.getY() >= PLUNGE_MIN_HEIGHT) {
             startPlunge();
+            return;
+        }
+        // 星罗连斩（初雪专属）：八连迅冲 + 星罗天翔
+        if (getPhase() == LumenPhase.FIRST_SNOW && this.rushStormLeft <= 0
+                && now >= this.rushStormCooldownUntil
+                && this.rushTicksLeft <= 0 && distanceToSqr(target) <= 400.0D) {
+            this.rushStormLeft = RUSH_STORM_COUNT;
+            this.rushStormCooldownUntil = now + RUSH_STORM_COOLDOWN;
+            startRush(target);
+            return;
+        }
+        // 连斩进行中：不看距离，一冲到底
+        if (this.rushStormLeft > 0) {
+            if (this.rushTicksLeft <= 0 && now >= this.rushCooldownUntil) {
+                startRush(target);
+            }
             return;
         }
         // 迅冲斩：目标跑太远
@@ -1224,6 +1282,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
             // 空坠斩：下坠用 aerial_cleave_loop，落地用 aerial_cleave_landing
             case PLUNGE -> "slashblade:aerial_cleave_loop";
             case PLUNGE_IMPACT -> "slashblade:aerial_cleave_landing";
+            case STARFALL -> "slashblade:rising_star";
             case NONE -> "idle";
         };
     }
