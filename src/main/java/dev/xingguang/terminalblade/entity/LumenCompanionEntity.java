@@ -632,7 +632,8 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         }
         this.setCustomName(Component.translatable(
                 NAME_KEYS[this.getRandom().nextInt(NAME_KEYS.length)]));
-        this.setCustomNameVisible(true);
+        // 名字只作为身份用于文本，头顶不显示名牌
+        this.setCustomNameVisible(false);
     }
 
     @Override
@@ -646,6 +647,14 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
+    /**
+     * 头顶永远不显示名牌。
+     * 覆盖这个方法而不是只依赖 setCustomNameVisible，避免被别的逻辑重新打开。
+     */
+    @Override
+    public boolean shouldShowName() {
+        return false;
+    }
     @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_companion");
