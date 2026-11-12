@@ -54,7 +54,6 @@ import java.util.List;
  */
 public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public static final float MAX_HEALTH = 360.0F;
-    private static final int PHASE_LOCK_TICKS = 20;
 
     /** 朝露普通三连：每刀 5。 */
     private static final float MELEE_DAWN = 5.0F;
@@ -74,6 +73,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final float SLASH_RATIO = 0.25F;
     private static final long SLASH_WINDUP = 24L;
     private static final long SLASH_COOLDOWN = 300L;
+    private static final double SLASH_HIT_RANGE = 8.0D;
+    private static final double SLASH_CONE_DEGREES = 120.0D;
+    private static final double MELEE_HIT_RANGE = 4.25D;
 
     /** 朝露回血：每次 10，整场最多 30，冷却 10 秒。 */
     private static final float HEAL_AMOUNT = 10.0F;
@@ -99,16 +101,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 每次换招式自增，客户端据此重启动画。 */
     private static final EntityDataAccessor<Integer> DATA_ANIM_SEQ =
             SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_COMBO_INDEX =
+            SynchedEntityData.defineId(LumenSeishinEntity.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
             Component.translatable("entity.mistletoe.lumen_seishin"),
             BossEvent.BossBarColor.BLUE,
             BossEvent.BossBarOverlay.PROGRESS);
-    private int lockTicks;
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
-    /** 击败它的玩家（用于死亡时生成随从）。 */
-    private Player subduedBy;
     private int lastAnimSeq = -1;
     /** 招式动画剩余 tick，到点自动复位成 NONE。 */
     private int actionTicksLeft;
@@ -123,8 +124,12 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private int meleeHitIndex;
     private int meleeCooldownTicks;
     private LivingEntity meleeTarget;
+    /** 霜刃起手时锁定的目标列表：目标被击退也不会丢刀。 */
+    private java.util.List<LivingEntity> frostTargets = java.util.List.of();
     private long frostCooldownUntil;
     private long slashWindupUntil;
+    /** Direction chosen on entering slash windup: dodging sideways should work. */
+    private float slashLockedYaw;
     private long slashCooldownUntil;
     private long healCooldownUntil;
     private float healedTotal;
@@ -162,6 +167,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         builder.define(DATA_PHASE, LumenPhase.DAWN.ordinal());
         builder.define(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
         builder.define(DATA_ANIM_SEQ, 0);
+        builder.define(DATA_COMBO_INDEX, 0);
     }
 
     public LumenAction getAction() {
@@ -227,6 +233,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
                 getNavigation().stop();
             }
         });
+        this.goalSelector.addGoal(1, new LumenFootworkGoal(this, () -> isFinalCharging()
+                || meleeHitsLeft > 0 || frostHitsLeft > 0 || slashWindupUntil > 0L));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
@@ -247,7 +255,6 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.bossEvent.setColor(phase.barColor());
         this.bossEvent.setName(getDisplayName());
         // 不再用无敌等待换刀：阶段锁血（伤害截断）已经保证不会跳阶段。
-        this.lockTicks = 0;
         this.frostHitsLeft = 0;
         this.slashWindupUntil = 0L;
         this.meleeHitsLeft = 0;
@@ -273,15 +280,54 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (target == null || !target.isAlive()) {
             target = this.level().getNearestPlayer(this, 24.0D);
         }
+        // Switching does NOT add a separate animation or wait. The new blade's SA begins this tick.
         if (phase == LumenPhase.FIRST_SNOW) {
-            playAction(LumenAction.FROST);
-            frostStrike();
+            startFrostCombo(); // 1 immediate hit + 6 follow-up hits; not just frostStrike() once
+        } else {
+            if (target != null && target.isAlive()) {
+                getLookControl().setLookAt(target, 180.0F, 180.0F);
+                faceTarget(target);
+            }
+            slashStrike(target); // instant transition SA, with actual geometry/LOS hit validation
+            this.slashCooldownUntil = this.level().getGameTime() + SLASH_COOLDOWN;
+        }
+    }
+
+    private void startFrostCombo() {
+        if (this.frostHitsLeft > 0 || isFinalCharging()) {
             return;
         }
-        if (target != null && target.isAlive() && distanceToSqr(target) <= 16.0D * 16.0D) {
-            playAction(LumenAction.SLASH_ART);
-            slashStrike(target);
+        this.meleeHitsLeft = 0;
+        this.frostHitIndex = 0;
+        this.frostHitsLeft = FROST_HITS;
+        this.nextFrostTick = this.level().getGameTime();
+        this.frostCooldownUntil = this.level().getGameTime() + FROST_COOLDOWN;
+        // 起手即锁定目标：后续六刀打同一批目标，不因被击退出扇形而丢刀
+        this.frostTargets = new java.util.ArrayList<>(fanTargets(FROST_RANGE, FROST_CONE_DEGREES));
+        playAction(LumenAction.FROST);
+        playSound(SoundEvents.PLAYER_ATTACK_NODAMAGE, 1.0F, 1.6F);
+        tickFrostCombo(this.level().getGameTime()); // first slash immediately
+    }
+
+    private void tickFrostCombo(long now) {
+        if (this.frostHitsLeft <= 0 || now < this.nextFrostTick) {
+            return;
         }
+        frostStrike();
+        this.frostHitsLeft--;
+        this.nextFrostTick = now + 3L; // 7 strikes over 19 ticks, matched to accelerated frost animation
+        if (this.frostHitsLeft <= 0) {
+            this.frostTargets = java.util.List.of();
+        }
+    }
+
+    private void faceTarget(LivingEntity target) {
+        double dx = target.getX() - getX();
+        double dz = target.getZ() - getZ();
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        setYRot(yaw);
+        setYHeadRot(yaw);
+        this.yBodyRot = yaw;
     }
 
     /** 阶段切换特效：换刀刀光 + 粒子爆发 + 音效。 */
@@ -289,7 +335,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (this.level().isClientSide()) {
             return;
         }
-        playAction(LumenAction.PHASE);
+        // No extra PHASE animation: transition SA is the only combat animation.
         spawnCosmeticSlash(-45.0F, 3.0F, phaseColor(phase));
         spawnCosmeticSlash(45.0F, 3.0F, phaseColor(phase));
         playSound(SoundEvents.BEACON_ACTIVATE, 1.6F, 0.7F);
@@ -326,36 +372,34 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         }
     }
 
-    public boolean isPhaseLocked() {
-        return this.lockTicks > 0;
-    }
-
-    @Override
-    public boolean isInvulnerableTo(DamageSource source) {
-        return isPhaseLocked() || super.isInvulnerableTo(source);
-    }
-
-    /** 阶段锁血：只允许把生命削到下一阶段阈值，不允许一刀跳过阶段。 */
-    public void clampPhaseDamage(LivingIncomingDamageEvent event) {
-        if (this.level().isClientSide() || isPhaseLocked()) {
-            return;
+    /** Final net damage, *after* armor/effects; keeps exact 240/120 threshold. */
+    public float adjustFinalDamage(float damage) {
+        if (damage <= 0.0F) {
+            return damage;
         }
-        // 终局蓄力：90% 减伤。蓄力不是无敌，玩家仍可在 6 秒内把它打死（结局 A）。
+        // Deliberate mechanic: 90% reduction in the last 6-second charge.
         if (isFinalCharging()) {
-            event.setAmount(event.getAmount() * FINAL_CHARGE_DAMAGE_MULTIPLIER);
-            return;
+            return damage * FINAL_CHARGE_DAMAGE_MULTIPLIER;
         }
         float threshold = getPhase().nextThreshold();
         if (threshold <= 0.0F) {
-            return;
+            return damage;
         }
-        float health = getHealth();
-        if (health > threshold && health - event.getAmount() < threshold) {
-            event.setAmount(health - threshold);
-        }
+        return Math.min(damage, Math.max(0.0F, getHealth() - threshold));
     }
 
     // ── 主循环 ──────────────────────────────────────────────────────────
+
+    /** Immediately switch on successful damage to 240/120 HP; tick path remains fallback for setHealth / commands. */
+    public void onDamageResolved() {
+        if (this.level().isClientSide() || !isAlive()) {
+            return;
+        }
+        LumenPhase expected = LumenPhase.forHealth(getHealth());
+        if (expected.ordinal() > getPhase().ordinal()) {
+            enterPhase(expected);
+        }
+    }
 
     @Override
     public void aiStep() {
@@ -363,17 +407,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (this.level().isClientSide()) {
             return;
         }
-        if (this.lockTicks > 0) {
-            this.lockTicks--;
-        }
         this.bossEvent.setProgress(getHealth() / getMaxHealth());
         if (!isAlive()) {
             return;
         }
-        LumenPhase expected = LumenPhase.forHealth(getHealth());
-        if (expected.ordinal() > getPhase().ordinal()) {
-            enterPhase(expected);
-        }
+        onDamageResolved();
         if (isFinalCharging()) {
             tickFinalCharge();
             return;
@@ -493,26 +531,19 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
 
     private void tickSkills() {
         long now = this.level().getGameTime();
-        LivingEntity target = getTarget();
-        if (target == null || !target.isAlive()) {
-            this.frostHitsLeft = 0;
-            this.slashWindupUntil = 0L;
-            return;
-        }
-
         if (this.frostHitsLeft > 0) {
-            if (now >= this.nextFrostTick) {
-                frostStrike();
-                this.frostHitsLeft--;
-                this.nextFrostTick = now + 1L;
-            }
+            tickFrostCombo(now);
             return;
         }
         if (this.slashWindupUntil > 0L) {
             if (now >= this.slashWindupUntil) {
                 this.slashWindupUntil = 0L;
-                slashStrike(target);
+                releaseWoundUpSlash(getTarget());
             }
+            return;
+        }
+        LivingEntity target = getTarget();
+        if (target == null || !target.isAlive()) {
             return;
         }
         if (getPhase() == LumenPhase.DAWN
@@ -525,19 +556,18 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         if (getPhase() == LumenPhase.FIRST_SNOW
                 && now >= this.frostCooldownUntil
                 && distanceToSqr(target) <= FROST_RANGE * FROST_RANGE) {
-            this.frostHitsLeft = FROST_HITS;
-            this.frostHitIndex = 0;
-            this.nextFrostTick = now;
-            playAction(LumenAction.FROST);
-            this.frostCooldownUntil = now + FROST_COOLDOWN;
-            playSound(SoundEvents.PLAYER_ATTACK_NODAMAGE, 1.0F, 1.6F);
+            startFrostCombo();
             return;
         }
         if (getPhase() == LumenPhase.MISTLETOE
                 && now >= this.slashCooldownUntil
                 && distanceToSqr(target) <= 16.0D * 16.0D) {
+            this.meleeHitsLeft = 0;
+            faceTarget(target);
+            this.slashLockedYaw = getYRot();
             this.slashWindupUntil = now + SLASH_WINDUP;
             this.slashCooldownUntil = now + SLASH_COOLDOWN;
+            playAction(LumenAction.SLASH_ART); // show the windup immediately
             playSound(SoundEvents.BEACON_ACTIVATE, 1.0F, 0.7F);
         }
     }
@@ -547,7 +577,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     @Override
     public boolean doHurtTarget(Entity target) {
         // 蓄力期间禁止任何普攻：Goal 优先级可能仍有窗口，这里直接兜底。
-        if (this.level().isClientSide() || isFinalCharging()
+        if (this.level().isClientSide() || isFinalCharging() || this.meleeHitsLeft > 0
+                || this.frostHitsLeft > 0 || this.slashWindupUntil > 0L
                 || !(target instanceof LivingEntity living) || !living.isAlive()) {
             return false;
         }
@@ -577,19 +608,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         };
     }
 
-    /** 连段的单刀：目标丢失、超出 3 格或死亡就中断，不积压。 */
-    /**
-     * 连段的单刀。目标是发起时的锁定目标：只要还活着就继续打，
-     * 不再用距离判断中断——Boss 在几 tick 里会自然位移，3 格阈值会把连段误杀。
-     */
+    /** Each hit independently checks range, facing and line-of-sight; escapes cancel the chain. */
     private void meleeHit() {
         LivingEntity target = this.meleeTarget;
         if (target == null || !target.isAlive()) {
             this.meleeHitsLeft = 0;
             return;
         }
-        long now = this.level().getGameTime();
         float amount = meleeDamage(target);
+        this.entityData.set(DATA_COMBO_INDEX, this.meleeHitIndex + 1);
         playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, phaseColor(getPhase()));
         target.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
@@ -615,17 +642,38 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public void frostStrike() {
         spawnCosmeticSlash(-35.0F + this.frostHitIndex * 12.0F, 2.0F, 0xA9D8FF);
         this.frostHitIndex++;
-        for (LivingEntity victim : fanTargets(FROST_RANGE, FROST_CONE_DEGREES)) {
-            victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE), FROST_DAMAGE);
+        // 直接调用（测试/兼容路径）时按当前朝向惰性取一次快照
+        if (this.frostTargets.isEmpty()) {
+            this.frostTargets = new java.util.ArrayList<>(fanTargets(FROST_RANGE, FROST_CONE_DEGREES));
+        }
+        for (LivingEntity victim : this.frostTargets) {
+            if (victim != null && victim.isAlive()) {
+                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE), FROST_DAMAGE);
+            }
         }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F, 1.4F);
     }
 
+    /** Public entry point also used by transition, including immediate transition cast. */
     public void slashStrike(LivingEntity target) {
+        if (target != null && target.isAlive()) {
+            faceTarget(target);
+        }
         playAction(LumenAction.SLASH_ART);
+        strikeWithYaw(target, getYRot());
+    }
+
+    /** Ordinary slash: rotation locked at windup start, allowing real dodges. */
+    private void releaseWoundUpSlash(LivingEntity target) {
+        strikeWithYaw(target, this.slashLockedYaw);
+    }
+
+    private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
-        float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
-        target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+        if (target != null && target.isAlive()) {
+            float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
+            target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+        }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);
     }
 
@@ -674,9 +722,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     @Override
     public void die(DamageSource source) {
         if (!this.level().isClientSide()) {
-            if (this.subduedBy != null) {
-                // 被玩家击败：原地转成随从，不掉落
-                this.spawnCompanion(this.subduedBy);
+            if (source.getEntity() instanceof Player killer) {
+                // Only the actual lethal damage source decides the reward; overkill at 240/120 HP must not pre-credit a player.
+                this.spawnCompanion(killer);
             } else {
                 // 其它死法（终局蓄力自爆、摔死等）：掉落槲寄生「暮色」。
                 // named blade 的物品栈没法用纯数据战利品表表达，这里直接生成并丢出。
@@ -693,12 +741,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("LumenPhase", getPhase().ordinal());
-        tag.putInt("LumenLock", this.lockTicks);
         tag.putFloat("LumenHealed", this.healedTotal);
         tag.putLong("LumenFrostCooldown", this.frostCooldownUntil);
         tag.putLong("LumenSlashCooldown", this.slashCooldownUntil);
         tag.putLong("LumenHealCooldown", this.healCooldownUntil);
         tag.putInt("LumenFinalCharge", this.finalChargeLeft);
+        tag.putDouble("LumenChargeAnchorX", this.chargeAnchorX);
+        tag.putDouble("LumenChargeAnchorY", this.chargeAnchorY);
+        tag.putDouble("LumenChargeAnchorZ", this.chargeAnchorZ);
+        tag.putFloat("LumenChargeYaw", this.chargeYaw);
         tag.putBoolean("LumenFinalChargeDone", this.finalChargeDone);
     }
 
@@ -706,15 +757,27 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.entityData.set(DATA_PHASE, LumenPhase.byOrdinal(tag.getInt("LumenPhase")).ordinal());
-        this.lockTicks = tag.getInt("LumenLock");
         this.healedTotal = tag.getFloat("LumenHealed");
         this.frostCooldownUntil = tag.getLong("LumenFrostCooldown");
         this.slashCooldownUntil = tag.getLong("LumenSlashCooldown");
         this.healCooldownUntil = tag.getLong("LumenHealCooldown");
         this.finalChargeLeft = tag.getInt("LumenFinalCharge");
+        this.chargeAnchorX = tag.contains("LumenChargeAnchorX") ? tag.getDouble("LumenChargeAnchorX") : getX();
+        this.chargeAnchorY = tag.contains("LumenChargeAnchorY") ? tag.getDouble("LumenChargeAnchorY") : getY();
+        this.chargeAnchorZ = tag.contains("LumenChargeAnchorZ") ? tag.getDouble("LumenChargeAnchorZ") : getZ();
+        this.chargeYaw = tag.contains("LumenChargeYaw") ? tag.getFloat("LumenChargeYaw") : getYRot();
+        if (this.finalChargeLeft > 0) {
+            playAction(LumenAction.CHARGE);
+            this.bossEvent.setColor(BossEvent.BossBarColor.RED);
+            this.bossEvent.setName(Component.translatable("entity.mistletoe.lumen_seishin.charging"));
+            this.bossEvent.setDarkenScreen(true);
+        }
         this.finalChargeDone = tag.getBoolean("LumenFinalChargeDone");
-        this.bossEvent.setColor(getPhase().barColor());
-        this.bossEvent.setName(getDisplayName());
+        if (!isFinalCharging()) {
+            this.bossEvent.setColor(getPhase().barColor());
+            this.bossEvent.setName(getDisplayName());
+            this.bossEvent.setDarkenScreen(false);
+        }
     }
 
     private void refreshBlade(LumenPhase phase) {
@@ -747,7 +810,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
 
     /** A 连段推进：放在 tick 里用简单计数器，不依赖目标/技能状态。 */
     private void tickMeleeChain() {
-        if (this.meleeHitsLeft <= 0) {
+        if (this.meleeHitsLeft <= 0 || isFinalCharging() || this.frostHitsLeft > 0
+                || this.slashWindupUntil > 0L) {
             return;
         }
         this.meleeCooldownTicks--;
@@ -758,19 +822,6 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     // ── 骑乘 / 坐下 ─────────────────────────────────────────────────────
 
     // ── 臣服 / 友方 ─────────────────────────────────────────────────────
-
-    /** 被玩家打出致死一击时不死，而是当场臣服，成为该玩家的随从。 */
-    @Override
-    public boolean hurt(DamageSource source, float amount) {
-        // 被玩家打出致死一击：只记录是谁终结的，本体照常死亡，
-        // 由 die() 在死亡时生成随从形态。
-        if (!this.level().isClientSide() && this.subduedBy == null
-                && source.getEntity() instanceof Player player
-                && this.getHealth() - amount <= 0.0F) {
-            this.subduedBy = player;
-        }
-        return super.hurt(source, amount);
-    }
 
     /** 玩家击败时，在死亡位置生成一只属于该玩家的随从。 */
     private void spawnCompanion(Player owner) {
@@ -818,10 +869,24 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
      */
     private PlayState mainAnim(AnimationState<LumenSeishinEntity> state) {
         String desired = this.desiredAnimation();
-        if (!desired.equals(this.lastAnimName)) {
+        // Combat clips in the existing Bedrock JSON run much longer than the hit cadence.
+        // Speed them up instead of adding transition pauses or changing damage values.
+        state.getController().setAnimationSpeed(switch (getAction()) {
+            case FROST -> 5.0D;
+            case MELEE -> getPhase() == LumenPhase.FIRST_SNOW ? 4.0D : 3.0D;
+            case SLASH_ART -> 2.0D;
+            default -> 1.0D;
+        });
+        int sequence = this.getAnimSeq();
+        if (!desired.equals(this.lastAnimName) || sequence != this.lastAnimSeq) {
             this.lastAnimName = desired;
-            this.lastAnimSeq = this.getAnimSeq();
-            state.getController().setAnimation(RawAnimation.begin().thenPlay(desired));
+            this.lastAnimSeq = sequence;
+            state.getController().forceAnimationReset();
+            if (getAction() == LumenAction.NONE || getAction() == LumenAction.CHARGE) {
+                state.getController().setAnimation(RawAnimation.begin().thenLoop(desired));
+            } else {
+                state.getController().setAnimation(RawAnimation.begin().thenPlay(desired));
+            }
         }
         return PlayState.CONTINUE;
     }
@@ -847,7 +912,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 招式 → YSM 动画名（资源里是 Bedrock 的 slashblade:* 动作）。 */
     private String actionAnimation(LumenAction action) {
         return switch (action) {
-            case MELEE -> switch (Math.min(this.meleeHitIndex, 4)) {
+            case MELEE -> switch (Math.min(this.entityData.get(DATA_COMBO_INDEX), 4)) {
                 case 1 -> "slashblade:combo_a1";
                 case 2 -> "slashblade:combo_a2";
                 case 3 -> "slashblade:combo_a3";

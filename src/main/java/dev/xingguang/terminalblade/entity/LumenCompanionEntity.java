@@ -73,7 +73,10 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     private static final float SLASH_RATIO = 0.25F;
     private static final long SLASH_WINDUP = 24L;
     private static final long SLASH_COOLDOWN = 300L;
-    private static final double SLASH_RANGE = 16.0D;
+    private static final double SLASH_RANGE = 8.0D;
+    private static final double SLASH_CONE_DEGREES = 120.0D;
+    private static final double MELEE_HIT_RANGE = 4.25D;
+    private static final double OWNER_GUARD_RADIUS = 24.0D;
     private static final int SLASH_COLOR = 0xC9A0FF;
 
     private static final int REGEN_INTERVAL = 40;
@@ -82,6 +85,8 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     private static final EntityDataAccessor<Byte> DATA_ACTION =
             SynchedEntityData.defineId(LumenCompanionEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> DATA_ANIM_SEQ =
+            SynchedEntityData.defineId(LumenCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_COMBO_INDEX =
             SynchedEntityData.defineId(LumenCompanionEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
@@ -98,6 +103,7 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     private int actionTicksLeft;
 
     private long slashWindupUntil;
+    private float slashLockedYaw;
     private long slashCooldownUntil;
 
     public LumenCompanionEntity(EntityType<? extends TamableAnimal> type, Level level) {
@@ -122,6 +128,7 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         super.defineSynchedData(builder);
         builder.define(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
         builder.define(DATA_ANIM_SEQ, 0);
+        builder.define(DATA_COMBO_INDEX, 0);
     }
 
     public LumenAction getAction() {
@@ -149,8 +156,11 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.0D, 10.0F, 3.0F));
+        this.goalSelector.addGoal(2, new LumenFootworkGoal(this, () -> this.isOrderedToSit()
+                || this.isVehicle() || this.meleeHitsLeft > 0 || this.slashWindupUntil > 0L
+                || !shouldGuardTarget(getTarget())));
+        this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.0D, 10.0F, 3.0F));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 16.0F));
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
@@ -201,6 +211,14 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     private void tickSkills() {
         LivingEntity target = getTarget();
+        if (this.isOrderedToSit() || this.isVehicle() || !shouldGuardTarget(target)) {
+            this.slashWindupUntil = 0L;
+            this.meleeHitsLeft = 0;
+            if (target != null && (!shouldGuardTarget(target) || this.isOrderedToSit())) {
+                setTarget(null);
+            }
+            return;
+        }
         if (target == null || !target.isAlive()) {
             this.slashWindupUntil = 0L;
             return;
@@ -209,13 +227,17 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         if (this.slashWindupUntil > 0L) {
             if (now >= this.slashWindupUntil) {
                 this.slashWindupUntil = 0L;
-                slashStrike(target);
+                strikeWithYaw(target, this.slashLockedYaw);
             }
             return;
         }
         if (now >= this.slashCooldownUntil && distanceToSqr(target) <= SLASH_RANGE * SLASH_RANGE) {
+            this.meleeHitsLeft = 0;
+            faceTarget(target);
+            this.slashLockedYaw = getYRot();
             this.slashWindupUntil = now + SLASH_WINDUP;
             this.slashCooldownUntil = now + SLASH_COOLDOWN;
+            playAction(LumenAction.SLASH_ART);
             playSound(SoundEvents.BEACON_ACTIVATE, 1.0F, 0.7F);
         }
     }
@@ -224,7 +246,9 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     @Override
     public boolean doHurtTarget(Entity target) {
-        if (this.level().isClientSide() || !(target instanceof LivingEntity living) || !living.isAlive()) {
+        if (this.level().isClientSide() || this.isOrderedToSit() || this.isVehicle()
+                || this.meleeHitsLeft > 0 || this.slashWindupUntil > 0L
+                || !(target instanceof LivingEntity living) || !shouldGuardTarget(living)) {
             return false;
         }
         this.meleeTarget = living;
@@ -236,7 +260,7 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     }
 
     private void tickMeleeChain() {
-        if (this.meleeHitsLeft <= 0) {
+        if (this.meleeHitsLeft <= 0 || this.slashWindupUntil > 0L || this.isOrderedToSit() || this.isVehicle()) {
             return;
         }
         if (--this.meleeCooldownTicks <= 0) {
@@ -246,11 +270,13 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     private void meleeHit() {
         LivingEntity target = this.meleeTarget;
-        if (target == null || !target.isAlive()) {
+        if (!shouldGuardTarget(target)) {
             this.meleeHitsLeft = 0;
+            this.meleeTarget = null;
             return;
         }
         float amount = Math.max(1.0F, target.getMaxHealth() * MELEE_RATIO);
+        this.entityData.set(DATA_COMBO_INDEX, this.meleeHitIndex + 1);
         playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, SLASH_COLOR);
         target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
@@ -261,11 +287,37 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
     }
 
     public void slashStrike(LivingEntity target) {
+        if (target != null && target.isAlive()) {
+            faceTarget(target);
+        }
         playAction(LumenAction.SLASH_ART);
+        strikeWithYaw(target, getYRot());
+    }
+
+    private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, SLASH_COLOR);
-        float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
-        target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+        if (shouldGuardTarget(target)) {
+            float amount = Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO);
+            target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+        }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);
+    }
+
+    private boolean shouldGuardTarget(LivingEntity target) {
+        if (target == null || !target.isAlive() || !canAttack(target) || isAlliedTo(target)) {
+            return false;
+        }
+        LivingEntity owner = getOwner();
+        return owner == null || owner.distanceToSqr(target) <= OWNER_GUARD_RADIUS * OWNER_GUARD_RADIUS;
+    }
+
+    private void faceTarget(LivingEntity target) {
+        double dx = target.getX() - getX();
+        double dz = target.getZ() - getZ();
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        setYRot(yaw);
+        setYHeadRot(yaw);
+        this.yBodyRot = yaw;
     }
 
     private void spawnCosmeticSlash(float roll, float size, int color) {
@@ -438,10 +490,21 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
 
     private PlayState mainAnim(AnimationState<LumenCompanionEntity> state) {
         String desired = this.desiredAnimation();
-        if (!desired.equals(this.lastAnimName)) {
+        state.getController().setAnimationSpeed(switch (getAction()) {
+            case MELEE -> 3.0D;
+            case SLASH_ART -> 2.0D;
+            default -> 1.0D;
+        });
+        int sequence = this.getAnimSeq();
+        if (!desired.equals(this.lastAnimName) || sequence != this.lastAnimSeq) {
             this.lastAnimName = desired;
-            this.lastAnimSeq = this.getAnimSeq();
-            state.getController().setAnimation(RawAnimation.begin().thenPlay(desired));
+            this.lastAnimSeq = sequence;
+            state.getController().forceAnimationReset();
+            if (getAction() == LumenAction.NONE || this.isInSittingPose()) {
+                state.getController().setAnimation(RawAnimation.begin().thenLoop(desired));
+            } else {
+                state.getController().setAnimation(RawAnimation.begin().thenPlay(desired));
+            }
         }
         return PlayState.CONTINUE;
     }
@@ -451,7 +514,7 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
             return "sit";
         }
         return switch (getAction()) {
-            case MELEE -> switch (Math.min(this.meleeHitIndex, 4)) {
+            case MELEE -> switch (Math.min(this.entityData.get(DATA_COMBO_INDEX), 4)) {
                 case 1 -> "slashblade:combo_a1";
                 case 2 -> "slashblade:combo_a2";
                 case 3 -> "slashblade:combo_a3";

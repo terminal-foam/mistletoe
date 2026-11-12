@@ -5,7 +5,7 @@ import dev.xingguang.terminalblade.entity.LumenSeishinEntity;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 /**
  * 流明·星的阶段锁血钩子。放在独立类里，避免把实体逻辑和全局事件绑死。
@@ -16,9 +16,16 @@ public final class LumenDamageHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onIncomingDamage(LivingIncomingDamageEvent event) {
+    public static void onFinalDamage(LivingDamageEvent.Pre event) {
         if (event.getEntity() instanceof LumenSeishinEntity boss) {
-            boss.clampPhaseDamage(event);
+            event.setNewDamage(boss.adjustFinalDamage(event.getNewDamage()));
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onDamageApplied(LivingDamageEvent.Post event) {
+        if (event.getEntity() instanceof LumenSeishinEntity boss) {
+            boss.onDamageResolved();
         }
     }
 }

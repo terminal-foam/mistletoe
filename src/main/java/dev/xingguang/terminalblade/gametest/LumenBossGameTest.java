@@ -106,6 +106,26 @@ public final class LumenBossGameTest {
         helper.succeed();
     }
 
+    /** 转阶段即刻起手，并且完整打完七刀霜刃（不因目标锁定丢失而中断）。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void phaseFrostTransitionExecutesAllSevenStrikes(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        Pig target = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.PIG, 2, 1, 3);
+        setMaxHealth(target, 1000.0D);
+        boss.setNoAi(true);
+        boss.setYRot(0.0F);
+        boss.setHealth(239.0F);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(boss.getPhase() == LumenPhase.FIRST_SNOW, "未即时进入初雪阶段");
+            helper.assertTrue(target.getHealth() < 1000.0F, "转阶段没有立即发动第一刀霜刃");
+            helper.runAfterDelay(24, () -> {
+                helper.assertTrue(Math.abs(target.getHealth() - 986.0F) < 0.01F,
+                        "霜刃转阶段未完成七次判定：" + target.getHealth());
+                helper.succeed();
+            });
+        });
+    }
     private static void setMaxHealth(LivingEntity entity, double health) {
         entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         entity.setHealth((float) health);
