@@ -161,6 +161,48 @@ public final class LumenBossGameTest {
                 "随从普攻没有使用玩家公式（生命差额），实际只打了：" + dealt);
         helper.succeed();
     }
+    /** Boss 会主动锁定敌对生物。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void bossAttacksHostileMobs(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        net.minecraft.world.entity.monster.Zombie zombie = helper.spawnWithNoFreeWill(
+                net.minecraft.world.entity.EntityType.ZOMBIE, 2, 1, 6);
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(boss.getTarget() instanceof net.minecraft.world.entity.monster.Zombie,
+                    "Boss 没有主动锁定敌对生物，当前目标：" + boss.getTarget());
+            helper.succeed();
+        });
+    }
+
+    /** 未收服的随从同样会主动锁定敌对生物。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void untamedCompanionAttacksHostileMobs(GameTestHelper helper) {
+        dev.xingguang.terminalblade.entity.LumenCompanionEntity pet =
+                helper.spawn(ModEntities.LUMEN_COMPANION.get(), 2, 1, 2);
+        helper.assertFalse(pet.isTame(), "这只随从不该是已收服状态");
+        net.minecraft.world.entity.monster.Zombie zombie = helper.spawnWithNoFreeWill(
+                net.minecraft.world.entity.EntityType.ZOMBIE, 2, 1, 6);
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(pet.getTarget() instanceof net.minecraft.world.entity.monster.Zombie,
+                    "未收服的随从没有主动锁定敌对生物，当前目标：" + pet.getTarget());
+            helper.succeed();
+        });
+    }
+    /** 终局蓄力对敌对生物同样生效。 */
+    @PrefixGameTestTemplate(false)
+    @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
+    public static void finalChargeKillsHostileMobs(GameTestHelper helper) {
+        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        setMaxHealth(boss, 1000.0D);
+        net.minecraft.world.entity.monster.Zombie zombie = helper.spawnWithNoFreeWill(
+                net.minecraft.world.entity.EntityType.ZOMBIE, 3, 1, 2);
+        boss.resolveFinalCharge();
+        helper.assertTrue(!zombie.isAlive(),
+                "终局蓄力没有结算敌对生物，僵尸剩余生命：" + zombie.getHealth());
+        helper.succeed();
+    }
     private static void setMaxHealth(LivingEntity entity, double health) {
         entity.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         entity.setHealth((float) health);

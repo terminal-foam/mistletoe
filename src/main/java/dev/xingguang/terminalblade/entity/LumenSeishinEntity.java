@@ -241,6 +241,13 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // 主动攻击敌对生物（玩家优先，这条排在后面）；不会打自己的随从
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<net.minecraft.world.entity.Mob>(
+                this, net.minecraft.world.entity.Mob.class, 10, true, false,
+                target -> target != this && target instanceof net.minecraft.world.entity.monster.Enemy
+                        && !(target instanceof LumenCompanionEntity)
+                        && !(target instanceof LumenSeishinEntity)   // 别把同类 Boss 当敌人
+                        && !this.isAlliedTo(target)));
     }
 
     // ── 阶段 ────────────────────────────────────────────────────────────
@@ -544,11 +551,15 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         Vec3 center = position().add(0.0D, getBbHeight() * 0.5D, 0.0D);
         double radiusSq = FINAL_CHARGE_RADIUS * FINAL_CHARGE_RADIUS;
         var box = new net.minecraft.world.phys.AABB(center, center).inflate(FINAL_CHARGE_RADIUS);
-        for (Player player : this.level().getEntitiesOfClass(Player.class, box,
-                p -> p.isAlive() && !p.isSpectator() && !p.isCreative())) {
-            if (center.distanceToSqr(player.position()) <= radiusSq) {
-                player.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE),
-                        Math.max(FINAL_EXECUTE_DAMAGE, player.getMaxHealth() * 20.0F));
+        // 玩家和敌对生物都会被终局蓄力结算；不打自己的随从和召唤物
+        for (LivingEntity victim : this.level().getEntitiesOfClass(LivingEntity.class, box,
+                e -> e.isAlive() && e != this
+                        && !(e instanceof LumenCompanionEntity)
+                        && (e instanceof Player p ? !p.isSpectator() && !p.isCreative()
+                                : e instanceof net.minecraft.world.entity.monster.Enemy))) {
+            if (center.distanceToSqr(victim.position()) <= radiusSq) {
+                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE),
+                        Math.max(FINAL_EXECUTE_DAMAGE, victim.getMaxHealth() * 20.0F));
             }
         }
         playSound(SoundEvents.WITHER_DEATH, 1.5F, 0.5F);

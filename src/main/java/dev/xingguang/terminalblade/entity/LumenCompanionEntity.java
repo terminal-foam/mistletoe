@@ -171,9 +171,12 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new OwnerHurtTargetGoal(this));
         // 主动搜寻敌对生物（Enemy 标记接口），不会误打牛羊
+        // 主动搜寻敌对生物（Enemy 标记接口），不会误打牛羊；未收服时同样会打
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<net.minecraft.world.entity.Mob>(
                 this, net.minecraft.world.entity.Mob.class, 10, true, false,
-                target -> this.isTame() && target instanceof Enemy && !this.isAlliedTo(target)));
+                target -> target != this && target instanceof Enemy
+                        && !(target instanceof LumenSeishinEntity)
+                        && !this.isAlliedTo(target)));
     }
 
     // ── 每 tick ─────────────────────────────────────────────────────────
