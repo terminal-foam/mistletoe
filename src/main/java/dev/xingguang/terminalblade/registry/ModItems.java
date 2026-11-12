@@ -14,6 +14,9 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> LUMEN_SEISHIN_SPAWN_EGG = ITEMS.register("lumen_seishin_spawn_egg",
             () -> new SpawnEggItem(ModEntities.LUMEN_SEISHIN.get(), 0x9FD8FF, 0x2A3B66, new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> LUMEN_COMPANION_SPAWN_EGG = ITEMS.register("lumen_companion_spawn_egg",
+    () -> new SpawnEggItem(ModEntities.LUMEN_COMPANION.get(), 0xE0C4FF, 0x3A2A66, new Item.Properties()));
+
     private ModItems() {
     }
 }

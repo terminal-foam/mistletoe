@@ -32,5 +32,8 @@
   "commands.mistletoe.give.dawn": "Gave Mistletoe -Dew- to %s",
   "commands.mistletoe.give.first_snow": "Gave Mistletoe -First Snow- to %s",
   "commands.mistletoe.audit": "Normal %s; enhanced SA %s; sacrifice %s; SA damage %s; super cost %s; super lethal %s; radius %s",
-  "entity.mistletoe.lumen_seishin.respawned": "Lumen Seishin respawned at your respawn point"
+  "entity.mistletoe.lumen_seishin.respawned": "Lumen Seishin respawned at your respawn point",
+  "entity.mistletoe.lumen_companion": "Lumen Seishin Companion",
+  "entity.mistletoe.lumen_companion.respawned": "Lumen Seishin respawned at your respawn point",
+  "item.mistletoe.lumen_companion_spawn_egg": "Lumen Seishin Companion Spawn Egg"
 }

@@ -19,7 +19,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * 已臣服的流明·星死亡后，像玩家一样在主人的重生点重生。
+ * 已臣服的随从死亡后，像玩家一样在主人的重生点重生。
  *
  * <p>延迟 {@link #RESPAWN_DELAY_TICKS} tick 后，取主人当前的
  * {@code getRespawnPosition()} / {@code getRespawnDimension()}；主人没设重生点就落在主人脚下。
@@ -39,19 +39,19 @@ public final class LumenRespawnHandler {
 
     @SubscribeEvent
     public static void onDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof LumenSeishinEntity boss) || boss.level().isClientSide()) {
+        if (!(event.getEntity() instanceof LumenCompanionEntity pet) || pet.level().isClientSide()) {
             return;
         }
-        if (!boss.isTame()) {
+        if (!pet.isTame()) {
             return;
         }
-        UUID owner = boss.getOwnerUUID();
+        UUID owner = pet.getOwnerUUID();
         if (owner == null) {
             return;
         }
         PENDING.add(new Pending(owner,
-                boss.level().getGameTime() + RESPAWN_DELAY_TICKS,
-                boss.getName().getString()));
+                pet.level().getGameTime() + RESPAWN_DELAY_TICKS,
+                pet.getName().getString()));
     }
 
     @SubscribeEvent
@@ -81,7 +81,7 @@ public final class LumenRespawnHandler {
             respawnPos = owner.blockPosition();
         }
 
-        LumenSeishinEntity entity = ModEntities.LUMEN_SEISHIN.get().create(target);
+        LumenCompanionEntity entity = ModEntities.LUMEN_COMPANION.get().create(target);
         if (entity == null) {
             return true;
         }
@@ -92,12 +92,12 @@ public final class LumenRespawnHandler {
         entity.setCustomName(Component.literal(pending.name()));
         var maxHealth = entity.getAttribute(Attributes.MAX_HEALTH);
         if (maxHealth != null) {
-            maxHealth.setBaseValue(LumenSeishinEntity.TAME_MAX_HEALTH);
+            maxHealth.setBaseValue(LumenCompanionEntity.MAX_HEALTH);
         }
-        entity.setHealth(LumenSeishinEntity.TAME_MAX_HEALTH);
+        entity.setHealth(LumenCompanionEntity.MAX_HEALTH);
         target.addFreshEntity(entity);
-        owner.sendSystemMessage(Component.translatable("entity.mistletoe.lumen_seishin.respawned"));
-        TerminalBlade.LOGGER.info("[流明·星] 在主人重生点复活：{}", respawnPos);
+        owner.sendSystemMessage(Component.translatable("entity.mistletoe.lumen_companion.respawned"));
+        TerminalBlade.LOGGER.info("[流明·星] 随从在主人重生点复活：{}", respawnPos);
         return true;
     }
 }

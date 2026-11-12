@@ -118,6 +118,8 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     private final net.minecraft.world.SimpleContainer inventory = new net.minecraft.world.SimpleContainer(36);
     private final AnimatableInstanceCache animatableCache = GeckoLibUtil.createInstanceCache(this);
     /** 客户端记录上次播放的动画序号，避免每帧重启动画。 */
+    /** 击败它的玩家（用于死亡时生成随从）。 */
+    private Player subduedBy;
     private int lastAnimSeq = -1;
     /** 招式动画剩余 tick，到点自动复位成 NONE。 */
     private int actionTicksLeft;
@@ -719,12 +721,17 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
 
     @Override
     public void die(DamageSource source) {
-        // 掉落物：槲寄生「暮色」。named blade 的物品栈没法用纯数据战利品表表达，
-        // 这里在死亡时直接生成并丢出。
-        if (!this.level().isClientSide() && !this.isTame()) {
-            ItemStack blade = bladeFor(LumenPhase.MISTLETOE);
-            if (!blade.isEmpty()) {
-                this.spawnAtLocation(blade);
+        if (!this.level().isClientSide()) {
+            if (this.subduedBy != null) {
+                // 被玩家击败：原地转成随从，不掉落
+                this.spawnCompanion(this.subduedBy);
+            } else {
+                // 其它死法（终局蓄力自爆、摔死等）：掉落槲寄生「暮色」。
+                // named blade 的物品栈没法用纯数据战利品表表达，这里直接生成并丢出。
+                ItemStack blade = bladeFor(LumenPhase.MISTLETOE);
+                if (!blade.isEmpty()) {
+                    this.spawnAtLocation(blade);
+                }
             }
         }
         super.die(source);
@@ -889,42 +896,32 @@ public class LumenSeishinEntity extends TamableAnimal implements GeoAnimatable {
     /** 被玩家打出致死一击时不死，而是当场臣服，成为该玩家的随从。 */
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (!this.level().isClientSide() && !this.isTame()
+        // 被玩家打出致死一击：只记录是谁终结的，本体照常死亡，
+        // 由 die() 在死亡时生成随从形态。
+        if (!this.level().isClientSide() && this.subduedBy == null
                 && source.getEntity() instanceof Player player
                 && this.getHealth() - amount <= 0.0F) {
-            this.subdueTo(player);
-            return true;
+            this.subduedBy = player;
         }
         return super.hurt(source, amount);
     }
 
-    /** 臣服：满血的一半、回到朝露、收起 Boss 血条、清空所有招式状态。 */
-    private void subdueTo(Player player) {
-        // 必须先掐掉进行中的终局蓄力，否则归队后 finalChargeLeft 还在倒数，
-        // resolveFinalCharge 会把主人和自己一起结算掉。
-        this.finalChargeLeft = 0;
-        this.finalChargeDone = true;
-        this.bossEvent.setDarkenScreen(false);
-        this.bossEvent.setVisible(false);
-        this.setTame(true, true);
-        this.setOwnerUUID(player.getUUID());
-        var maxHealth = this.getAttribute(Attributes.MAX_HEALTH);
-        if (maxHealth != null) {
-            maxHealth.setBaseValue(TAME_MAX_HEALTH);
+    /** 玩家击败时，在死亡位置生成一只属于该玩家的随从。 */
+    private void spawnCompanion(Player owner) {
+        if (!(this.level() instanceof net.minecraft.server.level.ServerLevel server)) {
+            return;
         }
-        this.setHealth(TAME_MAX_HEALTH);
-        this.setPhase(LumenPhase.MISTLETOE);
-        this.meleeHitsLeft = 0;
-        this.frostHitsLeft = 0;
-        this.slashWindupUntil = 0L;
-        this.actionTicksLeft = 0;
-        this.entityData.set(DATA_ACTION, (byte) LumenAction.NONE.ordinal());
-        this.setTarget(null);
-        this.finalChargeDone = false;
-        this.bossEvent.removeAllPlayers();
-        this.bossEvent.setVisible(false);
-        playPhaseChangeEffect(LumenPhase.DAWN);
-        this.playSound(net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 1.2F, 1.3F);
+        LumenCompanionEntity companion = dev.xingguang.terminalblade.registry.ModEntities.LUMEN_COMPANION
+                .get().create(server);
+        if (companion == null) {
+            return;
+        }
+        companion.moveTo(getX(), getY(), getZ(), getYRot(), 0.0F);
+        companion.setTame(true, true);
+        companion.setOwnerUUID(owner.getUUID());
+        companion.setCustomName(this.getCustomName());
+        server.addFreshEntity(companion);
+        TerminalBlade.LOGGER.info("[流明·星] 被 {} 击败，生成随从", owner.getName().getString());
     }
 
     @Override

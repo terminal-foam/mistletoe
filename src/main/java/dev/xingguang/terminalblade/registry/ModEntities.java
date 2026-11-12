@@ -1,6 +1,7 @@
 package dev.xingguang.terminalblade.registry;
 
 import dev.xingguang.terminalblade.TerminalBlade;
+import dev.xingguang.terminalblade.entity.LumenCompanionEntity;
 import dev.xingguang.terminalblade.entity.LumenSeishinEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -18,6 +19,14 @@ public final class ModEntities {
                     .sized(0.6F, 1.8F)
                     .clientTrackingRange(10)
                     .build("lumen_seishin"));
+
+    /** 臣服后的随从形态，和 Boss 是两个独立实体。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<LumenCompanionEntity>> LUMEN_COMPANION =
+            ENTITIES.register("lumen_companion", () -> EntityType.Builder
+                    .of(LumenCompanionEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F)
+                    .clientTrackingRange(10)
+                    .build("lumen_companion"));
 
     private ModEntities() {
     }

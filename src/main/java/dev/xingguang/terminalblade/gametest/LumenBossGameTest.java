@@ -208,25 +208,26 @@ public final class LumenBossGameTest {
     @PrefixGameTestTemplate(false)
     @GameTest(templateNamespace = TerminalBlade.MOD_ID, template = "empty")
     public static void tamedFollowerSeeksHostileMobs(GameTestHelper helper) {
-        LumenSeishinEntity boss = helper.spawn(ModEntities.LUMEN_SEISHIN.get(), 2, 1, 2);
+        dev.xingguang.terminalblade.entity.LumenCompanionEntity pet =
+                helper.spawn(ModEntities.LUMEN_COMPANION.get(), 2, 1, 2);
         net.minecraft.world.entity.monster.Zombie foe =
                 helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.ZOMBIE, 3, 1, 6);
         net.minecraft.world.entity.animal.Cow cow =
                 helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.COW, 6, 1, 2);
         // 不需要真实玩家：主人 UUID 只用于归属判定，避免 mock 玩家登录把测试卡住
-        boss.setTame(true, true);
-        boss.setOwnerUUID(java.util.UUID.randomUUID());
+        pet.setTame(true, true);
+        pet.setOwnerUUID(java.util.UUID.randomUUID());
 
         helper.runAfterDelay(60, () -> {
-            LivingEntity target = boss.getTarget();
+            LivingEntity target = pet.getTarget();
             String diag = " target=" + target
-                    + " tame=" + boss.isTame()
-                    + " owner=" + boss.getOwnerUUID()
-                    + " canAttack=" + boss.canAttack(foe)
-                    + " distSq=" + String.format("%.2f", boss.distanceToSqr(foe))
-                    + " follow=" + boss.getAttributeValue(Attributes.FOLLOW_RANGE);
-            helper.assertTrue(target == foe, "臣服后没有主动攻击敌对生物：" + diag);
-            helper.assertTrue(boss.getTarget() != cow, "臣服后误把被动生物设为目标");
+                    + " tame=" + pet.isTame()
+                    + " owner=" + pet.getOwnerUUID()
+                    + " canAttack=" + pet.canAttack(foe)
+                    + " distSq=" + String.format("%.2f", pet.distanceToSqr(foe))
+                    + " follow=" + pet.getAttributeValue(Attributes.FOLLOW_RANGE);
+            helper.assertTrue(target == foe, "随从没有主动攻击敌对生物：" + diag);
+            helper.assertTrue(pet.getTarget() != cow, "随从误把被动生物设为目标");
             helper.succeed();
         });
     }

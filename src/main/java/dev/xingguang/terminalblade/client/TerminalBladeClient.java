@@ -17,5 +17,6 @@ public final class TerminalBladeClient {
 
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.LUMEN_SEISHIN.get(), LumenGeoRenderer::new);
+        event.registerEntityRenderer(ModEntities.LUMEN_COMPANION.get(), LumenCompanionGeoRenderer::new);
     }
 }
