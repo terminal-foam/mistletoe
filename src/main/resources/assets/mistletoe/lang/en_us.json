@@ -33,7 +33,9 @@
   "commands.mistletoe.give.first_snow": "Gave Mistletoe -First Snow- to %s",
   "commands.mistletoe.audit": "Normal %s; enhanced SA %s; sacrifice %s; SA damage %s; super cost %s; super lethal %s; radius %s",
   "entity.mistletoe.lumen_seishin.respawned": "Lumen Seishin respawned at your respawn point",
-  "entity.mistletoe.lumen_companion": "Little Star",
-  "entity.mistletoe.lumen_companion.respawned": "Little Star respawned at your respawn point",
-  "item.mistletoe.lumen_companion_spawn_egg": "Little Star Spawn Egg"
+  "entity.mistletoe.lumen_companion": "Lumen Seishin Companion",
+  "entity.mistletoe.lumen_companion.name_lumen": "Lumen",
+  "entity.mistletoe.lumen_companion.name_star": "Little Star",
+  "entity.mistletoe.lumen_companion.respawned": "Your companion respawned at your spawn point",
+  "item.mistletoe.lumen_companion_spawn_egg": "Lumen Seishin Companion Spawn Egg"
 }

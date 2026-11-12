@@ -617,6 +617,35 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         return false;
     }
 
+    // ── 名字 ────────────────────────────────────────────────────────────
+
+    /** 随机名字的翻译键：每次生成随机挑一个。 */
+    private static final String[] NAME_KEYS = {
+            "entity.mistletoe.lumen_companion.name_lumen",
+            "entity.mistletoe.lumen_companion.name_star",
+    };
+
+    /** 生成时随机取一个显示名（流明 / 小星）。 */
+    public void randomDisplayName() {
+        if (this.level().isClientSide() || this.hasCustomName()) {
+            return;
+        }
+        this.setCustomName(Component.translatable(
+                NAME_KEYS[this.getRandom().nextInt(NAME_KEYS.length)]));
+        this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(
+            net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty,
+            net.minecraft.world.entity.MobSpawnType spawnType,
+            net.minecraft.world.entity.SpawnGroupData spawnGroupData) {
+        // 走刷怪蛋 / 自然生成这条路也要有名字
+        randomDisplayName();
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
+    }
+
     @Override
     public Component getName() {
         return Component.translatable("entity.mistletoe.lumen_companion");
