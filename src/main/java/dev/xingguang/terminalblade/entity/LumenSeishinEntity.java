@@ -95,7 +95,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     /** 星罗天翔的作用半径。 */
     private static final double STARFALL_RADIUS = 6.0D;
     /** 星罗天翔的伤害比例（目标最大生命）。 */
-    private static final float STARFALL_RATIO = 0.30F;
+    private static final float STARFALL_FLAT = 40.0F;
     private static final long PLUNGE_COOLDOWN = 160L;
     /** 落地后目标仍不在范围内：立刻再来一次空坠。 */
     private static final long PLUNGE_RETRY = 5L;
@@ -108,6 +108,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private static final float SLASH_RATIO = 0.25F;
     /** 暮色的斩星翻倍到 50% 目标最大生命。 */
     private static final float SLASH_RATIO_MISTLETOE = 0.50F;
+    /** 朝露 / 初雪的斩星是固定值（与这两段的固定普攻保持一致）。 */
+    private static final float SLASH_FLAT_DAWN = 20.0F;
+    private static final float SLASH_FLAT_FIRST_SNOW = 30.0F;
+    /** 朝露每命中一次回复的生命。 */
+    private static final float DAWN_LIFESTEAL = 3.0F;
     private static final long SLASH_WINDUP = 24L;
     private static final long SLASH_COOLDOWN = 300L;
     private static final double SLASH_HIT_RANGE = 8.0D;
@@ -479,8 +484,8 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         playSound(SoundEvents.BEACON_POWER_SELECT, 1.2F, 1.4F);
         for (LivingEntity victim : fanTargets(STARFALL_RADIUS, 360.0D)) {
             if (victim != null && victim.isAlive()) {
-                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE),
-                        Math.max(2.0F, victim.getMaxHealth() * STARFALL_RATIO));
+                MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE, STARFALL_FLAT);
+                dawnLifesteal();
             }
         }
         if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
@@ -522,8 +527,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 1.4F);
         for (LivingEntity victim : fanTargets(PLUNGE_RADIUS, 360.0D)) {
             if (victim != null && victim.isAlive()) {
-                victim.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_BLADE),
+                MistletoeDamage.hurt(this, victim, MistletoeDamage.LUMEN_BLADE,
                         Math.max(2.0F, victim.getMaxHealth() * 0.10F));
+                dawnLifesteal();
             }
         }
         if (this.level() instanceof net.minecraft.server.level.ServerLevel server) {
@@ -893,7 +899,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.entityData.set(DATA_COMBO_INDEX, this.meleeHitIndex + 1);
         playAction(LumenAction.MELEE);
         spawnCosmeticSlash(-25.0F + getRandom().nextFloat() * 50.0F, 1.8F, phaseColor(getPhase()));
-        target.hurt(MistletoeDamage.source(this, meleeDamageType()), amount);
+        if (target.hurt(MistletoeDamage.source(this, meleeDamageType()), amount)) {
+            dawnLifesteal();
+        }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.0F);
         this.meleeHitIndex++;
         this.meleeHitsLeft--;
@@ -928,6 +936,25 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F, 1.4F);
     }
 
+    /**
+     * 斩星类招式的伤害：朝露 / 初雪用固定值（和这两段的固定普攻同一套逻辑），
+     * 暮色才按目标最大生命的比例结算。
+     */
+    private float slashAmount(LivingEntity target) {
+        return switch (getPhase()) {
+            case DAWN -> SLASH_FLAT_DAWN;
+            case FIRST_SNOW -> SLASH_FLAT_FIRST_SNOW;
+            case MISTLETOE -> Math.max(1.0F, target.getMaxHealth() * SLASH_RATIO_MISTLETOE);
+        };
+    }
+
+    /** 朝露：每次命中都回血。 */
+    private void dawnLifesteal() {
+        if (getPhase() == LumenPhase.DAWN) {
+            heal(DAWN_LIFESTEAL);
+        }
+    }
+
     /** Public entry point also used by transition, including immediate transition cast. */
     public void slashStrike(LivingEntity target) {
         if (target != null && target.isAlive()) {
@@ -945,9 +972,9 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
     private void strikeWithYaw(LivingEntity target, float lockedYaw) {
         spawnCosmeticSlash(-30.0F, 2.6F, 0xC9A0FF);
         if (target != null && target.isAlive()) {
-            float ratio = getPhase() == LumenPhase.MISTLETOE ? SLASH_RATIO_MISTLETOE : SLASH_RATIO;
-            float amount = Math.max(1.0F, target.getMaxHealth() * ratio);
-            target.hurt(MistletoeDamage.source(this, MistletoeDamage.LUMEN_TRUE), amount);
+            if (MistletoeDamage.hurt(this, target, MistletoeDamage.LUMEN_TRUE, slashAmount(target))) {
+                dawnLifesteal();
+            }
         }
         playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.2F, 0.7F);
     }
