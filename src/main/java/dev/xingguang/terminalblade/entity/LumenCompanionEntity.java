@@ -497,6 +497,11 @@ public class LumenCompanionEntity extends TamableAnimal implements GeoAnimatable
         });
         int sequence = this.getAnimSeq();
         if (!desired.equals(this.lastAnimName) || sequence != this.lastAnimSeq) {
+            // 坐姿诊断：确认到底哪个实体在播 sit
+            if ("sit".equals(desired) || "sit".equals(this.lastAnimName)) {
+                dev.xingguang.terminalblade.TerminalBlade.LOGGER.info("[流明] {} ({}) 动画 {} -> {}",
+                        this.getUUID(), this.getClass().getSimpleName(), this.lastAnimName, desired);
+            }
             this.lastAnimName = desired;
             this.lastAnimSeq = sequence;
             state.getController().forceAnimationReset();

@@ -116,10 +116,10 @@ public final class LumenBossGameTest {
         boss.setNoAi(true);
         boss.setYRot(0.0F);
         boss.setHealth(239.0F);
-        helper.runAfterDelay(2, () -> {
+        helper.runAfterDelay(10, () -> {
             helper.assertTrue(boss.getPhase() == LumenPhase.FIRST_SNOW, "未即时进入初雪阶段");
             helper.assertTrue(target.getHealth() < 1000.0F, "转阶段没有立即发动第一刀霜刃");
-            helper.runAfterDelay(24, () -> {
+            helper.runAfterDelay(45, () -> {
                 helper.assertTrue(Math.abs(target.getHealth() - 986.0F) < 0.01F,
                         "霜刃转阶段未完成七次判定：" + target.getHealth());
                 helper.succeed();

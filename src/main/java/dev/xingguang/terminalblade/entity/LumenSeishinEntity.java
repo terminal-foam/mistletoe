@@ -282,6 +282,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         }
         // Switching does NOT add a separate animation or wait. The new blade's SA begins this tick.
         if (phase == LumenPhase.FIRST_SNOW) {
+            // 必须先面向目标，否则起手扇形圈不到人 → 七刀全空
+            if (target != null && target.isAlive()) {
+                getLookControl().setLookAt(target, 180.0F, 180.0F);
+                faceTarget(target);
+            }
             startFrostCombo(); // 1 immediate hit + 6 follow-up hits; not just frostStrike() once
         } else {
             if (target != null && target.isAlive()) {
@@ -304,6 +309,11 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         this.frostCooldownUntil = this.level().getGameTime() + FROST_COOLDOWN;
         // 起手即锁定目标：后续六刀打同一批目标，不因被击退出扇形而丢刀
         this.frostTargets = new java.util.ArrayList<>(fanTargets(FROST_RANGE, FROST_CONE_DEGREES));
+        if (this.frostTargets.isEmpty()) {
+            // 起手扇形没圈到人（刚转阶段朝向还没同步）：退化成 6 格内全向锁定，
+            // 保证七刀有确定的命中集合，不靠每刀重新取扇形（那样目标被击退就丢刀）。
+            this.frostTargets = new java.util.ArrayList<>(fanTargets(FROST_RANGE, 360.0D));
+        }
         playAction(LumenAction.FROST);
         playSound(SoundEvents.PLAYER_ATTACK_NODAMAGE, 1.0F, 1.6F);
         tickFrostCombo(this.level().getGameTime()); // first slash immediately
@@ -908,6 +918,7 @@ public class LumenSeishinEntity extends Monster implements GeoAnimatable {
         });
         int sequence = this.getAnimSeq();
         if (!desired.equals(this.lastAnimName) || sequence != this.lastAnimSeq) {
+
             this.lastAnimName = desired;
             this.lastAnimSeq = sequence;
             state.getController().forceAnimationReset();
